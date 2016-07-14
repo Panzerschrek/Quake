@@ -1,0 +1,13 @@
+# Windows binaries
+*.exe
+*.dll
+
+# Visual studio outputs directories
+WinQuake/Debug
+WinQuake/Release
+WinQuake/gas2masm/Debug
+WinQuake/gas2masm/Release
+
+# Visual studio stuff
+*.user
+*.suo
