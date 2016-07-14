@@ -11,3 +11,7 @@ WinQuake/gas2masm/Release
 # Visual studio stuff
 *.user
 *.suo
+*.ncb
+
+# Quake files directory
+WinQuake/ID1

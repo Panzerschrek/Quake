@@ -4,6 +4,7 @@
 	Version="9,00"
 	Name="winquake"
 	ProjectGUID="{B5E07AD1-85D1-4AFF-BDDB-F3479D6F533B}"
+	RootNamespace="winquake"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -76,6 +77,7 @@
 				OutputFile=".\Release/WinQuake.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				IgnoreDefaultLibraryNames="LIBC"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -166,6 +168,7 @@
 				OutputFile=".\release_gl\glquake.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				IgnoreDefaultLibraryNames="LIBC"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -349,6 +352,7 @@
 				OutputFile=".\debug_gl\glquake.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
+				IgnoreDefaultLibraryNames="LIBC"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\debug_gl/glquake.pdb"
 				SubSystem="2"
