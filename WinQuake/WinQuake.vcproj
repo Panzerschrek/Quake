@@ -50,7 +50,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories=".\scitech\include,.\dxsdk\sdk\inc"
+				AdditionalIncludeDirectories=".\scitech\include;.\dxsdk\sdk\inc;&quot;..\..\SDL2-2.0.3\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="0"
 				PrecompiledHeaderFile=".\Release/WinQuake.pch"
@@ -142,7 +142,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="4"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories=".\dxsdk\sdk\inc"
+				AdditionalIncludeDirectories=".\dxsdk\sdk\inc;&quot;..\..\SDL2-2.0.3\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;GLQUAKE"
 				RuntimeLibrary="0"
 				PrecompiledHeaderFile=".\release_gl/WinQuake.pch"
@@ -233,7 +233,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\scitech\include,.\dxsdk\sdk\inc"
+				AdditionalIncludeDirectories=".\scitech\include;.\dxsdk\sdk\inc;&quot;..\..\SDL2-2.0.3\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				RuntimeLibrary="0"
 				PrecompiledHeaderFile=".\Debug/WinQuake.pch"
@@ -2367,10 +2367,15 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\in_sdl.c"
+				>
+			</File>
+			<File
 				RelativePath="in_win.c"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2381,6 +2386,7 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="GL Release|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2390,6 +2396,7 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2399,6 +2406,7 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="GL Debug|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -4449,10 +4457,15 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vid_sdl.c"
+				>
+			</File>
+			<File
 				RelativePath="vid_win.c"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -4473,6 +4486,7 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
