@@ -73,10 +73,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=".\dxsdk\sdk\lib\dxguid.lib .\scitech\lib\win32\vc\mgllt.lib winmm.lib wsock32.lib opengl32.lib glu32.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies=".\dxsdk\sdk\lib\dxguid.lib .\scitech\lib\win32\vc\mgllt.lib winmm.lib wsock32.lib opengl32.lib glu32.lib odbc32.lib odbccp32.lib SDL2.lib"
 				OutputFile=".\Release/WinQuake.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="&quot;..\..\SDL2-2.0.3\lib\x86&quot;"
 				IgnoreDefaultLibraryNames="LIBC"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
@@ -164,10 +165,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=".\dxsdk\sdk\lib\dxguid.lib comctl32.lib winmm.lib wsock32.lib opengl32.lib glu32.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies=".\dxsdk\sdk\lib\dxguid.lib comctl32.lib winmm.lib wsock32.lib opengl32.lib glu32.lib odbc32.lib odbccp32.lib SDL2.lib"
 				OutputFile=".\release_gl\glquake.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\..\SDL2-2.0.3\lib\x86"
 				IgnoreDefaultLibraryNames="LIBC"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
@@ -255,10 +257,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=".\dxsdk\sdk\lib\dxguid.lib .\scitech\lib\win32\vc\mgllt.lib winmm.lib wsock32.lib opengl32.lib glu32.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies=".\dxsdk\sdk\lib\dxguid.lib .\scitech\lib\win32\vc\mgllt.lib winmm.lib wsock32.lib opengl32.lib glu32.lib odbc32.lib odbccp32.lib SDL2.lib"
 				OutputFile=".\Debug/WinQuake.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\..\SDL2-2.0.3\lib\x86"
 				IgnoreDefaultLibraryNames="LIBC"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/WinQuake.pdb"
@@ -348,10 +351,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=".\dxsdk\sdk\lib\dxguid.lib comctl32.lib winmm.lib wsock32.lib opengl32.lib glu32.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies=".\dxsdk\sdk\lib\dxguid.lib comctl32.lib winmm.lib wsock32.lib opengl32.lib glu32.lib odbc32.lib odbccp32.lib SDL2.lib"
 				OutputFile=".\debug_gl\glquake.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="..\..\SDL2-2.0.3\lib\x86"
 				IgnoreDefaultLibraryNames="LIBC"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\debug_gl/glquake.pdb"
