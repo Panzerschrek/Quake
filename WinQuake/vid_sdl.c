@@ -89,6 +89,9 @@ void	VID_ShiftPalette (unsigned char *palette)
 
 void	VID_Init (unsigned char *palette)
 {
+	if ( SDL_InitSubSystem(SDL_INIT_VIDEO) < 0 )
+		Sys_Error("Could not initialize SDL video.");
+
 	VID_SetPalette(palette);
 
 	vid.width  = 640;
@@ -118,7 +121,7 @@ void	VID_Init (unsigned char *palette)
 			SDL_WINDOW_SHOWN | (SDL_WINDOW_FULLSCREEN & 0) );
 
 	if (!g_sdl.window)
-		Sys_Error("I_InitGraphics: Could not create window");
+		Sys_Error("Can not create window.");
 
 	g_sdl.window_surface = SDL_GetWindowSurface( g_sdl.window );
 
