@@ -56,7 +56,13 @@ struct
 } g_sdl;
 
 
-static void StubFn(){}
+static void MenuDrawFn(void)
+{
+}
+
+static void MenuKeyFn(int x)
+{
+}
 
 // lock/unlock used in some places
 
@@ -106,6 +112,7 @@ void	VID_Init (unsigned char *palette)
 
 	vid.conwidth  = 320;
 	vid.conheight = vid.height;
+	vid.conrowbytes = vid.conwidth;
 	vid.conbuffer = malloc( vid.conwidth * vid.conheight );
 
 	vid.colormap = host_colormap;
@@ -136,8 +143,8 @@ void	VID_Init (unsigned char *palette)
 	}
 	S_Init ();
 
-	vid_menudrawfn = StubFn;
-	vid_menukeyfn = StubFn;
+	vid_menudrawfn = &MenuDrawFn;
+	vid_menukeyfn = &MenuKeyFn;
 
 	g_vid_surfcachesize = D_SurfaceCacheForRes (vid.width, vid.height);
 	g_vid_surfcache = malloc( g_vid_surfcachesize );
