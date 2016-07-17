@@ -23,6 +23,36 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
+static qboolean g_mouse_captured = false;
+static int g_mouse_dx = 0, g_mouse_dy = 0;
+static int g_prev_mouse_dx = 0, g_prev_mouse_dy = 0;
+
+extern cvar_t sensitivity;
+static cvar_t	m_filter = {"m_filter","0", true};
+
+static void CaptureMouse( qboolean need_capture )
+{
+	if( g_mouse_captured == need_capture )
+		return;
+
+	g_mouse_captured = need_capture;
+
+	if( need_capture )
+	{
+		SDL_SetRelativeMouseMode(true);
+		SDL_ShowCursor(false);
+		g_mouse_dx = 0;
+		g_mouse_dy = 0;
+		g_prev_mouse_dx = 0;
+		g_prev_mouse_dy = 0;
+	}
+	else
+	{
+		SDL_SetRelativeMouseMode(false);
+		SDL_ShowCursor(true);
+	}
+}
+
 static int TranslateSDLKey( int key )
 {
 	switch(key)
@@ -122,12 +152,16 @@ static void ProcessSDLEvent( const SDL_Event* event )
 		break;
 
 	case SDL_MOUSEMOTION:
+		g_mouse_dx += event->motion.xrel;
+		g_mouse_dy += event->motion.yrel;
 		break;
 
 	case SDL_WINDOWEVENT_ENTER:
+		CaptureMouse(true);
 		break;
 
 	case SDL_WINDOWEVENT_LEAVE:
+		CaptureMouse(false);
 		break;
 
 	case SDL_WINDOWEVENT_CLOSE:
@@ -142,6 +176,9 @@ static void ProcessSDLEvent( const SDL_Event* event )
 
 void IN_Init (void)
 {
+	Cvar_RegisterVariable (&m_filter);
+
+	CaptureMouse(true);
 }
 
 void IN_Shutdown (void)
@@ -158,12 +195,47 @@ void IN_Commands (void)
 
 void IN_Move (usercmd_t *cmd)
 {
-	// panzer - stub, do something with it later
+	// cmd not used - because we do not use mouse for moving, only for rotation.
+
+	if( !g_mouse_captured )
+		return;
+
+	if( !cl.paused )
+	{
+		float dx, dy;
+
+		if( m_filter.value != 0.0 )
+		{
+			dx = ( g_mouse_dx + g_prev_mouse_dx ) * 0.5;
+			dy = ( g_mouse_dy + g_prev_mouse_dy ) * 0.5;
+		}
+		else
+		{
+			dx = g_mouse_dx;
+			dy = g_mouse_dy;
+		}
+
+		V_StopPitchDrift();
+
+		cl.viewangles[YAW  ] -= 0.015 * sensitivity.value * dx;
+		cl.viewangles[PITCH] += 0.015 * sensitivity.value * dy;
+
+		if( cl.viewangles[PITCH] > +90 ) cl.viewangles[PITCH] = +90;
+		if( cl.viewangles[PITCH] < -90 ) cl.viewangles[PITCH] = -90;
+	}
+
+	g_prev_mouse_dx = g_mouse_dx;
+	g_prev_mouse_dy = g_mouse_dy;
+	g_mouse_dx = 0;
+	g_mouse_dy = 0;
 }
 
 void IN_ClearStates (void)
 {
-	// panzer - stub, do something with it later
+	g_mouse_dx = 0;
+	g_mouse_dy = 0;
+	g_prev_mouse_dx = 0;
+	g_prev_mouse_dy = 0;
 }
 
 void IN_Accumulate (void)
