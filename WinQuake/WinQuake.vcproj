@@ -4120,6 +4120,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\snd_sdl.c"
+				>
+			</File>
+			<File
 				RelativePath="snd_win.c"
 				>
 				<FileConfiguration
@@ -4143,6 +4147,7 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"

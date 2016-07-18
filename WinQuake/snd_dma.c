@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void S_Play(void);
 void S_PlayVol(void);
 void S_SoundList(void);
-void S_Update_();
+//void S_Update_();
 void S_StopAllSounds(qboolean clear);
 void S_StopAllSoundsC(void);
 
@@ -53,7 +53,7 @@ vec3_t		listener_right;
 vec3_t		listener_up;
 vec_t		sound_nominal_clip_dist=1000.0;
 
-int			soundtime;		// sample PAIRS
+//int			soundtime;		// sample PAIRS
 int   		paintedtime; 	// sample PAIRS
 
 
@@ -62,9 +62,6 @@ sfx_t		*known_sfx;		// hunk allocated [MAX_SFX]
 int			num_sfx;
 
 sfx_t		*ambient_sfx[NUM_AMBIENTS];
-
-int 		desired_speed = 11025;
-int 		desired_bits = 16;
 
 int sound_started=0;
 
@@ -147,9 +144,6 @@ void S_Startup (void)
 
 		if (!rc)
 		{
-#ifndef	_WIN32
-			Con_Printf("S_Startup: SNDDMA_Init failed.\n");
-#endif
 			sound_started = 0;
 			return;
 		}
@@ -560,11 +554,7 @@ void S_ClearBuffer (void)
 {
 	int		clear;
 		
-#ifdef _WIN32
-	if (!sound_started || !shm || (!shm->buffer && !pDSBuf))
-#else
 	if (!sound_started || !shm || !shm->buffer)
-#endif
 		return;
 
 	if (shm->samplebits == 8)
@@ -572,40 +562,6 @@ void S_ClearBuffer (void)
 	else
 		clear = 0;
 
-#ifdef _WIN32
-	if (pDSBuf)
-	{
-		DWORD	dwSize;
-		DWORD	*pData;
-		int		reps;
-		HRESULT	hresult;
-
-		reps = 0;
-
-		while ((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, &pData, &dwSize, NULL, NULL, 0)) != DS_OK)
-		{
-			if (hresult != DSERR_BUFFERLOST)
-			{
-				Con_Printf ("S_ClearBuffer: DS::Lock Sound Buffer Failed\n");
-				S_Shutdown ();
-				return;
-			}
-
-			if (++reps > 10000)
-			{
-				Con_Printf ("S_ClearBuffer: DS: couldn't restore buffer\n");
-				S_Shutdown ();
-				return;
-			}
-		}
-
-		Q_memset(pData, clear, shm->samples * shm->samplebits/8);
-
-		pDSBuf->lpVtbl->Unlock(pDSBuf, pData, dwSize, NULL, 0);
-	
-	}
-	else
-#endif
 	{
 		Q_memset(shm->buffer, clear, shm->samples * shm->samplebits/8);
 	}
@@ -804,56 +760,16 @@ void S_Update(vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 	}
 
 // mix some sound
-	S_Update_();
+	// PANZER - we perfom mixing in separate thread
+	//S_Update_();
 }
 
-void GetSoundtime(void)
-{
-	int		samplepos;
-	static	int		buffers;
-	static	int		oldsamplepos;
-	int		fullsamples;
-	
-	fullsamples = shm->samples / shm->channels;
-
-// it is possible to miscount buffers if it has wrapped twice between
-// calls to S_Update.  Oh well.
-#ifdef __sun__
-	soundtime = SNDDMA_GetSamples();
-#else
-	samplepos = SNDDMA_GetDMAPos();
-
-
-	if (samplepos < oldsamplepos)
-	{
-		buffers++;					// buffer wrapped
-		
-		if (paintedtime > 0x40000000)
-		{	// time to chop things off to avoid 32 bit limits
-			buffers = 0;
-			paintedtime = fullsamples;
-			S_StopAllSounds (true);
-		}
-	}
-	oldsamplepos = samplepos;
-
-	soundtime = buffers*fullsamples + samplepos/shm->channels;
-#endif
-}
 
 void S_ExtraUpdate (void)
 {
-
-#ifdef _WIN32
-	IN_Accumulate ();
-#endif
-
-	if (snd_noextraupdate.value)
-		return;		// don't pollute timings
-	S_Update_();
 }
 
-void S_Update_(void)
+/*void S_Update_(void)
 {
 	unsigned        endtime;
 	int				samps;
@@ -861,45 +777,16 @@ void S_Update_(void)
 	if (!sound_started || (snd_blocked > 0))
 		return;
 
-// Updates DMA time
-	GetSoundtime();
-
-// check to make sure that we haven't overshot
-	if (paintedtime < soundtime)
-	{
-		//Con_Printf ("S_Update_ : overflow\n");
-		paintedtime = soundtime;
-	}
-
 // mix ahead of current position
 	endtime = soundtime + _snd_mixahead.value * shm->speed;
 	samps = shm->samples >> (shm->channels-1);
 	if (endtime - soundtime > samps)
 		endtime = soundtime + samps;
 
-#ifdef _WIN32
-// if the buffer was lost or stopped, restore it and/or restart it
-	{
-		DWORD	dwStatus;
-
-		if (pDSBuf)
-		{
-			if (pDSBuf->lpVtbl->GetStatus (pDSBuf, &dwStatus) != DD_OK)
-				Con_Printf ("Couldn't get sound buffer status\n");
-			
-			if (dwStatus & DSBSTATUS_BUFFERLOST)
-				pDSBuf->lpVtbl->Restore (pDSBuf);
-			
-			if (!(dwStatus & DSBSTATUS_PLAYING))
-				pDSBuf->lpVtbl->Play(pDSBuf, 0, 0, DSBPLAY_LOOPING);
-		}
-	}
-#endif
-
 	S_PaintChannels (endtime);
 
 	SNDDMA_Submit ();
-}
+}*/
 
 /*
 ===============================================================================
