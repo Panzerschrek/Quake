@@ -52,15 +52,12 @@ static void SDLCALL AudioCallback( void* userdata, Uint8* stream, int len )
 	samples = (sample_t*) stream;
 	len_in_samples = len / ( sizeof(sample_t) * g_sdl_audio.format.channels );
 
-	SDL_LockMutex( g_sdl_audio.mutex );
+	SNDDMA_LockSoundData();
 
-	for( i = 0; i < len_in_samples; i++ )
-	{
-		samples[i] = 64 * i;
-	}
+	shm->buffer = stream;
+	S_PaintChannels( paintedtime + len_in_samples );
 
-	paintedtime += len_in_samples;
-	SDL_UnlockMutex( g_sdl_audio.mutex );
+	SNDDMA_UnlockSoundData();
 }
 
 qboolean SNDDMA_Init(void)
@@ -77,6 +74,8 @@ qboolean SNDDMA_Init(void)
 	audio_format.freq = 22050;
 	audio_format.format = AUDIO_S16;
 	audio_format.callback = AudioCallback;
+
+	// ~ 1 callback call per two frames (60fps)
 	audio_format.samples = NearestPowerOfTwoFloor( audio_format.freq / 30 );
 
 	g_sdl_audio.device_id = 0;
@@ -112,9 +111,9 @@ qboolean SNDDMA_Init(void)
 	shm = (void *) malloc(sizeof(dma_t));
 	shm->splitbuffer = 0;
 	shm->samplebits = SDL_AUDIO_BITSIZE( g_sdl_audio.format.format );
-	shm->speed = g_sdl_audio.format.samples;
+	shm->speed = g_sdl_audio.format.freq;
 	shm->channels = g_sdl_audio.format.channels;
-	shm->samples = g_sdl_audio.format.size / ( sizeof(sample_t) * g_sdl_audio.format.channels );
+	shm->samples = g_sdl_audio.format.size / sizeof(sample_t);
 	shm->samplepos = 0;
 	shm->soundalive = true;
 	shm->gamealive = true;
@@ -123,7 +122,7 @@ qboolean SNDDMA_Init(void)
 
 	g_sdl_audio.initialized = true;
 
-	return false;
+	return true;
 }
 
 void SNDDMA_Shutdown(void)
@@ -137,11 +136,12 @@ void SNDDMA_Shutdown(void)
 	g_sdl_audio.initialized = false;
 }
 
-int SNDDMA_GetDMAPos(void)
+void SNDDMA_LockSoundData(void)
 {
-	return 0;
+	SDL_LockMutex( g_sdl_audio.mutex );
 }
 
-void SNDDMA_Submit(void)
+void SNDDMA_UnlockSoundData(void)
 {
+	SDL_UnlockMutex( g_sdl_audio.mutex );
 }

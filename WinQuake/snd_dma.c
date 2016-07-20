@@ -93,19 +93,19 @@ cvar_t _snd_mixahead = {"_snd_mixahead", "0.1", true};
 qboolean fakedma = false;
 int fakedma_updates = 15;
 
-
+// Panzer - internal
 void S_AmbientOff (void)
 {
 	snd_ambient = false;
 }
 
-
+// Panzer - internal
 void S_AmbientOn (void)
 {
 	snd_ambient = true;
 }
 
-
+// Panzer - internal
 void S_SoundInfo_f(void)
 {
 	if (!sound_started || !shm)
@@ -130,7 +130,7 @@ void S_SoundInfo_f(void)
 S_Startup
 ================
 */
-
+// Panzer - internal
 void S_Startup (void)
 {
 	int		rc;
@@ -268,6 +268,7 @@ S_FindName
 
 ==================
 */
+// Panzer - internal
 sfx_t *S_FindName (char *name)
 {
 	int		i;
@@ -304,15 +305,20 @@ S_TouchSound
 
 ==================
 */
+
 void S_TouchSound (char *name)
 {
-	sfx_t	*sfx;
+	/*sfx_t	*sfx;
 	
 	if (!sound_started)
 		return;
 
+	SNDDMA_LockSoundData();
+
 	sfx = S_FindName (name);
 	Cache_Check (&sfx->cache);
+
+	SNDDMA_UnlockSoundData();*/
 }
 
 /*
@@ -321,6 +327,7 @@ S_PrecacheSound
 
 ==================
 */
+// External, but we do not need locking
 sfx_t *S_PrecacheSound (char *name)
 {
 	sfx_t	*sfx;
@@ -345,6 +352,7 @@ sfx_t *S_PrecacheSound (char *name)
 SND_PickChannel
 =================
 */
+// Panzer - internal
 channel_t *SND_PickChannel(int entnum, int entchannel)
 {
     int ch_idx;
@@ -389,6 +397,7 @@ channel_t *SND_PickChannel(int entnum, int entchannel)
 SND_Spatialize
 =================
 */
+// Panzer - internal
 void SND_Spatialize(channel_t *ch)
 {
     vec_t dot;
@@ -441,7 +450,7 @@ void SND_Spatialize(channel_t *ch)
 // =======================================================================
 // Start a sound effect
 // =======================================================================
-
+// Panzer - External
 void S_StartSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation)
 {
 	channel_t *target_chan, *check;
@@ -461,6 +470,8 @@ void S_StartSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float f
 
 	vol = fvol*255;
 
+	SNDDMA_LockSoundData();
+
 // pick a channel to play on
 	target_chan = SND_PickChannel(entnum, entchannel);
 	if (!target_chan)
@@ -476,14 +487,14 @@ void S_StartSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float f
 	SND_Spatialize(target_chan);
 
 	if (!target_chan->leftvol && !target_chan->rightvol)
-		return;		// not audible at all
+		goto return_;		// not audible at all
 
 // new channel
 	sc = S_LoadSound (sfx);
 	if (!sc)
 	{
 		target_chan->sfx = NULL;
-		return;		// couldn't load the sound's data
+		goto return_;		// couldn't load the sound's data
 	}
 
 	target_chan->sfx = sfx;
@@ -508,11 +519,17 @@ void S_StartSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float f
 		}
 		
 	}
+
+return_:
+	SNDDMA_UnlockSoundData();
 }
 
+// External
 void S_StopSound(int entnum, int entchannel)
 {
 	int i;
+
+	SNDDMA_LockSoundData();
 
 	for (i=0 ; i<MAX_DYNAMIC_CHANNELS ; i++)
 	{
@@ -521,9 +538,12 @@ void S_StopSound(int entnum, int entchannel)
 		{
 			channels[i].end = 0;
 			channels[i].sfx = NULL;
-			return;
+			goto return_;
 		}
 	}
+
+return_:
+	SNDDMA_UnlockSoundData();
 }
 
 void S_StopAllSounds(qboolean clear)
@@ -535,6 +555,8 @@ void S_StopAllSounds(qboolean clear)
 
 	total_channels = MAX_DYNAMIC_CHANNELS + NUM_AMBIENTS;	// no statics
 
+	SNDDMA_LockSoundData();
+
 	for (i=0 ; i<MAX_CHANNELS ; i++)
 		if (channels[i].sfx)
 			channels[i].sfx = NULL;
@@ -543,6 +565,8 @@ void S_StopAllSounds(qboolean clear)
 
 	if (clear)
 		S_ClearBuffer ();
+
+	SNDDMA_UnlockSoundData();
 }
 
 void S_StopAllSoundsC (void)
@@ -684,6 +708,8 @@ void S_Update(vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 	if (!sound_started || (snd_blocked > 0))
 		return;
 
+	SNDDMA_LockSoundData();
+
 	VectorCopy(origin, listener_origin);
 	VectorCopy(forward, listener_forward);
 	VectorCopy(right, listener_right);
@@ -738,8 +764,6 @@ void S_Update(vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 				continue;
 			}
 		}
-		
-		
 	}
 
 //
@@ -762,6 +786,7 @@ void S_Update(vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 // mix some sound
 	// PANZER - we perfom mixing in separate thread
 	//S_Update_();
+	SNDDMA_UnlockSoundData();
 }
 
 

@@ -35,7 +35,6 @@ short	*snd_out;
 
 void Snd_WriteLinearBlastStereo16 (void);
 
-#if	!id386
 void Snd_WriteLinearBlastStereo16 (void)
 {
 	int		i;
@@ -60,7 +59,6 @@ void Snd_WriteLinearBlastStereo16 (void)
 			snd_out[i+1] = val;
 	}
 }
-#endif
 
 void S_TransferStereo16 (int endtime)
 {
@@ -196,7 +194,10 @@ void S_PaintChannels(int endtime)
 				continue;
 			if (!ch->leftvol && !ch->rightvol)
 				continue;
-			sc = S_LoadSound (ch->sfx);
+
+			//sc = S_LoadSound (ch->sfx);
+			// PANZER - remove caching
+			sc = ch->sfx->cache.data;
 			if (!sc)
 				continue;
 
