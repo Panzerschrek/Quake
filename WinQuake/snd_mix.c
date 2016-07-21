@@ -100,8 +100,6 @@ void S_PaintChannels(int endtime)
 			if (!ch->leftvol && !ch->rightvol)
 				continue;
 
-			//sc = S_LoadSound (ch->sfx);
-			// PANZER - remove caching
 			sc = ch->sfx->cache.data;
 			if (!sc)
 				continue;

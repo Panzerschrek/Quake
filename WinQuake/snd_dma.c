@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void S_Play(void);
 void S_PlayVol(void);
 void S_SoundList(void);
-//void S_Update_();
 void S_StopAllSounds(qboolean clear);
 void S_StopAllSoundsC(void);
 
@@ -83,29 +82,16 @@ cvar_t _snd_mixahead = {"_snd_mixahead", "0.1", true};
 // User-setable variables
 // ====================================================================
 
-
-//
-// Fake dma is a synchronous faking of the DMA progress used for
-// isolating performance in the renderer.  The fakedma_updates is
-// number of times S_Update() is called per second.
-//
-
-qboolean fakedma = false;
-int fakedma_updates = 15;
-
-// Panzer - internal
 void S_AmbientOff (void)
 {
 	snd_ambient = false;
 }
 
-// Panzer - internal
 void S_AmbientOn (void)
 {
 	snd_ambient = true;
 }
 
-// Panzer - internal
 void S_SoundInfo_f(void)
 {
 	if (!sound_started || !shm)
@@ -129,7 +115,6 @@ void S_SoundInfo_f(void)
 S_Startup
 ================
 */
-// Panzer - internal
 void S_Startup (void)
 {
 	int		rc;
@@ -137,15 +122,12 @@ void S_Startup (void)
 	if (!snd_initialized)
 		return;
 
-	if (!fakedma)
-	{
-		rc = SNDDMA_Init();
+	rc = SNDDMA_Init();
 
-		if (!rc)
-		{
-			sound_started = 0;
-			return;
-		}
+	if (!rc)
+	{
+		sound_started = 0;
+		return;
 	}
 
 	sound_started = 1;
@@ -164,9 +146,6 @@ void S_Init (void)
 
 	if (COM_CheckParm("-nosound"))
 		return;
-
-	if (COM_CheckParm("-simsound"))
-		fakedma = true;
 
 	Cmd_AddCommand("play", S_Play);
 	Cmd_AddCommand("playvol", S_PlayVol);
@@ -203,22 +182,6 @@ void S_Init (void)
 	known_sfx = Hunk_AllocName (MAX_SFX*sizeof(sfx_t), "sfx_t");
 	num_sfx = 0;
 
-// create a piece of DMA memory
-
-	if (fakedma)
-	{
-		shm = (void *) Hunk_AllocName(sizeof(*shm), "shm");
-		shm->splitbuffer = 0;
-		shm->samplebits = 16;
-		shm->speed = 22050;
-		shm->channels = 2;
-		shm->samplepos = 0;
-		shm->soundalive = true;
-		shm->gamealive = true;
-		shm->submission_chunk = 1;
-		shm->buffer = Hunk_AllocName(1<<16, "shmbuf");
-	}
-
 	Con_Printf ("Sound sampling rate: %i\n", shm->speed);
 
 	// provides a tick sound until washed clean
@@ -249,10 +212,7 @@ void S_Shutdown(void)
 	shm = 0;
 	sound_started = 0;
 
-	if (!fakedma)
-	{
-		SNDDMA_Shutdown();
-	}
+	SNDDMA_Shutdown();
 }
 
 
@@ -266,7 +226,6 @@ S_FindName
 
 ==================
 */
-// Panzer - internal
 sfx_t *S_FindName (char *name)
 {
 	int		i;
@@ -314,7 +273,6 @@ S_PrecacheSound
 
 ==================
 */
-// Panzer - external
 sfx_t *S_PrecacheSound (char *name)
 {
 	sfx_t	*sfx;
@@ -343,7 +301,6 @@ sfx_t *S_PrecacheSound (char *name)
 SND_PickChannel
 =================
 */
-// Panzer - internal
 channel_t *SND_PickChannel(int entnum, int entchannel)
 {
     int ch_idx;
@@ -388,7 +345,6 @@ channel_t *SND_PickChannel(int entnum, int entchannel)
 SND_Spatialize
 =================
 */
-// Panzer - internal
 void SND_Spatialize(channel_t *ch)
 {
     vec_t dot;
@@ -441,7 +397,6 @@ void SND_Spatialize(channel_t *ch)
 // =======================================================================
 // Start a sound effect
 // =======================================================================
-// Panzer - External
 void S_StartSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation)
 {
 	channel_t *target_chan, *check;
@@ -515,7 +470,6 @@ return_:
 	SNDDMA_UnlockSoundData();
 }
 
-// External
 void S_StopSound(int entnum, int entchannel)
 {
 	int i;
@@ -553,9 +507,6 @@ void S_StopAllSounds(qboolean clear)
 			channels[i].sfx = NULL;
 
 	Q_memset(channels, 0, MAX_CHANNELS * sizeof(channel_t));
-
-	if (clear)
-		S_ClearBuffer ();
 
 	SNDDMA_UnlockSoundData();
 }
@@ -847,7 +798,6 @@ void S_SoundList(void)
 	total = 0;
 	for (sfx=known_sfx, i=0 ; i<num_sfx ; i++, sfx++)
 	{
-		//sc = Cache_Check (&sfx->cache);
 		sc = sfx->cache.data;
 		if (!sc)
 			continue;

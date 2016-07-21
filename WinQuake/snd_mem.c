@@ -39,8 +39,6 @@ void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, byte *data)
 	int		sample, samplefrac, fracstep;
 	sfxcache_t	*sc;
 	
-	// PANZER - remove caching
-	//sc = Cache_Check (&sfx->cache);
 	sc = sfx->cache.data;
 	if (!sc)
 		return;
@@ -106,9 +104,6 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	sfxcache_t	*sc;
 	byte	stackbuf[1*1024];		// avoid dirtying the cache heap
 
-// see if still in memory
-	//sc = Cache_Check (&s->cache);
-	// PANZER - remove caching
 	sc = s->cache.data;
 	if (sc)
 		return sc;
