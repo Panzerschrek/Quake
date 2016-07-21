@@ -402,49 +402,6 @@
 				>
 			</File>
 			<File
-				RelativePath="cd_win.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="chase.c"
 				>
 				<FileConfiguration
@@ -937,90 +894,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="d_draw.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm.exe &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="d_draw16.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="d_edge.c"
 				>
 				<FileConfiguration
@@ -1236,90 +1109,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="d_parta.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="d_polysa.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="d_polyse.c"
 				>
 				<FileConfiguration
@@ -1406,48 +1195,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="d_scana.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="d_sky.c"
 				>
 				<FileConfiguration
@@ -1487,48 +1234,6 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="d_spr8.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1658,48 +1363,6 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="d_varsa.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -2392,51 +2055,6 @@
 				>
 			</File>
 			<File
-				RelativePath="in_win.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="keys.c"
 				>
 				<FileConfiguration
@@ -2474,52 +2092,6 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="math.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP /DGLQUAKE &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3106,48 +2678,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="r_aclipa.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="r_alias.c"
 				>
 				<FileConfiguration
@@ -3187,48 +2717,6 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="r_aliasa.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3319,48 +2807,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="r_drawa.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="r_edge.c"
 				>
 				<FileConfiguration
@@ -3400,48 +2846,6 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="r_edgea.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3831,48 +3235,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="r_varsa.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="sbar.c"
 				>
 				<FileConfiguration
@@ -4080,181 +3442,8 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="snd_mixa.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP /DGLQUAKE &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP /DGLQUAKE &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\snd_sdl.c"
 				>
-			</File>
-			<File
-				RelativePath="snd_win.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="surf16.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="surf8.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="sv_main.c"
@@ -4425,142 +3614,8 @@
 				>
 			</File>
 			<File
-				RelativePath="sys_win.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="sys_wina.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP /DGLQUAKE &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP /DGLQUAKE &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\vid_sdl.c"
 				>
-			</File>
-			<File
-				RelativePath="vid_win.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="view.c"
@@ -4722,52 +3777,6 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="worlda.s"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP /DGLQUAKE &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="GL Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="mycoolbuild"
-						CommandLine="cl /EP /DGLQUAKE &gt; $(OUTDIR)\$(InputName).spp $(InputPath)&#x0D;&#x0A;gas2masm\debug\gas2masm &lt; $(OUTDIR)\$(InputName).spp &gt;                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;ml /c /Cp /coff /Fo$(OUTDIR)\$(InputName).obj /Zm /Zi                                                                                                                                                                                                    $(OUTDIR)\$(InputName).asm&#x0D;&#x0A;del $(OUTDIR)\$(InputName).spp&#x0D;&#x0A;"
-						Outputs="$(OUTDIR)\$(InputName).obj"
 					/>
 				</FileConfiguration>
 			</File>
