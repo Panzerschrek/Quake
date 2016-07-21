@@ -115,7 +115,6 @@ void S_SoundInfo_f(void)
 	}
 	
     Con_Printf("%5d stereo\n", shm->channels - 1);
-    Con_Printf("%5d samples\n", shm->samples);
     Con_Printf("%5d samplepos\n", shm->samplepos);
     Con_Printf("%5d samplebits\n", shm->samplebits);
     Con_Printf("%5d submission_chunk\n", shm->submission_chunk);
@@ -213,7 +212,6 @@ void S_Init (void)
 		shm->samplebits = 16;
 		shm->speed = 22050;
 		shm->channels = 2;
-		shm->samples = 32768;
 		shm->samplepos = 0;
 		shm->soundalive = true;
 		shm->gamealive = true;
@@ -576,19 +574,6 @@ void S_StopAllSoundsC (void)
 
 void S_ClearBuffer (void)
 {
-	int		clear;
-		
-	if (!sound_started || !shm || !shm->buffer)
-		return;
-
-	if (shm->samplebits == 8)
-		clear = 0x80;
-	else
-		clear = 0;
-
-	{
-		Q_memset(shm->buffer, clear, shm->samples * shm->samplebits/8);
-	}
 }
 
 
@@ -793,25 +778,6 @@ void S_Update(vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 void S_ExtraUpdate (void)
 {
 }
-
-/*void S_Update_(void)
-{
-	unsigned        endtime;
-	int				samps;
-	
-	if (!sound_started || (snd_blocked > 0))
-		return;
-
-// mix ahead of current position
-	endtime = soundtime + _snd_mixahead.value * shm->speed;
-	samps = shm->samples >> (shm->channels-1);
-	if (endtime - soundtime > samps)
-		endtime = soundtime + samps;
-
-	S_PaintChannels (endtime);
-
-	SNDDMA_Submit ();
-}*/
 
 /*
 ===============================================================================

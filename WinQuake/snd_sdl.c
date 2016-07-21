@@ -104,6 +104,19 @@ qboolean SNDDMA_Init(void)
 		return false;
 	}
 
+	if (g_sdl_audio.format.channels != 2 ||
+		SDL_AUDIO_BITSIZE( g_sdl_audio.format.format ) != 16 )
+	{
+		SDL_CloseAudioDevice( g_sdl_audio.device_id );
+
+		Con_Printf(
+			"Could not open audio device with 16bits stereo. Got: %dbits %d channels",
+			SDL_AUDIO_BITSIZE( g_sdl_audio.format.format ),
+			g_sdl_audio.format.channels);
+
+		return false;
+	}
+
 	g_sdl_audio.mutex = SDL_CreateMutex();
 
 	SDL_PauseAudioDevice( g_sdl_audio.device_id , 0 );

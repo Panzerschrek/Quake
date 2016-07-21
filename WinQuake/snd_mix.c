@@ -33,8 +33,6 @@ int		snd_scaletable[32][256];
 int 	*snd_p, snd_linear_count, snd_vol;
 short	*snd_out;
 
-void Snd_WriteLinearBlastStereo16 (void);
-
 void Snd_WriteLinearBlastStereo16 (void)
 {
 	int		i;
@@ -60,103 +58,6 @@ void Snd_WriteLinearBlastStereo16 (void)
 	}
 }
 
-void S_TransferStereo16 (int endtime)
-{
-	int		lpos;
-	int		lpaintedtime;
-	DWORD	*pbuf;
-	
-	snd_vol = volume.value*256;
-
-	snd_p = (int *) paintbuffer;
-	lpaintedtime = paintedtime;
-
-	{
-		pbuf = (DWORD *)shm->buffer;
-	}
-
-	while (lpaintedtime < endtime)
-	{
-	// handle recirculating buffer issues
-		lpos = lpaintedtime & ((shm->samples>>1)-1);
-
-		snd_out = (short *) pbuf + (lpos<<1);
-
-		snd_linear_count = (shm->samples>>1) - lpos;
-		if (lpaintedtime + snd_linear_count > endtime)
-			snd_linear_count = endtime - lpaintedtime;
-
-		snd_linear_count <<= 1;
-
-	// write a linear blast of samples
-		Snd_WriteLinearBlastStereo16 ();
-
-		snd_p += snd_linear_count;
-		lpaintedtime += (snd_linear_count>>1);
-	}
-}
-
-void S_TransferPaintBuffer(int endtime)
-{
-	int 	out_idx;
-	int 	count;
-	int 	out_mask;
-	int 	*p;
-	int 	step;
-	int		val;
-	int		snd_vol;
-	DWORD	*pbuf;
-
-	if (shm->samplebits == 16 && shm->channels == 2)
-	{
-		S_TransferStereo16 (endtime);
-		return;
-	}
-	
-	p = (int *) paintbuffer;
-	count = (endtime - paintedtime) * shm->channels;
-	out_mask = shm->samples - 1; 
-	out_idx = paintedtime * shm->channels & out_mask;
-	step = 3 - shm->channels;
-	snd_vol = volume.value*256;
-
-	{
-		pbuf = (DWORD *)shm->buffer;
-	}
-
-	if (shm->samplebits == 16)
-	{
-		short *out = (short *) pbuf;
-		while (count--)
-		{
-			val = (*p * snd_vol) >> 8;
-			p+= step;
-			if (val > 0x7fff)
-				val = 0x7fff;
-			else if (val < (short)0x8000)
-				val = (short)0x8000;
-			out[out_idx] = val;
-			out_idx = (out_idx + 1) & out_mask;
-		}
-	}
-	else if (shm->samplebits == 8)
-	{
-		unsigned char *out = (unsigned char *) pbuf;
-		while (count--)
-		{
-			val = (*p * snd_vol) >> 8;
-			p+= step;
-			if (val > 0x7fff)
-				val = 0x7fff;
-			else if (val < (short)0x8000)
-				val = (short)0x8000;
-			out[out_idx] = (val>>8) + 128;
-			out_idx = (out_idx + 1) & out_mask;
-		}
-	}
-}
-
-
 /*
 ===============================================================================
 
@@ -175,7 +76,11 @@ void S_PaintChannels(int endtime)
 	channel_t *ch;
 	sfxcache_t	*sc;
 	int		ltime, count;
+	int		dsttime;
 
+	snd_vol = volume.value*256;
+
+	dsttime = 0;
 	while (paintedtime < endtime)
 	{
 	// if paintbuffer is smaller than DMA buffer
@@ -239,7 +144,13 @@ void S_PaintChannels(int endtime)
 		}
 
 	// transfer out according to DMA format
-		S_TransferPaintBuffer(end);
+		snd_p = (int*)paintbuffer;
+		snd_out = ((short*)shm->buffer) + dsttime * shm->channels;
+		snd_linear_count = (end - paintedtime) * shm->channels;
+
+		Snd_WriteLinearBlastStereo16();
+
+		dsttime+= end - paintedtime;
 		paintedtime = end;
 	}
 }
