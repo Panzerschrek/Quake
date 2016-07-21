@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+20016 Atröm "Panzerschrek" Kunç.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -33,9 +34,6 @@ int		snd_scaletable[32][256];
 int 	*snd_p, snd_linear_count, snd_vol;
 short	*snd_out;
 
-void Snd_WriteLinearBlastStereo16 (void);
-
-#if	!id386
 void Snd_WriteLinearBlastStereo16 (void)
 {
 	int		i;
@@ -60,192 +58,6 @@ void Snd_WriteLinearBlastStereo16 (void)
 			snd_out[i+1] = val;
 	}
 }
-#endif
-
-void S_TransferStereo16 (int endtime)
-{
-	int		lpos;
-	int		lpaintedtime;
-	DWORD	*pbuf;
-#ifdef _WIN32
-	int		reps;
-	DWORD	dwSize,dwSize2;
-	DWORD	*pbuf2;
-	HRESULT	hresult;
-#endif
-	
-	snd_vol = volume.value*256;
-
-	snd_p = (int *) paintbuffer;
-	lpaintedtime = paintedtime;
-
-#ifdef _WIN32
-	if (pDSBuf)
-	{
-		reps = 0;
-
-		while ((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, &pbuf, &dwSize, 
-									   &pbuf2, &dwSize2, 0)) != DS_OK)
-		{
-			if (hresult != DSERR_BUFFERLOST)
-			{
-				Con_Printf ("S_TransferStereo16: DS::Lock Sound Buffer Failed\n");
-				S_Shutdown ();
-				S_Startup ();
-				return;
-			}
-
-			if (++reps > 10000)
-			{
-				Con_Printf ("S_TransferStereo16: DS: couldn't restore buffer\n");
-				S_Shutdown ();
-				S_Startup ();
-				return;
-			}
-		}
-	}
-	else
-#endif
-	{
-		pbuf = (DWORD *)shm->buffer;
-	}
-
-	while (lpaintedtime < endtime)
-	{
-	// handle recirculating buffer issues
-		lpos = lpaintedtime & ((shm->samples>>1)-1);
-
-		snd_out = (short *) pbuf + (lpos<<1);
-
-		snd_linear_count = (shm->samples>>1) - lpos;
-		if (lpaintedtime + snd_linear_count > endtime)
-			snd_linear_count = endtime - lpaintedtime;
-
-		snd_linear_count <<= 1;
-
-	// write a linear blast of samples
-		Snd_WriteLinearBlastStereo16 ();
-
-		snd_p += snd_linear_count;
-		lpaintedtime += (snd_linear_count>>1);
-	}
-
-#ifdef _WIN32
-	if (pDSBuf)
-		pDSBuf->lpVtbl->Unlock(pDSBuf, pbuf, dwSize, NULL, 0);
-#endif
-}
-
-void S_TransferPaintBuffer(int endtime)
-{
-	int 	out_idx;
-	int 	count;
-	int 	out_mask;
-	int 	*p;
-	int 	step;
-	int		val;
-	int		snd_vol;
-	DWORD	*pbuf;
-#ifdef _WIN32
-	int		reps;
-	DWORD	dwSize,dwSize2;
-	DWORD	*pbuf2;
-	HRESULT	hresult;
-#endif
-
-	if (shm->samplebits == 16 && shm->channels == 2)
-	{
-		S_TransferStereo16 (endtime);
-		return;
-	}
-	
-	p = (int *) paintbuffer;
-	count = (endtime - paintedtime) * shm->channels;
-	out_mask = shm->samples - 1; 
-	out_idx = paintedtime * shm->channels & out_mask;
-	step = 3 - shm->channels;
-	snd_vol = volume.value*256;
-
-#ifdef _WIN32
-	if (pDSBuf)
-	{
-		reps = 0;
-
-		while ((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, &pbuf, &dwSize, 
-									   &pbuf2,&dwSize2, 0)) != DS_OK)
-		{
-			if (hresult != DSERR_BUFFERLOST)
-			{
-				Con_Printf ("S_TransferPaintBuffer: DS::Lock Sound Buffer Failed\n");
-				S_Shutdown ();
-				S_Startup ();
-				return;
-			}
-
-			if (++reps > 10000)
-			{
-				Con_Printf ("S_TransferPaintBuffer: DS: couldn't restore buffer\n");
-				S_Shutdown ();
-				S_Startup ();
-				return;
-			}
-		}
-	}
-	else
-#endif
-	{
-		pbuf = (DWORD *)shm->buffer;
-	}
-
-	if (shm->samplebits == 16)
-	{
-		short *out = (short *) pbuf;
-		while (count--)
-		{
-			val = (*p * snd_vol) >> 8;
-			p+= step;
-			if (val > 0x7fff)
-				val = 0x7fff;
-			else if (val < (short)0x8000)
-				val = (short)0x8000;
-			out[out_idx] = val;
-			out_idx = (out_idx + 1) & out_mask;
-		}
-	}
-	else if (shm->samplebits == 8)
-	{
-		unsigned char *out = (unsigned char *) pbuf;
-		while (count--)
-		{
-			val = (*p * snd_vol) >> 8;
-			p+= step;
-			if (val > 0x7fff)
-				val = 0x7fff;
-			else if (val < (short)0x8000)
-				val = (short)0x8000;
-			out[out_idx] = (val>>8) + 128;
-			out_idx = (out_idx + 1) & out_mask;
-		}
-	}
-
-#ifdef _WIN32
-	if (pDSBuf) {
-		DWORD dwNewpos, dwWrite;
-		int il = paintedtime;
-		int ir = endtime - paintedtime;
-		
-		ir += il;
-
-		pDSBuf->lpVtbl->Unlock(pDSBuf, pbuf, dwSize, NULL, 0);
-
-		pDSBuf->lpVtbl->GetCurrentPosition(pDSBuf, &dwNewpos, &dwWrite);
-
-//		if ((dwNewpos >= il) && (dwNewpos <= ir))
-//			Con_Printf("%d-%d p %d c\n", il, ir, dwNewpos);
-	}
-#endif
-}
-
 
 /*
 ===============================================================================
@@ -265,7 +77,11 @@ void S_PaintChannels(int endtime)
 	channel_t *ch;
 	sfxcache_t	*sc;
 	int		ltime, count;
+	int		dsttime;
 
+	snd_vol = volume.value*256;
+
+	dsttime = 0;
 	while (paintedtime < endtime)
 	{
 	// if paintbuffer is smaller than DMA buffer
@@ -284,7 +100,8 @@ void S_PaintChannels(int endtime)
 				continue;
 			if (!ch->leftvol && !ch->rightvol)
 				continue;
-			sc = S_LoadSound (ch->sfx);
+
+			sc = ch->sfx->cache.data;
 			if (!sc)
 				continue;
 
@@ -326,7 +143,13 @@ void S_PaintChannels(int endtime)
 		}
 
 	// transfer out according to DMA format
-		S_TransferPaintBuffer(end);
+		snd_p = (int*)paintbuffer;
+		snd_out = ((short*)shm->buffer) + dsttime * shm->channels;
+		snd_linear_count = (end - paintedtime) * shm->channels;
+
+		Snd_WriteLinearBlastStereo16();
+
+		dsttime+= end - paintedtime;
 		paintedtime = end;
 	}
 }

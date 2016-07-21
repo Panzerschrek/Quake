@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifndef SERVERONLY
 #include <ddraw.h>
-#include <dsound.h>
 #ifndef GLQUAKE
 #include <mgraph.h>
 #endif
@@ -36,15 +35,6 @@ extern	HINSTANCE	global_hInstance;
 extern	int			global_nCmdShow;
 
 #ifndef SERVERONLY
-
-extern LPDIRECTDRAW		lpDD;
-extern qboolean			DDActive;
-extern LPDIRECTDRAWSURFACE	lpPrimary;
-extern LPDIRECTDRAWSURFACE	lpFrontBuffer;
-extern LPDIRECTDRAWSURFACE	lpBackBuffer;
-extern LPDIRECTDRAWPALETTE	lpDDPal;
-extern LPDIRECTSOUND pDS;
-extern LPDIRECTSOUNDBUFFER pDSBuf;
 
 extern DWORD gSndBufSize;
 //#define SNDBUFSIZE 65536
@@ -58,7 +48,6 @@ typedef enum {MS_WINDOWED, MS_FULLSCREEN, MS_FULLDIB, MS_UNINIT} modestate_t;
 
 extern modestate_t	modestate;
 
-extern HWND			mainwindow;
 extern qboolean		ActiveApp, Minimized;
 
 extern qboolean	WinNT;

@@ -117,11 +117,9 @@ void SND_Spatialize(channel_t *ch);
 // initializes cycling through a DMA buffer and returns information on it
 qboolean SNDDMA_Init(void);
 
-// gets the current DMA position
-int SNDDMA_GetDMAPos(void);
-
-// shutdown the DMA xfer.
-void SNDDMA_Shutdown(void);
+// Lock for channels data
+void SNDDMA_LockSoundData(void);
+void SNDDMA_UnlockSoundData(void);
 
 // ====================================================================
 // User-setable variables

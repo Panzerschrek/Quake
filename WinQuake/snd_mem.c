@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+20016 Atröm "Panzerschrek" Kunç.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -39,7 +40,7 @@ void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, byte *data)
 	int		sample, samplefrac, fracstep;
 	sfxcache_t	*sc;
 	
-	sc = Cache_Check (&sfx->cache);
+	sc = sfx->cache.data;
 	if (!sc)
 		return;
 
@@ -104,8 +105,7 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	sfxcache_t	*sc;
 	byte	stackbuf[1*1024];		// avoid dirtying the cache heap
 
-// see if still in memory
-	sc = Cache_Check (&s->cache);
+	sc = s->cache.data;
 	if (sc)
 		return sc;
 
@@ -136,7 +136,10 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 
 	len = len * info.width * info.channels;
 
-	sc = Cache_Alloc ( &s->cache, len + sizeof(sfxcache_t), s->name);
+	// PANZER - remove caching
+	// Use malloc without "free" until game death
+	sc = malloc( len + sizeof(sfxcache_t) );
+	s->cache.data = sc;
 	if (!sc)
 		return NULL;
 	
