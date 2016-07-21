@@ -27,8 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "winquake.h"
 #include "d_local.h"
 
-#include <SDL_syswm.h>
-
 
 typedef union
 {
@@ -46,7 +44,6 @@ enum
 
 
 // Some subsystem needs it
-HWND		mainwindow;
 modestate_t	modestate = MS_UNINIT;
 qboolean			DDActive = 0;
 cvar_t		_windowed_mouse = {"_windowed_mouse","0", true};
@@ -173,16 +170,6 @@ static void UpdateMode (unsigned char *palette)
 	g_vid_surfcachesize = D_SurfaceCacheForRes (vid.width, vid.height);
 	g_vid_surfcache = malloc( g_vid_surfcachesize );
 	D_InitCaches (g_vid_surfcache, g_vid_surfcachesize);
-
-	{
-		// Panzer - get native window handle for sound system initialization
-		// TODO - remove this stuff, when we switch to sdl sound
-		SDL_SysWMinfo wmInfo;
-		SDL_VERSION(&wmInfo.version);
-		SDL_GetWindowWMInfo (g_sdl.window, &wmInfo);
-
-		mainwindow = wmInfo.info.win.window;
-	}
 
 	g_initialized = true;
 }
