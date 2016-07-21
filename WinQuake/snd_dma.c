@@ -306,17 +306,6 @@ S_TouchSound
 
 void S_TouchSound (char *name)
 {
-	/*sfx_t	*sfx;
-	
-	if (!sound_started)
-		return;
-
-	SNDDMA_LockSoundData();
-
-	sfx = S_FindName (name);
-	Cache_Check (&sfx->cache);
-
-	SNDDMA_UnlockSoundData();*/
 }
 
 /*
@@ -325,7 +314,7 @@ S_PrecacheSound
 
 ==================
 */
-// External, but we do not need locking
+// Panzer - external
 sfx_t *S_PrecacheSound (char *name)
 {
 	sfx_t	*sfx;
@@ -333,12 +322,16 @@ sfx_t *S_PrecacheSound (char *name)
 	if (!sound_started || nosound.value)
 		return NULL;
 
+	SNDDMA_LockSoundData();
+
 	sfx = S_FindName (name);
 	
 // cache it in
 	if (precache.value)
 		S_LoadSound (sfx);
 	
+	SNDDMA_UnlockSoundData();
+
 	return sfx;
 }
 
@@ -473,7 +466,7 @@ void S_StartSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float f
 // pick a channel to play on
 	target_chan = SND_PickChannel(entnum, entchannel);
 	if (!target_chan)
-		return;
+		goto return_;
 		
 // spatialize
 	memset (target_chan, 0, sizeof(*target_chan));
@@ -590,10 +583,12 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 	if (!sfx)
 		return;
 
+	SNDDMA_LockSoundData();
+
 	if (total_channels == MAX_CHANNELS)
 	{
 		Con_Printf ("total_channels == MAX_CHANNELS\n");
-		return;
+		goto return_;
 	}
 
 	ss = &channels[total_channels];
@@ -601,12 +596,12 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 
 	sc = S_LoadSound (sfx);
 	if (!sc)
-		return;
+		goto return_;
 
 	if (sc->loopstart == -1)
 	{
 		Con_Printf ("Sound %s not looped\n", sfx->name);
-		return;
+		goto return_;
 	}
 	
 	ss->sfx = sfx;
@@ -616,6 +611,9 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
     ss->end = paintedtime + sc->length;	
 	
 	SND_Spatialize (ss);
+
+return_:
+	SNDDMA_UnlockSoundData();
 }
 
 
@@ -640,12 +638,14 @@ void S_UpdateAmbientSounds (void)
 	if (!cl.worldmodel)
 		return;
 
+	SNDDMA_LockSoundData();
+
 	l = Mod_PointInLeaf (listener_origin, cl.worldmodel);
 	if (!l || !ambient_level.value)
 	{
 		for (ambient_channel = 0 ; ambient_channel< NUM_AMBIENTS ; ambient_channel++)
 			channels[ambient_channel].sfx = NULL;
-		return;
+		goto return_;
 	}
 
 	for (ambient_channel = 0 ; ambient_channel< NUM_AMBIENTS ; ambient_channel++)
@@ -673,6 +673,9 @@ void S_UpdateAmbientSounds (void)
 		
 		chan->leftvol = chan->rightvol = chan->master_vol;
 	}
+
+return_:
+	SNDDMA_UnlockSoundData();
 }
 
 
@@ -768,9 +771,6 @@ void S_Update(vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 		Con_Printf ("----(%i)----\n", total);
 	}
 
-// mix some sound
-	// PANZER - we perfom mixing in separate thread
-	//S_Update_();
 	SNDDMA_UnlockSoundData();
 }
 
@@ -842,10 +842,13 @@ void S_SoundList(void)
 	sfxcache_t	*sc;
 	int		size, total;
 
+	SNDDMA_LockSoundData();
+
 	total = 0;
 	for (sfx=known_sfx, i=0 ; i<num_sfx ; i++, sfx++)
 	{
-		sc = Cache_Check (&sfx->cache);
+		//sc = Cache_Check (&sfx->cache);
+		sc = sfx->cache.data;
 		if (!sc)
 			continue;
 		size = sc->length*sc->width*(sc->stereo+1);
@@ -857,6 +860,8 @@ void S_SoundList(void)
 		Con_Printf("(%2db) %6i : %s\n",sc->width*8,  size, sfx->name);
 	}
 	Con_Printf ("Total resident: %i\n", total);
+
+	SNDDMA_UnlockSoundData();
 }
 
 

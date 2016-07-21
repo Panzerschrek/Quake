@@ -140,10 +140,10 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 
 	len = len * info.width * info.channels;
 
-	// // PANZER - remove caching
-	sc = Hunk_AllocName( len + sizeof(sfxcache_t), s->name );
+	// PANZER - remove caching
+	// Use malloc without "free" until game death
+	sc = malloc( len + sizeof(sfxcache_t) );
 	s->cache.data = sc;
-	//sc = Cache_Alloc ( &s->cache, len + sizeof(sfxcache_t), s->name);
 	if (!sc)
 		return NULL;
 	
