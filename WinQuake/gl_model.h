@@ -55,7 +55,7 @@ typedef struct gl_texture_s
 	char				name[16];
 	unsigned			width, height;
 	int					gl_texturenum;
-	struct msurface_s	*texturechain;	// for gl_texsort drawing
+	struct gl_msurface_s	*texturechain;	// for gl_texsort drawing
 	int					anim_total;				// total tenths in sequence ( 0 = no)
 	int					anim_min, anim_max;		// time for this frame min <=time< max
 	struct gl_texture_s *anim_next;		// in the animation sequence
@@ -98,7 +98,7 @@ typedef struct gl_msurface_s
 	int			light_s, light_t;	// gl lightmap coordinates
 
 	glpoly_t	*polys;				// multiple if warped
-	struct	msurface_s	*texturechain;
+	struct	gl_msurface_s	*texturechain;
 
 	gl_mtexinfo_t	*texinfo;
 	

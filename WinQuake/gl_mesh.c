@@ -287,7 +287,7 @@ void BuildTris (void)
 GL_MakeAliasModelDisplayLists
 ================
 */
-void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr)
+void GL_MakeAliasModelDisplayLists (model_t *m, gl_aliashdr_t *hdr)
 {
 	int		i, j;
 	maliasgroup_t	*paliasgroup;

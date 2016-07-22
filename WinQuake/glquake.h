@@ -97,7 +97,7 @@ extern	PROC glVertexPointerEXT;
 
 void R_TimeRefresh_f (void);
 void R_ReadPointFile_f (void);
-texture_t *R_TextureAnimation (texture_t *base);
+gl_texture_t *R_GL_TextureAnimation (gl_texture_t *base);
 
 typedef struct gl_surfcache_s
 {

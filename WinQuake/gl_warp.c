@@ -143,7 +143,7 @@ boundaries so that turbulent and sky warps
 can be done reasonably.
 ================
 */
-void GL_SubdivideSurface (msurface_t *fa)
+void GL_SubdivideSurface (gl_msurface_t *fa)
 {
 	vec3_t		verts[64];
 	int			numverts;
@@ -228,7 +228,7 @@ void EmitWaterPolys (gl_msurface_t *fa)
 EmitSkyPolys
 =============
 */
-void EmitSkyPolys (msurface_t *fa)
+void EmitSkyPolys (gl_msurface_t *fa)
 {
 	glpoly_t	*p;
 	float		*v;
@@ -271,7 +271,7 @@ This will be called for brushmodels, the world
 will have them chained together.
 ===============
 */
-void EmitBothSkyLayers (msurface_t *fa)
+void EmitBothSkyLayers (gl_msurface_t *fa)
 {
 	int			i;
 	int			lindex;
@@ -301,9 +301,9 @@ void EmitBothSkyLayers (msurface_t *fa)
 R_DrawSkyChain
 =================
 */
-void R_DrawSkyChain (msurface_t *s)
+void R_DrawSkyChain (gl_msurface_t *s)
 {
-	msurface_t	*fa;
+	gl_msurface_t	*fa;
 
 	GL_DisableMultitexture();
 

@@ -234,7 +234,7 @@ void R_TranslatePlayerSkin (int playernum)
 	unsigned	translate32[256];
 	int		i, j, s;
 	model_t	*model;
-	aliashdr_t *paliashdr;
+	gl_aliashdr_t *paliashdr;
 	byte	*original;
 	unsigned	pixels[512*256], *out;
 	unsigned	scaled_width, scaled_height;
@@ -274,7 +274,7 @@ void R_TranslatePlayerSkin (int playernum)
 	if (model->type != mod_alias)
 		return; // only translate skins on alias models
 
-	paliashdr = (aliashdr_t *)Mod_Extradata (model);
+	paliashdr = (gl_aliashdr_t *)Mod_Extradata (model);
 	s = paliashdr->skinwidth * paliashdr->skinheight;
 	if (currententity->skinnum < 0 || currententity->skinnum >= paliashdr->numskins) {
 		Con_Printf("(%d): Invalid player skin #%d\n", playernum, currententity->skinnum);
@@ -407,7 +407,7 @@ void R_NewMap (void)
 			skytexturenum = i;
 		if (!Q_strncmp(cl.worldmodel->textures[i]->name,"window02_1",10) )
 			mirrortexturenum = i;
- 		cl.worldmodel->textures[i]->texturechain = NULL;
+ 		((gl_model_t*)cl.worldmodel)->textures[i]->texturechain = NULL;
 	}
 #ifdef QUAKE2
 	R_LoadSkys ();

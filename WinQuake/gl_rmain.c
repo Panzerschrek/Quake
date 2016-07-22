@@ -141,13 +141,13 @@ void R_RotateForEntity (entity_t *e)
 R_GetSpriteFrame
 ================
 */
-mspriteframe_t *R_GetSpriteFrame (entity_t *currententity)
+gl_mspriteframe_t *R_GetSpriteFrame (entity_t *currententity)
 {
-	msprite_t		*psprite;
-	mspritegroup_t	*pspritegroup;
-	mspriteframe_t	*pspriteframe;
-	int				i, numframes, frame;
-	float			*pintervals, fullinterval, targettime, time;
+	gl_msprite_t		*psprite;
+	gl_mspritegroup_t	*pspritegroup;
+	gl_mspriteframe_t	*pspriteframe;
+	int					i, numframes, frame;
+	float				*pintervals, fullinterval, targettime, time;
 
 	psprite = currententity->model->cache.data;
 	frame = currententity->frame;
@@ -164,7 +164,7 @@ mspriteframe_t *R_GetSpriteFrame (entity_t *currententity)
 	}
 	else
 	{
-		pspritegroup = (mspritegroup_t *)psprite->frames[frame].frameptr;
+		pspritegroup = (gl_mspritegroup_t *)psprite->frames[frame].frameptr;
 		pintervals = pspritegroup->intervals;
 		numframes = pspritegroup->numframes;
 		fullinterval = pintervals[numframes-1];
@@ -197,7 +197,7 @@ R_DrawSpriteModel
 void R_DrawSpriteModel (entity_t *e)
 {
 	vec3_t	point;
-	mspriteframe_t	*frame;
+	gl_mspriteframe_t	*frame;
 	float		*up, *right;
 	vec3_t		v_forward, v_right, v_up;
 	msprite_t		*psprite;
@@ -286,7 +286,7 @@ int	lastposenum;
 GL_DrawAliasFrame
 =============
 */
-void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum)
+void GL_DrawAliasFrame (gl_aliashdr_t *paliashdr, int posenum)
 {
 	float	s, t;
 	float 	l;
@@ -344,7 +344,7 @@ GL_DrawAliasShadow
 */
 extern	vec3_t			lightspot;
 
-void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
+void GL_DrawAliasShadow (gl_aliashdr_t *paliashdr, int posenum)
 {
 	float	s, t, l;
 	int		i, j;
@@ -412,7 +412,7 @@ R_SetupAliasFrame
 
 =================
 */
-void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
+void R_SetupAliasFrame (int frame, gl_aliashdr_t *paliashdr)
 {
 	int				pose, numposes;
 	float			interval;
@@ -451,7 +451,7 @@ void R_DrawAliasModel (entity_t *e)
 	float		add;
 	model_t		*clmodel;
 	vec3_t		mins, maxs;
-	aliashdr_t	*paliashdr;
+	gl_aliashdr_t	*paliashdr;
 	trivertx_t	*verts, *v;
 	int			index;
 	float		s, t, an;
@@ -525,7 +525,7 @@ void R_DrawAliasModel (entity_t *e)
 	//
 	// locate the proper data
 	//
-	paliashdr = (aliashdr_t *)Mod_Extradata (currententity->model);
+	paliashdr = (gl_aliashdr_t *)Mod_Extradata (currententity->model);
 
 	c_alias_polys += paliashdr->numtris;
 
@@ -1034,9 +1034,9 @@ R_Mirror
 */
 void R_Mirror (void)
 {
-	float		d;
-	msurface_t	*s;
-	entity_t	*ent;
+	float			d;
+	gl_msurface_t	*s;
+	entity_t		*ent;
 
 	if (!mirror)
 		return;
@@ -1086,10 +1086,10 @@ void R_Mirror (void)
 	glLoadMatrixf (r_base_world_matrix);
 
 	glColor4f (1,1,1,r_mirroralpha.value);
-	s = cl.worldmodel->textures[mirrortexturenum]->texturechain;
+	s = ((gl_model_t*) cl.worldmodel)->textures[mirrortexturenum]->texturechain;
 	for ( ; s ; s=s->texturechain)
 		R_RenderBrushPoly (s);
-	cl.worldmodel->textures[mirrortexturenum]->texturechain = NULL;
+	((gl_model_t*)cl.worldmodel)->textures[mirrortexturenum]->texturechain = NULL;
 	glDisable (GL_BLEND);
 	glColor4f (1,1,1,1);
 }

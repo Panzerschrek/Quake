@@ -55,17 +55,17 @@ int			allocated[MAX_LIGHTMAPS][BLOCK_WIDTH];
 byte		lightmaps[4*MAX_LIGHTMAPS*BLOCK_WIDTH*BLOCK_HEIGHT];
 
 // For gl_texsort 0
-msurface_t  *skychain = NULL;
-msurface_t  *waterchain = NULL;
+gl_msurface_t  *skychain = NULL;
+gl_msurface_t  *waterchain = NULL;
 
-void R_RenderDynamicLightmaps (msurface_t *fa);
+void R_RenderDynamicLightmaps (gl_msurface_t *fa);
 
 /*
 ===============
 R_AddDynamicLights
 ===============
 */
-void R_AddDynamicLights (msurface_t *surf)
+void R_AddDynamicLights (gl_msurface_t *surf)
 {
 	int			lnum;
 	int			sd, td;
@@ -74,7 +74,7 @@ void R_AddDynamicLights (msurface_t *surf)
 	int			s, t;
 	int			i;
 	int			smax, tmax;
-	mtexinfo_t	*tex;
+	gl_mtexinfo_t	*tex;
 
 	smax = (surf->extents[0]>>4)+1;
 	tmax = (surf->extents[1]>>4)+1;
@@ -135,7 +135,7 @@ R_BuildLightMap
 Combine and scale multiple lightmaps into the 8.8 format in blocklights
 ===============
 */
-void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
+void R_BuildLightMap (gl_msurface_t *surf, byte *dest, int stride)
 {
 	int			smax, tmax;
 	int			t;
@@ -230,7 +230,7 @@ R_TextureAnimation
 Returns the proper texture for a given time and base texture
 ===============
 */
-texture_t *R_TextureAnimation (texture_t *base)
+gl_texture_t *R_GL_TextureAnimation (gl_texture_t *base)
 {
 	int		reletive;
 	int		count;
@@ -407,12 +407,12 @@ Systems that have fast state and texture changes can
 just do everything as it passes with no need to sort
 ================
 */
-void R_DrawSequentialPoly (msurface_t *s)
+void R_DrawSequentialPoly (gl_msurface_t *s)
 {
 	glpoly_t	*p;
 	float		*v;
 	int			i;
-	texture_t	*t;
+	gl_texture_t	*t;
 	vec3_t		nv, dir;
 	float		ss, ss2, length;
 	float		s1, t1;
@@ -428,7 +428,7 @@ void R_DrawSequentialPoly (msurface_t *s)
 		if (gl_mtexable) {
 			p = s->polys;
 
-			t = R_TextureAnimation (s->texinfo->texture);
+			t = R_GL_TextureAnimation (s->texinfo->texture);
 			// Binds world to texture env 0
 			GL_SelectTexture(TEXTURE0_SGIS);
 			GL_Bind (t->gl_texturenum);
@@ -463,7 +463,7 @@ void R_DrawSequentialPoly (msurface_t *s)
 		} else {
 			p = s->polys;
 
-			t = R_TextureAnimation (s->texinfo->texture);
+			t = R_GL_TextureAnimation (s->texinfo->texture);
 			GL_Bind (t->gl_texturenum);
 			glBegin (GL_POLYGON);
 			v = p->verts[0];
@@ -532,7 +532,7 @@ void R_DrawSequentialPoly (msurface_t *s)
 	if (gl_mtexable) {
 		p = s->polys;
 
-		t = R_TextureAnimation (s->texinfo->texture);
+		t = R_GL_TextureAnimation (s->texinfo->texture);
 		GL_SelectTexture(TEXTURE0_SGIS);
 		GL_Bind (t->gl_texturenum);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -570,7 +570,7 @@ void R_DrawSequentialPoly (msurface_t *s)
 	} else {
 		p = s->polys;
 
-		t = R_TextureAnimation (s->texinfo->texture);
+		t = R_GL_TextureAnimation (s->texinfo->texture);
 		GL_Bind (t->gl_texturenum);
 		DrawGLWaterPoly (p);
 
@@ -751,9 +751,9 @@ void R_BlendLightmaps (void)
 R_RenderBrushPoly
 ================
 */
-void R_RenderBrushPoly (msurface_t *fa)
+void R_RenderBrushPoly (gl_msurface_t *fa)
 {
-	texture_t	*t;
+	gl_texture_t	*t;
 	byte		*base;
 	int			maps;
 	glRect_t    *theRect;
@@ -767,7 +767,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 		return;
 	}
 		
-	t = R_TextureAnimation (fa->texinfo->texture);
+	t = R_GL_TextureAnimation (fa->texinfo->texture);
 	GL_Bind (t->gl_texturenum);
 
 	if (fa->flags & SURF_DRAWTURB)
@@ -829,7 +829,7 @@ R_RenderDynamicLightmaps
 Multitexture
 ================
 */
-void R_RenderDynamicLightmaps (msurface_t *fa)
+void R_RenderDynamicLightmaps (gl_msurface_t *fa)
 {
 	texture_t	*t;
 	byte		*base;
@@ -887,7 +887,7 @@ dynamic:
 R_MirrorChain
 ================
 */
-void R_MirrorChain (msurface_t *s)
+void R_MirrorChain (gl_msurface_t *s)
 {
 	if (mirror)
 		return;
@@ -953,9 +953,9 @@ R_DrawWaterSurfaces
 */
 void R_DrawWaterSurfaces (void)
 {
-	int			i;
-	msurface_t	*s;
-	texture_t	*t;
+	int				i;
+	gl_msurface_t	*s;
+	gl_texture_t	*t;
 
 	if (r_wateralpha.value == 1.0 && gl_texsort.value)
 		return;
@@ -986,7 +986,7 @@ void R_DrawWaterSurfaces (void)
 
 		for (i=0 ; i<cl.worldmodel->numtextures ; i++)
 		{
-			t = cl.worldmodel->textures[i];
+			t = ((gl_model_t*)cl.worldmodel)->textures[i];
 			if (!t)
 				continue;
 			s = t->texturechain;
@@ -1026,8 +1026,8 @@ DrawTextureChains
 void DrawTextureChains (void)
 {
 	int		i;
-	msurface_t	*s;
-	texture_t	*t;
+	gl_msurface_t	*s;
+	gl_texture_t	*t;
 
 	if (!gl_texsort.value) {
 		GL_DisableMultitexture();
@@ -1042,7 +1042,7 @@ void DrawTextureChains (void)
 
 	for (i=0 ; i<cl.worldmodel->numtextures ; i++)
 	{
-		t = cl.worldmodel->textures[i];
+		t = ((gl_model_t*)cl.worldmodel)->textures[i];
 		if (!t)
 			continue;
 		s = t->texturechain;
@@ -1074,19 +1074,19 @@ R_DrawBrushModel
 */
 void R_DrawBrushModel (entity_t *e)
 {
-	int			j, k;
-	vec3_t		mins, maxs;
-	int			i, numsurfaces;
-	msurface_t	*psurf;
-	float		dot;
-	mplane_t	*pplane;
-	model_t		*clmodel;
-	qboolean	rotated;
+	int				j, k;
+	vec3_t			mins, maxs;
+	int				i, numsurfaces;
+	gl_msurface_t	*psurf;
+	float			dot;
+	mplane_t		*pplane;
+	gl_model_t		*clmodel;
+	qboolean		rotated;
 
 	currententity = e;
 	currenttexture = -1;
 
-	clmodel = e->model;
+	clmodel = (gl_model_t*)e->model;
 
 	if (e->angles[0] || e->angles[1] || e->angles[2])
 	{
@@ -1186,13 +1186,13 @@ R_RecursiveWorldNode
 */
 void R_RecursiveWorldNode (mnode_t *node)
 {
-	int			i, c, side, *pindex;
-	vec3_t		acceptpt, rejectpt;
-	mplane_t	*plane;
-	msurface_t	*surf, **mark;
-	mleaf_t		*pleaf;
-	double		d, dot;
-	vec3_t		mins, maxs;
+	int				i, c, side, *pindex;
+	vec3_t			acceptpt, rejectpt;
+	mplane_t		*plane;
+	gl_msurface_t	*surf, **mark;
+	gl_mleaf_t		*pleaf;
+	double			d, dot;
+	vec3_t			mins, maxs;
 
 	if (node->contents == CONTENTS_SOLID)
 		return;		// solid
@@ -1205,7 +1205,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 // if a leaf node, draw stuff
 	if (node->contents < 0)
 	{
-		pleaf = (mleaf_t *)node;
+		pleaf = (gl_mleaf_t *)node;
 
 		mark = pleaf->firstmarksurface;
 		c = pleaf->nummarksurfaces;
@@ -1260,7 +1260,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 
 	if (c)
 	{
-		surf = cl.worldmodel->surfaces + node->firstsurface;
+		surf = ((gl_model_t*)cl.worldmodel)->surfaces + node->firstsurface;
 
 		if (dot < 0 -BACKFACE_EPSILON)
 			side = SURF_PLANEBACK;
@@ -1280,7 +1280,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 				if (gl_texsort.value)
 				{
 					if (!mirror
-					|| surf->texinfo->texture != cl.worldmodel->textures[mirrortexturenum])
+					|| surf->texinfo->texture != ((gl_model_t*)cl.worldmodel)->textures[mirrortexturenum])
 					{
 						surf->texturechain = surf->texinfo->texture->texturechain;
 						surf->texinfo->texture->texturechain = surf;
@@ -1439,8 +1439,8 @@ int AllocBlock (int w, int h, int *x, int *y)
 }
 
 
-mvertex_t	*r_pcurrentvertbase;
-model_t		*currentmodel;
+mvertex_t		*r_pcurrentvertbase;
+gl_model_t		*currentmodel;
 
 int	nColinElim;
 
@@ -1449,7 +1449,7 @@ int	nColinElim;
 BuildSurfaceDisplayList
 ================
 */
-void BuildSurfaceDisplayList (msurface_t *fa)
+void BuildSurfaceDisplayList (gl_msurface_t *fa)
 {
 	int			i, lindex, lnumverts, s_axis, t_axis;
 	float		dist, lastdist, lzi, scale, u, v, frac;
@@ -1569,7 +1569,7 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 GL_CreateSurfaceLightmap
 ========================
 */
-void GL_CreateSurfaceLightmap (msurface_t *surf)
+void GL_CreateSurfaceLightmap (gl_msurface_t *surf)
 {
 	int		smax, tmax, s, t, l, i;
 	byte	*base;
@@ -1598,7 +1598,7 @@ with all the surfaces from all brush models
 void GL_BuildLightmaps (void)
 {
 	int		i, j;
-	model_t	*m;
+	gl_model_t	*m;
 	extern qboolean isPermedia;
 
 	memset (allocated, 0, sizeof(allocated));
@@ -1644,7 +1644,7 @@ void GL_BuildLightmaps (void)
 
 	for (j=1 ; j<MAX_MODELS ; j++)
 	{
-		m = cl.model_precache[j];
+		m = (gl_model_t*)cl.model_precache[j];
 		if (!m)
 			break;
 		if (m->name[0] == '*')
