@@ -21,7 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma warning( disable : 4229 )  // mgraph gets this
 
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 void	VID_LockBuffer (void);
 void	VID_UnlockBuffer (void);
@@ -32,33 +34,12 @@ extern modestate_t	modestate;
 
 extern qboolean		ActiveApp, Minimized;
 
-extern qboolean	WinNT;
-
 int VID_ForceUnlockedAndReturnState (void);
 void VID_ForceLockState (int lk);
-
-void IN_ShowMouse (void);
-void IN_DeactivateMouse (void);
-void IN_HideMouse (void);
-void IN_ActivateMouse (void);
-void IN_RestoreOriginalMouseState (void);
-void IN_SetQuakeMouseState (void);
-void IN_MouseEvent (int mstate);
 
 extern qboolean	winsock_lib_initialized;
 
 extern cvar_t		_windowed_mouse;
-
-extern int		window_center_x, window_center_y;
-extern RECT		window_rect;
-
-extern qboolean	mouseinitialized;
-extern HWND		hwnd_dialog;
-
-extern HANDLE	hinput, houtput;
-
-void IN_UpdateClipCursor (void);
-void CenterWindow(HWND hWndCenter, int width, int height, BOOL lefttopjustify);
 
 void S_BlockSound (void);
 void S_UnblockSound (void);

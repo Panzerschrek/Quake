@@ -22,7 +22,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 
 #ifdef _WIN32
+#include <direct.h>
 #include <windows.h>
+#else
+#include <sys/stat.h>
 #endif
 
 #include <SDL.h>
@@ -168,7 +171,11 @@ int	Sys_FileTime (char *path)
 void Sys_mkdir (char *path)
 {
 	// panzer - windows stuff, remove this
+#ifdef _WIN32
 	_mkdir (path);
+#else
+	mkdir (path, 0777);
+#endif
 }
 
 void Sys_Error (char *error, ...)
