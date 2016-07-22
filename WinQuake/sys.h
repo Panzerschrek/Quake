@@ -36,10 +36,6 @@ int Sys_FileWrite (int handle, void *data, int count);
 int	Sys_FileTime (char *path);
 void Sys_mkdir (char *path);
 
-//
-// memory protection
-//
-void Sys_MakeCodeWriteable (unsigned long startaddr, unsigned long length);
 
 //
 // system IO

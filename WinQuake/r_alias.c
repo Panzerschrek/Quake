@@ -449,7 +449,6 @@ void R_AliasTransformFinalVert (finalvert_t *fv, auxvert_t *av,
 }
 
 
-#if	!id386
 
 /*
 ================
@@ -503,7 +502,6 @@ void R_AliasTransformAndProjectFinalVerts (finalvert_t *fv, stvert_t *pstverts)
 	}
 }
 
-#endif
 
 
 /*
@@ -730,12 +728,6 @@ void R_AliasDrawModel (alight_t *plighting)
 	if (r_affinetridesc.drawtype)
 	{
 		D_PolysetUpdateTables ();		// FIXME: precalc...
-	}
-	else
-	{
-#if	id386
-		D_Aff8Patch (currententity->colormap);
-#endif
 	}
 
 	acolormap = currententity->colormap;

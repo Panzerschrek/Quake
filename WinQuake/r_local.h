@@ -83,7 +83,6 @@ extern cvar_t	r_numedges;
 
 #define	DIST_NOT_SET	98765
 
-// !!! if this is changed, it must be changed in asm_draw.h too !!!
 typedef struct clipplane_s
 {
 	vec3_t		normal;
@@ -140,15 +139,6 @@ void R_DrawSurfaceBlock16 (void);
 void R_DrawSurfaceBlock8 (void);
 texture_t *R_TextureAnimation (texture_t *base);
 
-#if	id386
-
-void R_DrawSurfaceBlock8_mip0 (void);
-void R_DrawSurfaceBlock8_mip1 (void);
-void R_DrawSurfaceBlock8_mip2 (void);
-void R_DrawSurfaceBlock8_mip3 (void);
-
-#endif
-
 void R_GenSkyTile (void *pdest);
 void R_GenSkyTile16 (void *pdest);
 void R_Surf8Patch (void);
@@ -183,7 +173,6 @@ extern	model_t		*cl_worldmodel;
 
 extern int		*pfrustum_indexes[4];
 
-// !!! if this is changed, it must be changed in asm_draw.h too !!!
 #define	NEAR_CLIP	0.01
 
 extern int			ubasestep, errorterm, erroradjustup, erroradjustdown;

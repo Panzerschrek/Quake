@@ -90,7 +90,6 @@ void D_WarpScreen (void)
 }
 
 
-#if	!id386
 
 /*
 =============
@@ -111,7 +110,6 @@ void D_DrawTurbulent8Span (void)
 	} while (--r_turb_spancount > 0);
 }
 
-#endif	// !id386
 
 
 /*
@@ -247,7 +245,6 @@ void Turbulent8 (espan_t *pspan)
 }
 
 
-#if	!id386
 
 /*
 =============
@@ -382,10 +379,8 @@ void D_DrawSpans8 (espan_t *pspan)
 	} while ((pspan = pspan->pnext) != NULL);
 }
 
-#endif
 
 
-#if	!id386
 
 /*
 =============
@@ -445,5 +440,4 @@ void D_DrawZSpans (espan_t *pspan)
 	} while ((pspan = pspan->pnext) != NULL);
 }
 
-#endif
 

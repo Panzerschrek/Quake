@@ -68,7 +68,6 @@ extern	entity_t		*currententity;
 #define MINSURFACES			NUMSTACKSURFACES
 #define	MAXSPANS			3000
 
-// !!! if this is changed, it must be changed in asm_draw.h too !!!
 typedef struct espan_s
 {
 	int				u, v, count;
@@ -140,7 +139,6 @@ extern int	ubasestep, errorterm, erroradjustup, erroradjustdown;
 											//  must be kept in sync
 #define ALIAS_XY_CLIP_MASK			0x000F
 
-// !!! if this is changed, it must be changed in asm_draw.h too !!!
 typedef struct edge_s
 {
 	fixed16_t		u;
