@@ -22,27 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma warning( disable : 4229 )  // mgraph gets this
 
 #include <windows.h>
-#define WM_MOUSEWHEEL                   0x020A
-
-#ifndef SERVERONLY
-#include <ddraw.h>
-#ifndef GLQUAKE
-#include <mgraph.h>
-#endif
-#endif
-
-extern	HINSTANCE	global_hInstance;
-extern	int			global_nCmdShow;
-
-#ifndef SERVERONLY
-
-extern DWORD gSndBufSize;
-//#define SNDBUFSIZE 65536
 
 void	VID_LockBuffer (void);
 void	VID_UnlockBuffer (void);
-
-#endif
 
 typedef enum {MS_WINDOWED, MS_FULLSCREEN, MS_FULLDIB, MS_UNINIT} modestate_t;
 

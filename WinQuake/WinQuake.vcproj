@@ -73,7 +73,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=".\dxsdk\sdk\lib\dxguid.lib .\scitech\lib\win32\vc\mgllt.lib winmm.lib wsock32.lib opengl32.lib glu32.lib odbc32.lib odbccp32.lib SDL2.lib"
+				AdditionalDependencies="wsock32.lib opengl32.lib glu32.lib odbc32.lib odbccp32.lib SDL2.lib"
 				OutputFile=".\Release/WinQuake.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -258,7 +258,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=".\dxsdk\sdk\lib\dxguid.lib .\scitech\lib\win32\vc\mgllt.lib winmm.lib wsock32.lib opengl32.lib glu32.lib odbc32.lib odbccp32.lib SDL2.lib"
+				AdditionalDependencies="wsock32.lib opengl32.lib glu32.lib odbc32.lib odbccp32.lib SDL2.lib"
 				OutputFile=".\Debug/WinQuake.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
