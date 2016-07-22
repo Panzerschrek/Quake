@@ -519,7 +519,7 @@ void V_CalcBlend (void)
 V_UpdatePalette
 =============
 */
-void V_UpdatePalette (void)
+void V_UpdatePaletteGL (void)
 {
 	int		i, j;
 	qboolean	new;

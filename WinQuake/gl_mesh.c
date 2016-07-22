@@ -30,7 +30,7 @@ ALIAS MODEL DISPLAY LIST GENERATION
 */
 
 model_t		*aliasmodel;
-aliashdr_t	*paliashdr;
+gl_aliashdr_t	*paliashdr;
 
 qboolean	used[8192];
 

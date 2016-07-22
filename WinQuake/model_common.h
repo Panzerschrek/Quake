@@ -90,49 +90,6 @@ typedef struct
 } hull_t;
 
 
-/*
-==============================================================================
-
-SPRITE MODELS
-
-==============================================================================
-*/
-
-
-// FIXME: shorten these?
-typedef struct mspriteframe_s
-{
-	int		width;
-	int		height;
-	void	*pcachespot;			// remove?
-	float	up, down, left, right;
-	byte	pixels[4];
-} mspriteframe_t;
-
-typedef struct
-{
-	int				numframes;
-	float			*intervals;
-	mspriteframe_t	*frames[1];
-} mspritegroup_t;
-
-typedef struct
-{
-	spriteframetype_t	type;
-	mspriteframe_t		*frameptr;
-} mspriteframedesc_t;
-
-typedef struct
-{
-	int					type;
-	int					maxwidth;
-	int					maxheight;
-	int					numframes;
-	float				beamlength;		// remove?
-	void				*cachespot;		// remove?
-	mspriteframedesc_t	frames[1];
-} msprite_t;
-
 typedef struct
 {
 	trivertx_t			bboxmin;

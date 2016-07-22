@@ -99,7 +99,7 @@ void R_TimeRefresh_f (void);
 void R_ReadPointFile_f (void);
 texture_t *R_TextureAnimation (texture_t *base);
 
-typedef struct surfcache_s
+typedef struct gl_surfcache_s
 {
 	struct gl_surfcache_s	*next;
 	struct gl_surfcache_s 	**owner;		// NULL is an empty chunk of memory
@@ -111,7 +111,7 @@ typedef struct surfcache_s
 	float				mipscale;
 	struct texture_s	*texture;	// checked for animating textures
 	byte				data[4];	// width*height elements
-} surfcache_t;
+} gl_surfcache_t;
 
 
 typedef struct
@@ -155,7 +155,7 @@ extern	vec3_t	r_origin;
 //
 extern	refdef_t	r_refdef;
 extern	mleaf_t		*r_viewleaf, *r_oldviewleaf;
-extern	texture_t	*r_notexture_mip;
+extern	gl_texture_t	*r_gl_notexture_mip;
 extern	int		d_lightstylevalue[256];	// 8.8 fraction of base light value
 
 extern	qboolean	envmap;

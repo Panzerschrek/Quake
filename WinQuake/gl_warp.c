@@ -29,7 +29,7 @@ int		solidskytexture;
 int		alphaskytexture;
 float	speedscale;		// for top sky and bottom sky
 
-msurface_t	*warpface;
+gl_msurface_t	*warpface;
 
 extern cvar_t gl_subdivide_size;
 
@@ -191,7 +191,7 @@ EmitWaterPolys
 Does a water warp on the pre-fragmented glpoly_t chain
 =============
 */
-void EmitWaterPolys (msurface_t *fa)
+void EmitWaterPolys (gl_msurface_t *fa)
 {
 	glpoly_t	*p;
 	float		*v;
@@ -1031,7 +1031,7 @@ R_InitSky
 A sky texture is 256*128, with the right side being a masked overlay
 ==============
 */
-void R_InitSky (texture_t *mt)
+void R_InitSkyGL (gl_texture_t *mt)
 {
 	int			i, j, p;
 	byte		*src;

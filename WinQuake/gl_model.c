@@ -24,18 +24,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-model_t	*loadmodel;
+gl_model_t	*loadmodel;
 char	loadname[32];	// for hunk tags
 
-void Mod_LoadSpriteModel (model_t *mod, void *buffer);
-void Mod_LoadBrushModel (model_t *mod, void *buffer);
-void Mod_LoadAliasModel (model_t *mod, void *buffer);
-model_t *Mod_LoadModel (model_t *mod, qboolean crash);
+void Mod_LoadSpriteModel (gl_model_t *mod, void *buffer);
+void Mod_LoadBrushModel (gl_model_t *mod, void *buffer);
+void Mod_LoadAliasModel (gl_model_t *mod, void *buffer);
+gl_model_t *Mod_LoadModel (gl_model_t *mod, qboolean crash);
 
 byte	mod_novis[MAX_MAP_LEAFS/8];
 
 #define	MAX_MOD_KNOWN	512
-model_t	mod_known[MAX_MOD_KNOWN];
+gl_model_t	mod_known[MAX_MOD_KNOWN];
 int		mod_numknown;
 
 cvar_t gl_subdivide_size = {"gl_subdivide_size", "128", true};
@@ -58,7 +58,7 @@ Mod_Init
 Caches the data if needed
 ===============
 */
-void *Mod_Extradata (model_t *mod)
+void *ModGL_Extradata (gl_model_t *mod)
 {
 	void	*r;
 	
@@ -168,7 +168,7 @@ Mod_ClearAll
 void Mod_ClearAll (void)
 {
 	int		i;
-	model_t	*mod;
+	gl_model_t	*mod;
 	
 	for (i=0 , mod=mod_known ; i<mod_numknown ; i++, mod++)
 		if (mod->type != mod_alias)
@@ -181,10 +181,10 @@ Mod_FindName
 
 ==================
 */
-model_t *Mod_FindName (char *name)
+gl_model_t *Mod_FindName (char *name)
 {
 	int		i;
-	model_t	*mod;
+	gl_model_t	*mod;
 	
 	if (!name[0])
 		Sys_Error ("Mod_ForName: NULL name");
@@ -216,7 +216,7 @@ Mod_TouchModel
 */
 void Mod_TouchModel (char *name)
 {
-	model_t	*mod;
+	gl_model_t	*mod;
 	
 	mod = Mod_FindName (name);
 	
@@ -234,7 +234,7 @@ Mod_LoadModel
 Loads a model into the cache
 ==================
 */
-model_t *Mod_LoadModel (model_t *mod, qboolean crash)
+gl_model_t *Mod_LoadModel (gl_model_t *mod, qboolean crash)
 {
 	void	*d;
 	unsigned *buf;
@@ -310,9 +310,9 @@ Mod_ForName
 Loads in a model for the given name
 ==================
 */
-model_t *Mod_ForName (char *name, qboolean crash)
+gl_model_t *ModGL_ForName (char *name, qboolean crash)
 {
-	model_t	*mod;
+	gl_model_t	*mod;
 	
 	mod = Mod_FindName (name);
 	
@@ -340,9 +340,9 @@ void Mod_LoadTextures (lump_t *l)
 {
 	int		i, j, pixels, num, max, altmax;
 	miptex_t	*mt;
-	texture_t	*tx, *tx2;
-	texture_t	*anims[10];
-	texture_t	*altanims[10];
+	gl_texture_t	*tx, *tx2;
+	gl_texture_t	*anims[10];
+	gl_texture_t	*altanims[10];
 	dmiptexlump_t *m;
 
 	if (!l->filelen)
@@ -384,7 +384,7 @@ void Mod_LoadTextures (lump_t *l)
 		
 
 		if (!Q_strncmp(mt->name,"sky",3))	
-			R_InitSky (tx);
+			R_InitSkyGL (tx);
 		else
 		{
 			texture_mode = GL_LINEAR_MIPMAP_NEAREST; //_LINEAR;
@@ -637,7 +637,7 @@ Mod_LoadTexinfo
 void Mod_LoadTexinfo (lump_t *l)
 {
 	texinfo_t *in;
-	mtexinfo_t *out;
+	gl_mtexinfo_t *out;
 	int 	i, j, count;
 	int		miptex;
 	float	len1, len2;
@@ -678,7 +678,7 @@ void Mod_LoadTexinfo (lump_t *l)
 	
 		if (!loadmodel->textures)
 		{
-			out->texture = r_notexture_mip;	// checkerboard texture
+			out->texture = r_gl_notexture_mip;	// checkerboard texture
 			out->flags = 0;
 		}
 		else
@@ -688,7 +688,7 @@ void Mod_LoadTexinfo (lump_t *l)
 			out->texture = loadmodel->textures[miptex];
 			if (!out->texture)
 			{
-				out->texture = r_notexture_mip; // texture not found
+				out->texture = r_gl_notexture_mip; // texture not found
 				out->flags = 0;
 			}
 		}
@@ -702,12 +702,12 @@ CalcSurfaceExtents
 Fills in s->texturemins[] and s->extents[]
 ================
 */
-void CalcSurfaceExtents (msurface_t *s)
+void CalcSurfaceExtents (gl_msurface_t *s)
 {
 	float	mins[2], maxs[2], val;
 	int		i,j, e;
 	mvertex_t	*v;
-	mtexinfo_t	*tex;
+	gl_mtexinfo_t	*tex;
 	int		bmins[2], bmaxs[2];
 
 	mins[0] = mins[1] = 999999;
@@ -757,7 +757,7 @@ Mod_LoadFaces
 void Mod_LoadFaces (lump_t *l)
 {
 	dface_t		*in;
-	msurface_t 	*out;
+	gl_msurface_t 	*out;
 	int			i, count, surfnum;
 	int			planenum, side;
 
@@ -893,7 +893,7 @@ Mod_LoadLeafs
 void Mod_LoadLeafs (lump_t *l)
 {
 	dleaf_t 	*in;
-	mleaf_t 	*out;
+	gl_mleaf_t 	*out;
 	int			i, j, count, p;
 
 	in = (void *)(mod_base + l->fileofs);
@@ -1039,7 +1039,7 @@ void Mod_LoadMarksurfaces (lump_t *l)
 {	
 	int		i, j, count;
 	short		*in;
-	msurface_t **out;
+	gl_msurface_t **out;
 	
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -1144,7 +1144,7 @@ float RadiusFromBounds (vec3_t mins, vec3_t maxs)
 Mod_LoadBrushModel
 =================
 */
-void Mod_LoadBrushModel (model_t *mod, void *buffer)
+void Mod_LoadBrushModel (gl_model_t *mod, void *buffer)
 {
 	int			i, j;
 	dheader_t	*header;
@@ -1231,7 +1231,7 @@ ALIAS MODELS
 ==============================================================================
 */
 
-aliashdr_t	*pheader;
+gl_aliashdr_t	*pheader;
 
 stvert_t	stverts[MAXALIASVERTS];
 mtriangle_t	triangles[MAXALIASTRIS];
@@ -1249,7 +1249,7 @@ byte		*player_8bit_texels;
 Mod_LoadAliasFrame
 =================
 */
-void * Mod_LoadAliasFrame (void * pin, maliasframedesc_t *frame)
+void * Mod_LoadAliasFrame (void * pin, gl_maliasframedesc_t *frame)
 {
 	trivertx_t		*pframe, *pinframe;
 	int				i, j;
@@ -1285,7 +1285,7 @@ void * Mod_LoadAliasFrame (void * pin, maliasframedesc_t *frame)
 Mod_LoadAliasGroup
 =================
 */
-void *Mod_LoadAliasGroup (void * pin,  maliasframedesc_t *frame)
+void *Mod_LoadAliasGroup (void * pin,  gl_maliasframedesc_t *frame)
 {
 	daliasgroup_t		*pingroup;
 	int					i, numframes;
@@ -1486,7 +1486,7 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype)
 Mod_LoadAliasModel
 =================
 */
-void Mod_LoadAliasModel (model_t *mod, void *buffer)
+void Mod_LoadAliasModel (gl_model_t *mod, void *buffer)
 {
 	int					i, j;
 	mdl_t				*pinmodel;
@@ -1652,10 +1652,10 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 Mod_LoadSpriteFrame
 =================
 */
-void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe, int framenum)
+void * Mod_LoadSpriteFrame (void * pin, gl_mspriteframe_t **ppframe, int framenum)
 {
 	dspriteframe_t		*pinframe;
-	mspriteframe_t		*pspriteframe;
+	gl_mspriteframe_t		*pspriteframe;
 	int					i, width, height, size, origin[2];
 	unsigned short		*ppixout;
 	byte				*ppixin;
@@ -1695,10 +1695,10 @@ void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe, int framenum)
 Mod_LoadSpriteGroup
 =================
 */
-void * Mod_LoadSpriteGroup (void * pin, mspriteframe_t **ppframe, int framenum)
+void * Mod_LoadSpriteGroup (void * pin, gl_mspriteframe_t **ppframe, int framenum)
 {
 	dspritegroup_t		*pingroup;
-	mspritegroup_t		*pspritegroup;
+	gl_mspritegroup_t	*pspritegroup;
 	int					i, numframes;
 	dspriteinterval_t	*pin_intervals;
 	float				*poutintervals;
@@ -1713,7 +1713,7 @@ void * Mod_LoadSpriteGroup (void * pin, mspriteframe_t **ppframe, int framenum)
 
 	pspritegroup->numframes = numframes;
 
-	*ppframe = (mspriteframe_t *)pspritegroup;
+	*ppframe = (gl_mspriteframe_t *)pspritegroup;
 
 	pin_intervals = (dspriteinterval_t *)(pingroup + 1);
 
@@ -1747,12 +1747,12 @@ void * Mod_LoadSpriteGroup (void * pin, mspriteframe_t **ppframe, int framenum)
 Mod_LoadSpriteModel
 =================
 */
-void Mod_LoadSpriteModel (model_t *mod, void *buffer)
+void Mod_LoadSpriteModel (gl_model_t *mod, void *buffer)
 {
 	int					i;
 	int					version;
 	dsprite_t			*pin;
-	msprite_t			*psprite;
+	gl_msprite_t		*psprite;
 	int					numframes;
 	int					size;
 	dspriteframetype_t	*pframetype;
@@ -1828,7 +1828,7 @@ Mod_Print
 void Mod_Print (void)
 {
 	int		i;
-	model_t	*mod;
+	gl_model_t	*mod;
 
 	Con_Printf ("Cached models:\n");
 	for (i=0, mod=mod_known ; i < mod_numknown ; i++, mod++)

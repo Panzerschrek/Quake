@@ -3799,6 +3799,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\model_common.h"
+				>
+			</File>
+			<File
 				RelativePath="modelgen.h"
 				>
 			</File>

@@ -66,7 +66,7 @@ refdef_t	r_refdef;
 
 mleaf_t		*r_viewleaf, *r_oldviewleaf;
 
-texture_t	*r_notexture_mip;
+gl_texture_t	*r_gl_notexture_mip;
 
 int		d_lightstylevalue[256];	// 8.8 fraction of base light value
 

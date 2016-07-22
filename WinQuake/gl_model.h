@@ -52,15 +52,15 @@ BRUSH MODELS
 
 typedef struct gl_texture_s
 {
-	char		name[16];
-	unsigned	width, height;
-	int			gl_texturenum;
+	char				name[16];
+	unsigned			width, height;
+	int					gl_texturenum;
 	struct msurface_s	*texturechain;	// for gl_texsort drawing
-	int			anim_total;				// total tenths in sequence ( 0 = no)
-	int			anim_min, anim_max;		// time for this frame min <=time< max
-	struct texture_s *anim_next;		// in the animation sequence
-	struct texture_s *alternate_anims;	// bmodels in frmae 1 use these
-	unsigned	offsets[MIPLEVELS];		// four mip maps stored
+	int					anim_total;				// total tenths in sequence ( 0 = no)
+	int					anim_min, anim_max;		// time for this frame min <=time< max
+	struct gl_texture_s *anim_next;		// in the animation sequence
+	struct gl_texture_s *alternate_anims;	// bmodels in frmae 1 use these
+	unsigned			offsets[MIPLEVELS];		// four mip maps stored
 } gl_texture_t;
 
 typedef struct
@@ -133,6 +133,48 @@ typedef struct gl_mleaf_s
 	int			key;			// BSP sequence number for leaf's contents
 	byte		ambient_sound_level[NUM_AMBIENTS];
 } gl_mleaf_t;
+
+/*
+==============================================================================
+
+SPRITE MODELS
+
+==============================================================================
+*/
+
+
+// FIXME: shorten these?
+typedef struct gl_mspriteframe_s
+{
+	int		width;
+	int		height;
+	float	up, down, left, right;
+	int		gl_texturenum;
+} gl_mspriteframe_t;
+
+typedef struct
+{	
+	int					numframes;
+	float				*intervals;
+	gl_mspriteframe_t	*frames[1];
+} gl_mspritegroup_t;
+
+typedef struct
+{
+	spriteframetype_t	type;
+	gl_mspriteframe_t		*frameptr;
+} gl_mspriteframedesc_t;
+
+typedef struct
+{
+	int					type;
+	int					maxwidth;
+	int					maxheight;
+	int					numframes;
+	float				beamlength;		// remove?
+	void				*cachespot;		// remove?
+	gl_mspriteframedesc_t	frames[1];
+} gl_msprite_t;
 
 
 /*
