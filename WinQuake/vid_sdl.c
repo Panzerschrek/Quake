@@ -25,8 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 #include "winquake.h"
-#include "d_local.h"
-
+//#include "d_local.h"
+#define WARP_WIDTH 320
+#define WARP_HEIGHT 200
+extern short			*d_pzbuffer;
 
 typedef union
 {

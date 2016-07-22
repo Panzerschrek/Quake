@@ -27,6 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // * pass data from one to the other via model files.      *
 // *********************************************************
 
+#ifndef __MODELGEN__
+#define __MODELGEN__
+
 #ifdef INCLUDELIBS
 
 #include <stdlib.h>
@@ -132,3 +135,4 @@ typedef struct {
 #define IDPOLYHEADER	(('O'<<24)+('P'<<16)+('D'<<8)+'I')
 														// little-endian "IDPO"
 
+#endif//__MODELGEN__
