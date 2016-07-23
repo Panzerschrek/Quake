@@ -209,7 +209,11 @@ void	R_ZDrawSubmodelPolys (model_t *clmodel);
 // Alias models
 //=========================================================
 
-#define MAXALIASVERTS		2000	// TODO: tune this
+// If this changed, it must be changed in gl_model.h too
+#ifndef MAXALIASVERTS
+#define	MAXALIASVERTS	2048
+#endif//MAXALIASVERTS
+
 #define ALIAS_Z_CLIP_PLANE	5
 
 extern int				numverts;

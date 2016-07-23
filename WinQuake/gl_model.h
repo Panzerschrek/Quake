@@ -224,7 +224,11 @@ typedef struct {
 	gl_maliasframedesc_t	frames[1];	// variable sized
 } gl_aliashdr_t;
 
-#define	MAXALIASVERTS	1024
+// If this changed, it must be changed in r_local.h too
+#ifndef MAXALIASVERTS
+#define	MAXALIASVERTS	2048
+#endif//MAXALIASVERTS
+
 #define	MAXALIASFRAMES	256
 #define	MAXALIASTRIS	2048
 extern	gl_aliashdr_t	*pheader;
