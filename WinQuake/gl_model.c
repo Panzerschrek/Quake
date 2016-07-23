@@ -27,10 +27,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 gl_model_t	*loadmodel;
 char	loadname[32];	// for hunk tags
 
-void Mod_LoadSpriteModel (gl_model_t *mod, void *buffer);
-void Mod_LoadBrushModel (gl_model_t *mod, void *buffer);
-void Mod_LoadAliasModel (gl_model_t *mod, void *buffer);
-gl_model_t *Mod_LoadModel (gl_model_t *mod, qboolean crash);
+static void Mod_LoadSpriteModel (gl_model_t *mod, void *buffer);
+static void Mod_LoadBrushModel (gl_model_t *mod, void *buffer);
+static void Mod_LoadAliasModel (gl_model_t *mod, void *buffer);
+static gl_model_t *Mod_LoadModel (gl_model_t *mod, qboolean crash);
 
 byte	mod_novis[MAX_MAP_LEAFS/8];
 
@@ -45,7 +45,7 @@ cvar_t gl_subdivide_size = {"gl_subdivide_size", "128", true};
 Mod_Init
 ===============
 */
-void Mod_Init (void)
+void Mod_GL_Init (void)
 {
 	Cvar_RegisterVariable (&gl_subdivide_size);
 	memset (mod_novis, 0xff, sizeof(mod_novis));
@@ -58,7 +58,7 @@ Mod_Init
 Caches the data if needed
 ===============
 */
-void *ModGL_Extradata (gl_model_t *mod)
+void *Mod_GL_Extradata (gl_model_t *mod)
 {
 	void	*r;
 	
@@ -78,9 +78,9 @@ void *ModGL_Extradata (gl_model_t *mod)
 Mod_PointInLeaf
 ===============
 */
-mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model)
+gl_mleaf_t *Mod_GL_PointInLeaf (vec3_t p, gl_model_t *model)
 {
-	mnode_t		*node;
+	gl_mnode_t		*node;
 	float		d;
 	mplane_t	*plane;
 	
@@ -91,7 +91,7 @@ mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model)
 	while (1)
 	{
 		if (node->contents < 0)
-			return (mleaf_t *)node;
+			return (gl_mleaf_t *)node;
 		plane = node->plane;
 		d = DotProduct (p,plane->normal) - plane->dist;
 		if (d > 0)
@@ -109,7 +109,7 @@ mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model)
 Mod_DecompressVis
 ===================
 */
-byte *Mod_DecompressVis (byte *in, model_t *model)
+static byte *Mod_DecompressVis (byte *in, gl_model_t *model)
 {
 	static byte	decompressed[MAX_MAP_LEAFS/8];
 	int		c;
@@ -153,7 +153,7 @@ byte *Mod_DecompressVis (byte *in, model_t *model)
 	return decompressed;
 }
 
-byte *Mod_LeafPVS (mleaf_t *leaf, model_t *model)
+byte *Mod_GL_LeafPVS (gl_mleaf_t *leaf, gl_model_t *model)
 {
 	if (leaf == model->leafs)
 		return mod_novis;
@@ -165,7 +165,7 @@ byte *Mod_LeafPVS (mleaf_t *leaf, model_t *model)
 Mod_ClearAll
 ===================
 */
-void Mod_ClearAll (void)
+void Mod_GL_ClearAll (void)
 {
 	int		i;
 	gl_model_t	*mod;
@@ -181,7 +181,7 @@ Mod_FindName
 
 ==================
 */
-gl_model_t *Mod_FindName (char *name)
+static gl_model_t *Mod_FindName (char *name)
 {
 	int		i;
 	gl_model_t	*mod;
@@ -214,7 +214,7 @@ Mod_TouchModel
 
 ==================
 */
-void Mod_TouchModel (char *name)
+void Mod_GL_TouchModel (char *name)
 {
 	gl_model_t	*mod;
 	
@@ -234,7 +234,7 @@ Mod_LoadModel
 Loads a model into the cache
 ==================
 */
-gl_model_t *Mod_LoadModel (gl_model_t *mod, qboolean crash)
+static gl_model_t *Mod_LoadModel (gl_model_t *mod, qboolean crash)
 {
 	void	*d;
 	unsigned *buf;
@@ -310,7 +310,7 @@ Mod_ForName
 Loads in a model for the given name
 ==================
 */
-gl_model_t *ModGL_ForName (char *name, qboolean crash)
+gl_model_t *Mod_GL_ForName (char *name, qboolean crash)
 {
 	gl_model_t	*mod;
 	
@@ -336,7 +336,7 @@ byte	*mod_base;
 Mod_LoadTextures
 =================
 */
-void Mod_LoadTextures (lump_t *l)
+static void Mod_LoadTextures (lump_t *l)
 {
 	int		i, j, pixels, num, max, altmax;
 	miptex_t	*mt;
@@ -492,7 +492,7 @@ void Mod_LoadTextures (lump_t *l)
 Mod_LoadLighting
 =================
 */
-void Mod_LoadLighting (lump_t *l)
+static void Mod_LoadLighting (lump_t *l)
 {
 	if (!l->filelen)
 	{
@@ -509,7 +509,7 @@ void Mod_LoadLighting (lump_t *l)
 Mod_LoadVisibility
 =================
 */
-void Mod_LoadVisibility (lump_t *l)
+static void Mod_LoadVisibility (lump_t *l)
 {
 	if (!l->filelen)
 	{
@@ -526,7 +526,7 @@ void Mod_LoadVisibility (lump_t *l)
 Mod_LoadEntities
 =================
 */
-void Mod_LoadEntities (lump_t *l)
+static void Mod_LoadEntities (lump_t *l)
 {
 	if (!l->filelen)
 	{
@@ -543,7 +543,7 @@ void Mod_LoadEntities (lump_t *l)
 Mod_LoadVertexes
 =================
 */
-void Mod_LoadVertexes (lump_t *l)
+static void Mod_LoadVertexes (lump_t *l)
 {
 	dvertex_t	*in;
 	mvertex_t	*out;
@@ -571,7 +571,7 @@ void Mod_LoadVertexes (lump_t *l)
 Mod_LoadSubmodels
 =================
 */
-void Mod_LoadSubmodels (lump_t *l)
+static void Mod_LoadSubmodels (lump_t *l)
 {
 	dmodel_t	*in;
 	dmodel_t	*out;
@@ -607,7 +607,7 @@ void Mod_LoadSubmodels (lump_t *l)
 Mod_LoadEdges
 =================
 */
-void Mod_LoadEdges (lump_t *l)
+static void Mod_LoadEdges (lump_t *l)
 {
 	dedge_t *in;
 	medge_t *out;
@@ -634,7 +634,7 @@ void Mod_LoadEdges (lump_t *l)
 Mod_LoadTexinfo
 =================
 */
-void Mod_LoadTexinfo (lump_t *l)
+static void Mod_LoadTexinfo (lump_t *l)
 {
 	texinfo_t *in;
 	gl_mtexinfo_t *out;
@@ -702,7 +702,7 @@ CalcSurfaceExtents
 Fills in s->texturemins[] and s->extents[]
 ================
 */
-void CalcSurfaceExtents (gl_msurface_t *s)
+static void CalcSurfaceExtents (gl_msurface_t *s)
 {
 	float	mins[2], maxs[2], val;
 	int		i,j, e;
@@ -754,7 +754,7 @@ void CalcSurfaceExtents (gl_msurface_t *s)
 Mod_LoadFaces
 =================
 */
-void Mod_LoadFaces (lump_t *l)
+static void Mod_LoadFaces (lump_t *l)
 {
 	dface_t		*in;
 	gl_msurface_t 	*out;
@@ -829,7 +829,7 @@ void Mod_LoadFaces (lump_t *l)
 Mod_SetParent
 =================
 */
-void Mod_SetParent (gl_mnode_t *node, gl_mnode_t *parent)
+static void Mod_SetParent (gl_mnode_t *node, gl_mnode_t *parent)
 {
 	node->parent = parent;
 	if (node->contents < 0)
@@ -843,7 +843,7 @@ void Mod_SetParent (gl_mnode_t *node, gl_mnode_t *parent)
 Mod_LoadNodes
 =================
 */
-void Mod_LoadNodes (lump_t *l)
+static void Mod_LoadNodes (lump_t *l)
 {
 	int			i, j, count, p;
 	dnode_t		*in;
@@ -890,7 +890,7 @@ void Mod_LoadNodes (lump_t *l)
 Mod_LoadLeafs
 =================
 */
-void Mod_LoadLeafs (lump_t *l)
+static void Mod_LoadLeafs (lump_t *l)
 {
 	dleaf_t 	*in;
 	gl_mleaf_t 	*out;
@@ -944,7 +944,7 @@ void Mod_LoadLeafs (lump_t *l)
 Mod_LoadClipnodes
 =================
 */
-void Mod_LoadClipnodes (lump_t *l)
+static void Mod_LoadClipnodes (lump_t *l)
 {
 	dclipnode_t *in, *out;
 	int			i, count;
@@ -998,7 +998,7 @@ Mod_MakeHull0
 Deplicate the drawing hull structure as a clipping hull
 =================
 */
-void Mod_MakeHull0 (void)
+static void Mod_MakeHull0 (void)
 {
 	gl_mnode_t		*in, *child;
 	dclipnode_t *out;
@@ -1035,7 +1035,7 @@ void Mod_MakeHull0 (void)
 Mod_LoadMarksurfaces
 =================
 */
-void Mod_LoadMarksurfaces (lump_t *l)
+static void Mod_LoadMarksurfaces (lump_t *l)
 {	
 	int		i, j, count;
 	short		*in;
@@ -1064,7 +1064,7 @@ void Mod_LoadMarksurfaces (lump_t *l)
 Mod_LoadSurfedges
 =================
 */
-void Mod_LoadSurfedges (lump_t *l)
+static void Mod_LoadSurfedges (lump_t *l)
 {	
 	int		i, count;
 	int		*in, *out;
@@ -1088,7 +1088,7 @@ void Mod_LoadSurfedges (lump_t *l)
 Mod_LoadPlanes
 =================
 */
-void Mod_LoadPlanes (lump_t *l)
+static void Mod_LoadPlanes (lump_t *l)
 {
 	int			i, j;
 	mplane_t	*out;
@@ -1126,7 +1126,7 @@ void Mod_LoadPlanes (lump_t *l)
 RadiusFromBounds
 =================
 */
-float RadiusFromBounds (vec3_t mins, vec3_t maxs)
+static float RadiusFromBounds (vec3_t mins, vec3_t maxs)
 {
 	int		i;
 	vec3_t	corner;
@@ -1144,7 +1144,7 @@ float RadiusFromBounds (vec3_t mins, vec3_t maxs)
 Mod_LoadBrushModel
 =================
 */
-void Mod_LoadBrushModel (gl_model_t *mod, void *buffer)
+static void Mod_LoadBrushModel (gl_model_t *mod, void *buffer)
 {
 	int			i, j;
 	dheader_t	*header;
@@ -1249,7 +1249,7 @@ byte		*player_8bit_texels;
 Mod_LoadAliasFrame
 =================
 */
-void * Mod_LoadAliasFrame (void * pin, gl_maliasframedesc_t *frame)
+static void * Mod_LoadAliasFrame (void * pin, gl_maliasframedesc_t *frame)
 {
 	trivertx_t		*pframe, *pinframe;
 	int				i, j;
@@ -1285,7 +1285,7 @@ void * Mod_LoadAliasFrame (void * pin, gl_maliasframedesc_t *frame)
 Mod_LoadAliasGroup
 =================
 */
-void *Mod_LoadAliasGroup (void * pin,  gl_maliasframedesc_t *frame)
+static void *Mod_LoadAliasGroup (void * pin,  gl_maliasframedesc_t *frame)
 {
 	daliasgroup_t		*pingroup;
 	int					i, numframes;
@@ -1486,7 +1486,7 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype)
 Mod_LoadAliasModel
 =================
 */
-void Mod_LoadAliasModel (gl_model_t *mod, void *buffer)
+static void Mod_LoadAliasModel (gl_model_t *mod, void *buffer)
 {
 	int					i, j;
 	mdl_t				*pinmodel;
@@ -1652,7 +1652,7 @@ void Mod_LoadAliasModel (gl_model_t *mod, void *buffer)
 Mod_LoadSpriteFrame
 =================
 */
-void * Mod_LoadSpriteFrame (void * pin, gl_mspriteframe_t **ppframe, int framenum)
+static void * Mod_LoadSpriteFrame (void * pin, gl_mspriteframe_t **ppframe, int framenum)
 {
 	dspriteframe_t		*pinframe;
 	gl_mspriteframe_t		*pspriteframe;
@@ -1695,7 +1695,7 @@ void * Mod_LoadSpriteFrame (void * pin, gl_mspriteframe_t **ppframe, int framenu
 Mod_LoadSpriteGroup
 =================
 */
-void * Mod_LoadSpriteGroup (void * pin, gl_mspriteframe_t **ppframe, int framenum)
+static void * Mod_LoadSpriteGroup (void * pin, gl_mspriteframe_t **ppframe, int framenum)
 {
 	dspritegroup_t		*pingroup;
 	gl_mspritegroup_t	*pspritegroup;
@@ -1747,7 +1747,7 @@ void * Mod_LoadSpriteGroup (void * pin, gl_mspriteframe_t **ppframe, int framenu
 Mod_LoadSpriteModel
 =================
 */
-void Mod_LoadSpriteModel (gl_model_t *mod, void *buffer)
+static void Mod_LoadSpriteModel (gl_model_t *mod, void *buffer)
 {
 	int					i;
 	int					version;
@@ -1825,7 +1825,7 @@ void Mod_LoadSpriteModel (gl_model_t *mod, void *buffer)
 Mod_Print
 ================
 */
-void Mod_Print (void)
+void Mod_GL_Print (void)
 {
 	int		i;
 	gl_model_t	*mod;

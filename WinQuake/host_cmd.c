@@ -1687,6 +1687,7 @@ edict_t	*FindViewthing (void)
 Host_Viewmodel_f
 ==================
 */
+// Panzer TODO - take right model (soft/gl)
 void Host_Viewmodel_f (void)
 {
 	edict_t	*e;
@@ -1696,7 +1697,7 @@ void Host_Viewmodel_f (void)
 	if (!e)
 		return;
 
-	m = Mod_ForName (Cmd_Argv(1), false);
+	m = Mod_S_ForName (Cmd_Argv(1), false);
 	if (!m)
 	{
 		Con_Printf ("Can't load %s\n", Cmd_Argv(1));
@@ -1730,13 +1731,13 @@ void Host_Viewframe_f (void)
 	e->v.frame = f;		
 }
 
-
+// Panzer TODO - take right model (soft/gl)
 void PrintFrameName (model_t *m, int frame)
 {
 	aliashdr_t 			*hdr;
 	maliasframedesc_t	*pframedesc;
 
-	hdr = (aliashdr_t *)Mod_Extradata (m);
+	hdr = (aliashdr_t *)Mod_S_Extradata (m);
 	if (!hdr)
 		return;
 	pframedesc = &hdr->frames[frame];

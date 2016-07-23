@@ -333,13 +333,13 @@ typedef struct gl_model_s
 
 //============================================================================
 
-void	Mod_Init (void);
-void	Mod_ClearAll (void);
-gl_model_t *ModGL_ForName (char *name, qboolean crash);
-void	*ModGL_Extradata (gl_model_t *mod);	// handles caching
-void	Mod_TouchModel (char *name);
+void	Mod_GL_Init (void);
+void	Mod_GL_ClearAll (void);
+gl_model_t *Mod_GL_ForName (char *name, qboolean crash);
+void	*Mod_GL_Extradata (gl_model_t *mod);	// handles caching
+void	Mod_GL_TouchModel (char *name);
 
-gl_mleaf_t *ModGL_PointInLeaf (float *p, gl_model_t *model);
-byte	*ModGL_LeafPVS (gl_mleaf_t *leaf, gl_model_t *model);
+gl_mleaf_t *Mod_GL_PointInLeaf (float *p, gl_model_t *model);
+byte	*Mod_GL_LeafPVS (gl_mleaf_t *leaf, gl_model_t *model);
 
 #endif	// __GL_MODEL__
