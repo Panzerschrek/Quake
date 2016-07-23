@@ -829,7 +829,7 @@ void Mod_LoadFaces (lump_t *l)
 Mod_SetParent
 =================
 */
-void Mod_SetParent (mnode_t *node, mnode_t *parent)
+void Mod_SetParent (gl_mnode_t *node, gl_mnode_t *parent)
 {
 	node->parent = parent;
 	if (node->contents < 0)
@@ -847,7 +847,7 @@ void Mod_LoadNodes (lump_t *l)
 {
 	int			i, j, count, p;
 	dnode_t		*in;
-	mnode_t 	*out;
+	gl_mnode_t 	*out;
 
 	in = (void *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
@@ -878,7 +878,7 @@ void Mod_LoadNodes (lump_t *l)
 			if (p >= 0)
 				out->children[j] = loadmodel->nodes + p;
 			else
-				out->children[j] = (mnode_t *)(loadmodel->leafs + (-1 - p));
+				out->children[j] = (gl_mnode_t *)(loadmodel->leafs + (-1 - p));
 		}
 	}
 	
@@ -1000,7 +1000,7 @@ Deplicate the drawing hull structure as a clipping hull
 */
 void Mod_MakeHull0 (void)
 {
-	mnode_t		*in, *child;
+	gl_mnode_t		*in, *child;
 	dclipnode_t *out;
 	int			i, j, count;
 	hull_t		*hull;

@@ -114,6 +114,24 @@ typedef struct gl_msurface_s
 } gl_msurface_t;
 
 
+typedef struct gl_mnode_s
+{
+// common with leaf
+	int			contents;		// 0, to differentiate from leafs
+	int			visframe;		// node needs to be traversed if current
+	
+	float		minmaxs[6];		// for bounding box culling
+
+	struct gl_mnode_s	*parent;
+
+// node specific
+	mplane_t	*plane;
+	struct gl_mnode_s	*children[2];	
+
+	unsigned short		firstsurface;
+	unsigned short		numsurfaces;
+} gl_mnode_t;
+
 typedef struct gl_mleaf_s
 {
 // common with node
@@ -280,7 +298,7 @@ typedef struct gl_model_s
 	medge_t		*edges;
 
 	int			numnodes;
-	mnode_t		*nodes;
+	gl_mnode_t		*nodes;
 
 	int				numtexinfo;
 	gl_mtexinfo_t	*texinfo;

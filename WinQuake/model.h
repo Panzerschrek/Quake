@@ -88,6 +88,24 @@ typedef struct msurface_s
 	byte		*samples;		// [numstyles*surfsize]
 } msurface_t;
 
+typedef struct mnode_s
+{
+// common with leaf
+	int			contents;		// 0, to differentiate from leafs
+	int			visframe;		// node needs to be traversed if current
+	
+	short		minmaxs[6];		// for bounding box culling
+
+	struct mnode_s	*parent;
+
+// node specific
+	mplane_t	*plane;
+	struct mnode_s	*children[2];	
+
+	unsigned short		firstsurface;
+	unsigned short		numsurfaces;
+} mnode_t;
+
 typedef struct mleaf_s
 {
 // common with node
