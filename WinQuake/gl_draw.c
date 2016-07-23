@@ -181,7 +181,7 @@ byte		menuplyr_pixels[4096];
 int		pic_texels;
 int		pic_count;
 
-qpic_t *Draw_PicFromWad (char *name)
+qpic_t *Draw_GL_PicFromWad (char *name)
 {
 	qpic_t	*p;
 	glpic_t	*gl;
@@ -229,7 +229,7 @@ qpic_t *Draw_PicFromWad (char *name)
 Draw_CachePic
 ================
 */
-qpic_t	*Draw_CachePic (char *path)
+qpic_t	*Draw_GL_CachePic (char *path)
 {
 	cachepic_t	*pic;
 	int			i;
@@ -273,7 +273,7 @@ qpic_t	*Draw_CachePic (char *path)
 }
 
 
-void Draw_CharToConback (int num, byte *dest)
+void Draw_GL_CharToConback (int num, byte *dest)
 {
 	int		row, col;
 	byte	*source;
@@ -365,7 +365,7 @@ void Draw_TextureMode_f (void)
 Draw_Init
 ===============
 */
-void Draw_Init (void)
+void Draw_GL_Init (void)
 {
 	int		i;
 	qpic_t	*cb;
@@ -412,7 +412,7 @@ void Draw_Init (void)
 	dest = cb->data + 320*186 + 320 - 11 - 8*strlen(ver);
 	y = strlen(ver);
 	for (x=0 ; x<y ; x++)
-		Draw_CharToConback (ver[x], dest+(x<<3));
+		Draw_GL_CharToConback (ver[x], dest+(x<<3));
 
 #if 0
 	conback->width = vid.conwidth;
@@ -489,7 +489,7 @@ It can be clipped to the top of the screen to allow the console to be
 smoothly scrolled off.
 ================
 */
-void Draw_Character (int x, int y, int num)
+void Draw_GL_Character (int x, int y, int num)
 {
 	byte			*dest;
 	byte			*source;
@@ -532,7 +532,7 @@ void Draw_Character (int x, int y, int num)
 Draw_String
 ================
 */
-void Draw_String (int x, int y, char *str)
+void Draw_GL_String (int x, int y, char *str)
 {
 	while (*str)
 	{
@@ -551,7 +551,7 @@ This is for debugging lockups by drawing different chars in different parts
 of the code.
 ================
 */
-void Draw_DebugChar (char num)
+void Draw_GL_DebugChar (char num)
 {
 }
 
@@ -597,7 +597,7 @@ void Draw_AlphaPic (int x, int y, qpic_t *pic, float alpha)
 Draw_Pic
 =============
 */
-void Draw_Pic (int x, int y, qpic_t *pic)
+void Draw_GL_Pic (int x, int y, qpic_t *pic)
 {
 	byte			*dest, *source;
 	unsigned short	*pusdest;
@@ -627,7 +627,7 @@ void Draw_Pic (int x, int y, qpic_t *pic)
 Draw_TransPic
 =============
 */
-void Draw_TransPic (int x, int y, qpic_t *pic)
+void Draw_GL_TransPic (int x, int y, qpic_t *pic)
 {
 	byte	*dest, *source, tbyte;
 	unsigned short	*pusdest;
@@ -650,7 +650,7 @@ Draw_TransPicTranslate
 Only used for the player color selection menu
 =============
 */
-void Draw_TransPicTranslate (int x, int y, qpic_t *pic, byte *translation)
+void Draw_GL_TransPicTranslate (int x, int y, qpic_t *pic, byte *translation)
 {
 	int				v, u, c;
 	unsigned		trans[64*64], *dest;
@@ -700,7 +700,7 @@ Draw_ConsoleBackground
 
 ================
 */
-void Draw_ConsoleBackground (int lines)
+void Draw_GL_ConsoleBackground (int lines)
 {
 	int y = (vid.height * 3) >> 2;
 
@@ -719,7 +719,7 @@ This repeats a 64*64 tile graphic to fill the screen around a sized down
 refresh window.
 =============
 */
-void Draw_TileClear (int x, int y, int w, int h)
+void Draw_GL_TileClear (int x, int y, int w, int h)
 {
 	glColor3f (1,1,1);
 	GL_Bind (*(int *)draw_backtile->data);
@@ -743,7 +743,7 @@ Draw_Fill
 Fills a box of pixels with a single color
 =============
 */
-void Draw_Fill (int x, int y, int w, int h, int c)
+void Draw_GL_Fill (int x, int y, int w, int h, int c)
 {
 	glDisable (GL_TEXTURE_2D);
 	glColor3f (host_basepal[c*3]/255.0,
@@ -769,7 +769,7 @@ Draw_FadeScreen
 
 ================
 */
-void Draw_FadeScreen (void)
+void Draw_GL_FadeScreen (void)
 {
 	glEnable (GL_BLEND);
 	glDisable (GL_TEXTURE_2D);
@@ -799,7 +799,7 @@ Draws the little blue disc in the corner of the screen.
 Call before beginning any disc IO.
 ================
 */
-void Draw_BeginDisc (void)
+void Draw_GL_BeginDisc (void)
 {
 	if (!draw_disc)
 		return;
@@ -817,7 +817,7 @@ Erases the disc icon.
 Call after completing any disc IO
 ================
 */
-void Draw_EndDisc (void)
+void Draw_GL_EndDisc (void)
 {
 }
 
