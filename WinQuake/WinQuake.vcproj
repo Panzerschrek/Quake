@@ -3506,6 +3506,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\vid_sdl_gl.c"
+				>
+			</File>
+			<File
 				RelativePath="view.c"
 				>
 				<FileConfiguration
