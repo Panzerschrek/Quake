@@ -233,10 +233,13 @@ void Sys_SendKeyEvents (void)
 
 #ifdef _WIN32
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-#else
-int main()
-#endif
 {
+	char		*argv[MAX_NUM_ARGVS];
+#else
+int main(int argc, const char* argv[])
+{
+#endif
+
 	quakeparms_t	parms;
 	double			oldtime;
 	double			newtime;
@@ -244,8 +247,36 @@ int main()
 
 	SDL_Init( SDL_INIT_TIMER | SDL_INIT_EVENTS );
 
-	parms.argc = 0;
-	parms.argv = NULL;
+#ifdef _WIN32
+	parms.argc = 1;
+	argv[0] = "";
+	while (*lpCmdLine && (parms.argc < MAX_NUM_ARGVS))
+	{
+		while (*lpCmdLine && ((*lpCmdLine <= 32) || (*lpCmdLine > 126)))
+			lpCmdLine++;
+
+		if (*lpCmdLine)
+		{
+			argv[parms.argc] = lpCmdLine;
+			parms.argc++;
+
+			while (*lpCmdLine && ((*lpCmdLine > 32) && (*lpCmdLine <= 126)))
+				lpCmdLine++;
+
+			if (*lpCmdLine)
+			{
+				*lpCmdLine = 0;
+				lpCmdLine++;
+			}
+			
+		}
+	}
+	parms.argv = argv;
+#else
+	parms.argc = argc;
+	parms.argv = argv;
+#endif
+
 	COM_InitArgv (parms.argc, parms.argv );
 
 	parms.basedir = ".";

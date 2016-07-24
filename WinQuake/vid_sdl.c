@@ -45,7 +45,6 @@ enum
 
 // Some subsystem needs it
 modestate_t	modestate = MS_UNINIT;
-qboolean			DDActive = 0;
 cvar_t		_windowed_mouse = {"_windowed_mouse","0", true};
 
 static byte		*g_vid_surfcache;
