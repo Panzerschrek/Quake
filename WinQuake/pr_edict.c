@@ -23,7 +23,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 dprograms_t		*progs;
 dfunction_t		*pr_functions;
+
+// pr_strings and pr_tmp_string allocated together,
+// we can call G_STRING for pr_tmp_string and recieve valid results.
 char			*pr_strings;
+char			*pr_tmp_string;
+
 ddef_t			*pr_fielddefs;
 ddef_t			*pr_globaldefs;
 dstatement_t	*pr_statements;
@@ -1010,7 +1015,11 @@ void PR_LoadProgs (void)
 		Sys_Error ("progs.dat system vars have been modified, progdefs.h is out of date");
 
 	pr_functions = (dfunction_t *)((byte *)progs + progs->ofs_functions);
-	pr_strings = (char *)progs + progs->ofs_strings;
+
+	pr_strings = Hunk_AllocName( progs->numstrings + PR_TMP_STRING_SIZE, "pr_strings" );
+	Q_memcpy( pr_strings, ((char*)progs) + progs->ofs_strings, progs->numstrings );
+	pr_tmp_string = pr_strings + progs->numstrings;
+
 	pr_globaldefs = (ddef_t *)((byte *)progs + progs->ofs_globaldefs);
 	pr_fielddefs = (ddef_t *)((byte *)progs + progs->ofs_fielddefs);
 	pr_statements = (dstatement_t *)((byte *)progs + progs->ofs_statements);
