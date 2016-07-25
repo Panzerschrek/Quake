@@ -240,7 +240,7 @@ mspriteframe_t *R_GetSpriteframe (msprite_t *psprite)
 	int				i, numframes, frame;
 	float			*pintervals, fullinterval, targettime, time;
 
-	frame = currententity->frame;
+	frame = currententity->frame[0];
 
 	if ((frame >= psprite->numframes) || (frame < 0))
 	{

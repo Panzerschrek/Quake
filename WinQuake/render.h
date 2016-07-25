@@ -51,7 +51,11 @@ typedef struct entity_s
 	vec3_t					angles;	
 	struct model_s			*model;			// NULL = no model
 	struct efrag_s			*efrag;			// linked list of efrags
-	int						frame;
+
+	// frame = -1 means uninitialized
+	int						frame[2]; // 0 - last frame from server, 1 - previous
+	float					frame_lerp;
+
 	float					syncbase;		// for client-side animations
 	byte					*colormap;
 	int						effects;		// light, particals, etc

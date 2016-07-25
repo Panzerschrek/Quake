@@ -512,12 +512,21 @@ void R_DrawEntitiesOnList (void)
 	vec3_t		dist;
 	float		add;
 
+	extern float	r_verts_weight[2];
+
 	if (!r_drawentities.value)
 		return;
 
 	for (i=0 ; i<cl_numvisedicts ; i++)
 	{
 		currententity = cl_visedicts[i];
+
+		// Panzer - Update entities animation.
+		// TODO - move it to other place
+		// 0.1 - game animations period
+		currententity->frame_lerp += host_frametime / 0.1f;
+		if( currententity->frame_lerp >= 1.0f )
+			currententity->frame_lerp = 1.0f;
 
 		if (currententity == &cl_entities[cl.viewentity])
 			continue;	// don't draw the player
@@ -533,6 +542,9 @@ void R_DrawEntitiesOnList (void)
 		case mod_alias:
 			VectorCopy (currententity->origin, r_entorigin);
 			VectorSubtract (r_origin, r_entorigin, modelorg);
+
+			r_verts_weight[0] = currententity->frame_lerp;
+			r_verts_weight[1] = 1.0f - currententity->frame_lerp;
 
 		// see if the bounding box lets us trivially reject, also sets
 		// trivial accept status

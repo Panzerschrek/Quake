@@ -951,7 +951,8 @@ void V_CalcRefdef (void)
 		view->origin[2] += 0.5;
 
 	view->model = cl.model_precache[cl.stats[STAT_WEAPON]];
-	view->frame = cl.stats[STAT_WEAPONFRAME];
+	view->frame[0] = view->frame[1] = cl.stats[STAT_WEAPONFRAME];
+	view->frame_lerp = 0.0;
 	view->colormap = vid.colormap;
 
 // set up the refresh position
