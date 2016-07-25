@@ -150,7 +150,7 @@ mspriteframe_t *R_GetSpriteFrame (entity_t *currententity)
 	float			*pintervals, fullinterval, targettime, time;
 
 	psprite = currententity->model->cache.data;
-	frame = currententity->frame;
+	frame = currententity->frame[0];
 
 	if ((frame >= psprite->numframes) || (frame < 0))
 	{
@@ -279,30 +279,31 @@ float	r_avertexnormal_dots[SHADEDOT_QUANT][256] =
 
 float	*shadedots = r_avertexnormal_dots[0];
 
-int	lastposenum;
+static int	posenum[2];
+static float pose_weight[2];
 
 /*
 =============
 GL_DrawAliasFrame
 =============
 */
-void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum)
+void GL_DrawAliasFrame (aliashdr_t *paliashdr)
 {
 	float	s, t;
 	float 	l;
 	int		i, j;
 	int		index;
-	trivertx_t	*v, *verts;
+	trivertx_t	*v, *verts[2];
 	int		list;
 	int		*order;
 	vec3_t	point;
 	float	*normal;
 	int		count;
 
-lastposenum = posenum;
+	verts[1] = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
+	verts[0] = verts[1] + posenum[0] * paliashdr->poseverts;
+	verts[1] = verts[1] + posenum[1] * paliashdr->poseverts;
 
-	verts = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
-	verts += posenum * paliashdr->poseverts;
 	order = (int *)((byte *)paliashdr + paliashdr->commands);
 
 	while (1)
@@ -326,10 +327,14 @@ lastposenum = posenum;
 			order += 2;
 
 			// normals and vertexes come from the frame list
-			l = shadedots[verts->lightnormalindex] * shadelight;
+			l = shadedots[verts[0]->lightnormalindex] * shadelight;
 			glColor3f (l, l, l);
-			glVertex3f (verts->v[0], verts->v[1], verts->v[2]);
-			verts++;
+			glVertex3f (
+				verts[0]->v[0] * pose_weight[0] + verts[1]->v[0] * pose_weight[1],
+				verts[0]->v[1] * pose_weight[0] + verts[1]->v[1] * pose_weight[1],
+				verts[0]->v[2] * pose_weight[0] + verts[1]->v[2] * pose_weight[1]);
+			verts[0]++;
+			verts[1]++;
 		} while (--count);
 
 		glEnd ();
@@ -344,12 +349,12 @@ GL_DrawAliasShadow
 */
 extern	vec3_t			lightspot;
 
-void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
+void GL_DrawAliasShadow (aliashdr_t *paliashdr)
 {
 	float	s, t, l;
 	int		i, j;
 	int		index;
-	trivertx_t	*v, *verts;
+	trivertx_t	*v, *verts[2];
 	int		list;
 	int		*order;
 	vec3_t	point;
@@ -360,8 +365,10 @@ void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
 	lheight = currententity->origin[2] - lightspot[2];
 
 	height = 0;
-	verts = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
-	verts += posenum * paliashdr->poseverts;
+	verts[1] = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
+	verts[0] = verts[1] + posenum[0] * paliashdr->poseverts;
+	verts[1] = verts[1] + posenum[1] * paliashdr->poseverts;
+
 	order = (int *)((byte *)paliashdr + paliashdr->commands);
 
 	height = -lheight + 1.0;
@@ -386,10 +393,15 @@ void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
 			// (skipped for shadows) glTexCoord2fv ((float *)order);
 			order += 2;
 
+			
+			point[0] = verts[0]->v[0] * pose_weight[0] + verts[1]->v[0] * pose_weight[1];
+			point[1] = verts[0]->v[1] * pose_weight[0] + verts[1]->v[1] * pose_weight[1];
+			point[2] = verts[0]->v[2] * pose_weight[0] + verts[1]->v[2] * pose_weight[1];
+
 			// normals and vertexes come from the frame list
-			point[0] = verts->v[0] * paliashdr->scale[0] + paliashdr->scale_origin[0];
-			point[1] = verts->v[1] * paliashdr->scale[1] + paliashdr->scale_origin[1];
-			point[2] = verts->v[2] * paliashdr->scale[2] + paliashdr->scale_origin[2];
+			point[0] = point[0] * paliashdr->scale[0] + paliashdr->scale_origin[0];
+			point[1] = point[1] * paliashdr->scale[1] + paliashdr->scale_origin[1];
+			point[2] = point[2] * paliashdr->scale[2] + paliashdr->scale_origin[2];
 
 			point[0] -= shadevector[0]*(point[2]+lheight);
 			point[1] -= shadevector[1]*(point[2]+lheight);
@@ -397,7 +409,8 @@ void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
 //			height -= 0.001;
 			glVertex3fv (point);
 
-			verts++;
+			verts[0]++;
+			verts[1]++;
 		} while (--count);
 
 		glEnd ();
@@ -412,27 +425,38 @@ R_SetupAliasFrame
 
 =================
 */
-void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
+void R_SetupAliasFrame (entity_t* ent, aliashdr_t *paliashdr)
 {
+	int				i;
+	int				frame;
 	int				pose, numposes;
 	float			interval;
 
-	if ((frame >= paliashdr->numframes) || (frame < 0))
+	for (i = 0; i < 2; i++)
 	{
-		Con_DPrintf ("R_AliasSetupFrame: no such frame %d\n", frame);
-		frame = 0;
+		frame = ent->frame[i];
+
+		if ((frame >= paliashdr->numframes) || (frame < 0))
+		{
+			Con_DPrintf ("R_AliasSetupFrame: no such frame %d\n", frame);
+			frame = 0;
+		}
+
+		pose = paliashdr->frames[frame].firstpose;
+		numposes = paliashdr->frames[frame].numposes;
+
+		if (numposes > 1)
+		{
+			interval = paliashdr->frames[frame].interval;
+			pose += (int)(cl.time / interval) % numposes;
+		}
+		posenum[i] = pose;
 	}
 
-	pose = paliashdr->frames[frame].firstpose;
-	numposes = paliashdr->frames[frame].numposes;
+	pose_weight[0] = currententity->frame_lerp;
+	pose_weight[1] = 1.0f - currententity->frame_lerp;
 
-	if (numposes > 1)
-	{
-		interval = paliashdr->frames[frame].interval;
-		pose += (int)(cl.time / interval) % numposes;
-	}
-
-	GL_DrawAliasFrame (paliashdr, pose);
+	GL_DrawAliasFrame (paliashdr);
 }
 
 
@@ -566,7 +590,7 @@ void R_DrawAliasModel (entity_t *e)
 	if (gl_affinemodels.value)
 		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 
-	R_SetupAliasFrame (currententity->frame, paliashdr);
+	R_SetupAliasFrame (e, paliashdr);
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
@@ -583,7 +607,7 @@ void R_DrawAliasModel (entity_t *e)
 		glDisable (GL_TEXTURE_2D);
 		glEnable (GL_BLEND);
 		glColor4f (0,0,0,0.5);
-		GL_DrawAliasShadow (paliashdr, lastposenum);
+		GL_DrawAliasShadow (paliashdr);
 		glEnable (GL_TEXTURE_2D);
 		glDisable (GL_BLEND);
 		glColor4f (1,1,1,1);
