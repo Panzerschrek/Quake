@@ -23,6 +23,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -48,8 +49,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
 				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\scitech\include;.\dxsdk\sdk\inc;&quot;..\..\SDL2-2.0.3\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="0"
@@ -116,6 +119,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -140,8 +144,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="4"
+				Optimization="2"
+				InlineFunctionExpansion="2"
 				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\dxsdk\sdk\inc;&quot;..\..\SDL2-2.0.3\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;GLQUAKE"
 				RuntimeLibrary="0"
