@@ -144,13 +144,6 @@ extern cvar_t	scr_fov;
 void CreatePassages (void);
 void SetVisibilityByPassages (void);
 
-static void AnimateEnity(entity_t* ent)
-{
-	// 0.1 - game animations period
-	ent->frame_lerp += host_frametime / 0.1f;
-	if( ent->frame_lerp >= 1.0f )
-		ent->frame_lerp = 1.0f;
-}
 
 /*
 ==================
@@ -529,10 +522,6 @@ void R_DrawEntitiesOnList (void)
 	{
 		currententity = cl_visedicts[i];
 
-		// Panzer - Update entities animation.
-		// TODO - move it to other place.
-		AnimateEnity(currententity);
-
 		if (currententity == &cl_entities[cl.viewentity])
 			continue;	// don't draw the player
 
@@ -663,9 +652,6 @@ void R_DrawViewModel (void)
 	cl.light_level = r_viewlighting.ambientlight;
 #endif
 
-	// Panzer - Update viewmodel animation.
-	// TODO - move it to other place.
-	AnimateEnity(currententity);
 
 	r_verts_weight[0] = currententity->frame_lerp;
 	r_verts_weight[1] = 1.0f - currententity->frame_lerp;

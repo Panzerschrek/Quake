@@ -53,6 +53,26 @@ dlight_t		cl_dlights[MAX_DLIGHTS];
 int				cl_numvisedicts;
 entity_t		*cl_visedicts[MAX_VISEDICTS];
 
+
+static void AnimateEnity(entity_t* ent)
+{
+	// 0.1 - game animations period
+	ent->frame_lerp += host_frametime / 0.1f;
+	if( ent->frame_lerp >= 1.0f )
+		ent->frame_lerp = 1.0f;
+}
+
+static void CL_AnimateEntities(void)
+{
+	entity_t*	ent;
+	int			i;
+
+	for (i=0 ; i<cl_numvisedicts ; i++)
+		AnimateEnity( cl_visedicts[i] );
+
+	AnimateEnity( &cl.viewent );
+}
+
 /*
 =====================
 CL_ClearState
@@ -655,6 +675,7 @@ int CL_ReadFromServer (void)
 
 	CL_RelinkEntities ();
 	CL_UpdateTEnts ();
+	CL_AnimateEntities ();
 
 //
 // bring the links up to date
