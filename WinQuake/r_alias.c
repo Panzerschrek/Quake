@@ -650,9 +650,9 @@ void R_AliasSetupFrame (void)
 {
 	int				frame;
 	int				lerp_frame_num;
-	int				i, numframes;
+	int				i, j, numframes;
 	maliasgroup_t	*paliasgroup;
-	float			*pintervals, fullinterval, targettime, time;
+	float			*pintervals, fullinterval, targettime;
 
 	for (lerp_frame_num = 0; lerp_frame_num < 2; lerp_frame_num++ )
 	{
@@ -677,22 +677,34 @@ void R_AliasSetupFrame (void)
 		numframes = paliasgroup->numframes;
 		fullinterval = pintervals[numframes-1];
 
-		time = cl.time + currententity->syncbase;
+		//
+		// when loading in Mod_LoadAliasGroup, we guaranteed all interval values
+		// are positive, so we don't have to worry about division by 0
+		//
+		targettime = fmodf( cl.time + currententity->syncbase, fullinterval );
 
-	//
-	// when loading in Mod_LoadAliasGroup, we guaranteed all interval values
-	// are positive, so we don't have to worry about division by 0
-	//
-		targettime = time - ((int)(time / fullinterval)) * fullinterval;
-
-		for (i=0 ; i<(numframes-1) ; i++)
+		for (i = 0; i < numframes; i++ )
 		{
-			if (pintervals[i] > targettime)
-				break;
+			if( targettime < pintervals[i] )
+			{
+				j = i == 0 ? numframes - 1 : i - 1;
+
+				r_verts_weight[1] =
+					(pintervals[i] - targettime) /
+					(pintervals[i] - ( i == 0 ? 0.0 : pintervals[j] ));
+				r_verts_weight[0]= 1.0f - r_verts_weight[1];
+
+				r_apverts[0] = (trivertx_t *)
+					((byte *)paliashdr + paliasgroup->frames[i].frame);
+				r_apverts[1] = (trivertx_t *)
+					((byte *)paliashdr + paliasgroup->frames[j].frame);
+				return;
+			}
 		}
 
-		r_apverts[lerp_frame_num] = (trivertx_t *)
-					((byte *)paliashdr + paliasgroup->frames[i].frame);
+		// Panzer - in case of unexpected mistakes
+		r_apverts[1] = r_apverts[0] = (trivertx_t *)
+					((byte *)paliashdr + paliasgroup->frames[0].frame);
 	}
 }
 
