@@ -69,6 +69,40 @@ char *svc_strings[] =
 
 //=============================================================================
 
+
+void CL_UpdateEntityAnimation(entity_t* ent, int frame)
+{
+	int		tmp;
+
+	// Init - setup frame
+	if( ent->frame[0] == -1 || ent->frame[1] == -1 )
+	{
+		ent->frame[0] = ent->frame[1] = frame;
+		ent->frame_lerp = 0.0f;
+	}
+	// All ok, continue aniamtion to next frame
+	else if( frame == ent->frame[0] )
+	{}
+	// Reverse animation
+	else if( frame == ent->frame[1] )
+	{
+		tmp = ent->frame[0];
+		ent->frame[0] = ent->frame[1];
+		ent->frame[1]= tmp;
+		ent->frame_lerp = 1.0f - ent->frame_lerp;
+	}
+	// Different frame
+	else
+	{
+		// Reset animation to nearest frame
+		if( ent->frame_lerp >= 0.5f )
+			ent->frame[1] = ent->frame[0];
+
+		ent->frame[0] = frame;
+		ent->frame_lerp = 0.0f;
+	}
+}
+
 /*
 ===============
 CL_EntityNum
@@ -85,6 +119,10 @@ entity_t	*CL_EntityNum (int num)
 		while (cl.num_entities<=num)
 		{
 			cl_entities[cl.num_entities].colormap = vid.colormap;
+
+			cl_entities[cl.num_entities].frame[0] = -1;
+			cl_entities[cl.num_entities].frame[1] = -1;
+
 			cl.num_entities++;
 		}
 	}
@@ -336,6 +374,7 @@ void CL_ParseUpdate (int bits)
 	entity_t	*ent;
 	int			num;
 	int			skin;
+	int			frame;
 
 	if (cls.signon == SIGNONS - 1)
 	{	// first update is the final signon stage
@@ -396,11 +435,13 @@ if (bits&(1<<i))
 			R_TranslatePlayerSkin (num - 1);
 #endif
 	}
-	
+
 	if (bits & U_FRAME)
-		ent->frame = MSG_ReadByte ();
+		frame = MSG_ReadByte ();
 	else
-		ent->frame = ent->baseline.frame;
+		frame = ent->baseline.frame;
+
+	CL_UpdateEntityAnimation(ent, frame);
 
 	if (bits & U_COLORMAP)
 		i = MSG_ReadByte();
@@ -679,10 +720,10 @@ void CL_ParseStatic (void)
 
 // copy it to the current state
 	ent->model = cl.model_precache[ent->baseline.modelindex];
-	ent->frame = ent->baseline.frame;
 	ent->colormap = vid.colormap;
 	ent->skinnum = ent->baseline.skin;
 	ent->effects = ent->baseline.effects;
+	CL_UpdateEntityAnimation(ent, ent->baseline.frame);
 
 	VectorCopy (ent->baseline.origin, ent->origin);
 	VectorCopy (ent->baseline.angles, ent->angles);	

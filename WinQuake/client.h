@@ -352,6 +352,7 @@ void CL_TimeDemo_f (void);
 //
 // cl_parse.c
 //
+void CL_UpdateEntityAnimation(entity_t* ent, int frame);
 void CL_ParseServerMessage (void);
 void CL_NewTranslation (int slot);
 

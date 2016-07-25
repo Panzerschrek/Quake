@@ -951,8 +951,8 @@ void V_CalcRefdef (void)
 		view->origin[2] += 0.5;
 
 	view->model = cl.model_precache[cl.stats[STAT_WEAPON]];
-	view->frame = cl.stats[STAT_WEAPONFRAME];
 	view->colormap = vid.colormap;
+	CL_UpdateEntityAnimation(view, cl.stats[STAT_WEAPONFRAME]);
 
 // set up the refresh position
 	VectorAdd (r_refdef.viewangles, cl.punchangle, r_refdef.viewangles);

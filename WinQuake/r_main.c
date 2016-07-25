@@ -113,6 +113,8 @@ int		d_lightstylevalue[256];	// 8.8 fraction of base light value
 float	dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
 float	se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
 
+extern float	r_verts_weight[2];
+
 void R_MarkLeaves (void);
 
 cvar_t	r_draworder = {"r_draworder","0"};
@@ -141,6 +143,7 @@ extern cvar_t	scr_fov;
 
 void CreatePassages (void);
 void SetVisibilityByPassages (void);
+
 
 /*
 ==================
@@ -534,6 +537,9 @@ void R_DrawEntitiesOnList (void)
 			VectorCopy (currententity->origin, r_entorigin);
 			VectorSubtract (r_origin, r_entorigin, modelorg);
 
+			r_verts_weight[0] = currententity->frame_lerp;
+			r_verts_weight[1] = 1.0f - currententity->frame_lerp;
+
 		// see if the bounding box lets us trivially reject, also sets
 		// trivial accept status
 			if (R_AliasCheckBBox ())
@@ -645,6 +651,10 @@ void R_DrawViewModel (void)
 #ifdef QUAKE2
 	cl.light_level = r_viewlighting.ambientlight;
 #endif
+
+
+	r_verts_weight[0] = currententity->frame_lerp;
+	r_verts_weight[1] = 1.0f - currententity->frame_lerp;
 
 	R_AliasDrawModel (&r_viewlighting);
 }
