@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
+int sb_scale = 1;
 
 int			sb_updates;		// if >= vid.numpages, no update needed
 
@@ -100,6 +101,13 @@ Sbar_Changed
 */
 void Sbar_Changed (void)
 {
+	int		scales[2];
+
+	scales[0] = (vid.width * 3 / 4) / 320; // take 3/4 of screen, not more.
+	scales[1] = vid.height / (200 + 100); // 200 - original size + some space for wide monitors.
+	sb_scale = scales[0] < scales[1] ? scales[0] : scales[1]; // Take minimum
+	if (sb_scale == 0) sb_scale = 1;
+
 	sb_updates = 0;	// update next frame
 }
 
@@ -259,10 +267,11 @@ Sbar_DrawPic
 */
 void Sbar_DrawPic (int x, int y, qpic_t *pic)
 {
+	y*= sb_scale;
 	if (cl.gametype == GAME_DEATHMATCH)
-		Draw_Pic (x /* + ((vid.width - 320)>>1)*/, y + (vid.height-SBAR_HEIGHT), pic);
+		Draw_PicScaled (x * sb_scale /* + ((vid.width - 320)>>1)*/, y + (vid.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
 	else
-		Draw_Pic (x + ((vid.width - 320)>>1), y + (vid.height-SBAR_HEIGHT), pic);
+		Draw_PicScaled (x * sb_scale + ((vid.width - 320 * sb_scale)>>1), y + (vid.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
 }
 
 /*
@@ -272,10 +281,11 @@ Sbar_DrawTransPic
 */
 void Sbar_DrawTransPic (int x, int y, qpic_t *pic)
 {
+	y*= sb_scale;
 	if (cl.gametype == GAME_DEATHMATCH)
-		Draw_TransPic (x /*+ ((vid.width - 320)>>1)*/, y + (vid.height-SBAR_HEIGHT), pic);
+		Draw_TransPicScaled (x * sb_scale /*+ ((vid.width - 320)>>1)*/, y + (vid.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
 	else
-		Draw_TransPic (x + ((vid.width - 320)>>1), y + (vid.height-SBAR_HEIGHT), pic);
+		Draw_TransPicScaled (x * sb_scale + ((vid.width - 320 * sb_scale)>>1), y + (vid.height-SBAR_HEIGHT * sb_scale), sb_scale, pic);
 }
 
 /*
@@ -927,9 +937,6 @@ void Sbar_Draw (void)
 {
 	if (scr_con_current == vid.height)
 		return;		// console is full screen
-
-	if (sb_updates >= vid.numpages)
-		return;
 
 	scr_copyeverything = 1;
 

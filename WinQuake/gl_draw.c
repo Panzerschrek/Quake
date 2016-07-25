@@ -621,6 +621,35 @@ void Draw_Pic (int x, int y, qpic_t *pic)
 	glEnd ();
 }
 
+/*
+=============
+Draw_PicScaled
+=============
+*/
+void Draw_PicScaled (int x, int y, int scale, qpic_t *pic)
+{
+	byte			*dest, *source;
+	unsigned short	*pusdest;
+	int				v, u;
+	glpic_t			*gl;
+
+	if (scrap_dirty)
+		Scrap_Upload ();
+	gl = (glpic_t *)pic->data;
+	glColor4f (1,1,1,1);
+	GL_Bind (gl->texnum);
+	glBegin (GL_QUADS);
+	glTexCoord2f (gl->sl, gl->tl);
+	glVertex2f (x, y);
+	glTexCoord2f (gl->sh, gl->tl);
+	glVertex2f (x+pic->width * scale, y);
+	glTexCoord2f (gl->sh, gl->th);
+	glVertex2f (x+pic->width * scale, y+pic->height * scale);
+	glTexCoord2f (gl->sl, gl->th);
+	glVertex2f (x, y+pic->height * scale);
+	glEnd ();
+}
+
 
 /*
 =============
@@ -640,6 +669,27 @@ void Draw_TransPic (int x, int y, qpic_t *pic)
 	}
 		
 	Draw_Pic (x, y, pic);
+}
+
+
+/*
+=============
+Draw_TransPicScaled
+=============
+*/
+void Draw_TransPicScaled (int x, int y, int scale, qpic_t *pic)
+{
+	byte	*dest, *source, tbyte;
+	unsigned short	*pusdest;
+	int				v, u;
+
+	if (x < 0 || (unsigned)(x + pic->width * scale) > vid.width || y < 0 ||
+		 (unsigned)(y + pic->height * scale) > vid.height)
+	{
+		Sys_Error ("Draw_TransPic: bad coordinates");
+	}
+		
+	Draw_PicScaled (x, y, scale, pic);
 }
 
 

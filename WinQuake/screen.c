@@ -221,6 +221,7 @@ static void SCR_CalcRefdef (void)
 {
 	vrect_t		vrect;
 	float		size;
+	int			sb_lines_shown;
 
 	scr_fullupdate = 0;		// force a background redraw
 	vid.recalc_refdef = 0;
@@ -258,6 +259,12 @@ static void SCR_CalcRefdef (void)
 	else
 		sb_lines = 24+16+8;
 
+	// Setup viewrect at half of status bar size, for scaled status bar.
+	if (sb_scale == 1)
+		sb_lines_shown = sb_lines;
+	else
+		sb_lines_shown = (sb_lines * sb_scale) >> 1;
+
 // these calculations mirror those in R_Init() for r_refdef, but take no
 // account of water warping
 	vrect.x = 0;
@@ -265,7 +272,7 @@ static void SCR_CalcRefdef (void)
 	vrect.width = vid.width;
 	vrect.height = vid.height;
 
-	R_SetVrect (&vrect, &scr_vrect, sb_lines);
+	R_SetVrect (&vrect, &scr_vrect, sb_lines_shown);
 
 // guard against going from one mode to another that's less than half the
 // vertical resolution
@@ -273,7 +280,7 @@ static void SCR_CalcRefdef (void)
 		scr_con_current = vid.height;
 
 // notify the refresh of the change
-	R_ViewChanged (&vrect, sb_lines, vid.aspect);
+	R_ViewChanged (&vrect, sb_lines_shown, vid.aspect);
 }
 
 
