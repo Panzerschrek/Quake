@@ -70,7 +70,7 @@ char *svc_strings[] =
 //=============================================================================
 
 
-static void UpdateEntityAnimation(entity_t* ent, int frame)
+void CL_UpdateEntityAnimation(entity_t* ent, int frame)
 {
 	int		tmp;
 
@@ -80,6 +80,9 @@ static void UpdateEntityAnimation(entity_t* ent, int frame)
 		ent->frame[0] = ent->frame[1] = frame;
 		ent->frame_lerp = 0.0f;
 	}
+	// All ok, continue aniamtion to next frame
+	else if( frame == ent->frame[0] )
+	{}
 	// Reverse animation
 	else if( frame == ent->frame[1] )
 	{
@@ -88,9 +91,6 @@ static void UpdateEntityAnimation(entity_t* ent, int frame)
 		ent->frame[1]= tmp;
 		ent->frame_lerp = 1.0f - ent->frame_lerp;
 	}
-	// All ok, continue aniamtion to next frame
-	else if( frame == ent->frame[0] )
-	{}
 	// Different frame
 	else
 	{
@@ -441,7 +441,7 @@ if (bits&(1<<i))
 	else
 		frame = ent->baseline.frame;
 
-	UpdateEntityAnimation(ent, frame);
+	CL_UpdateEntityAnimation(ent, frame);
 
 	if (bits & U_COLORMAP)
 		i = MSG_ReadByte();
@@ -723,7 +723,7 @@ void CL_ParseStatic (void)
 	ent->colormap = vid.colormap;
 	ent->skinnum = ent->baseline.skin;
 	ent->effects = ent->baseline.effects;
-	UpdateEntityAnimation(ent, ent->baseline.frame);
+	CL_UpdateEntityAnimation(ent, ent->baseline.frame);
 
 	VectorCopy (ent->baseline.origin, ent->origin);
 	VectorCopy (ent->baseline.angles, ent->angles);	

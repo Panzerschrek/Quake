@@ -113,6 +113,8 @@ int		d_lightstylevalue[256];	// 8.8 fraction of base light value
 float	dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
 float	se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
 
+extern float	r_verts_weight[2];
+
 void R_MarkLeaves (void);
 
 cvar_t	r_draworder = {"r_draworder","0"};
@@ -141,6 +143,14 @@ extern cvar_t	scr_fov;
 
 void CreatePassages (void);
 void SetVisibilityByPassages (void);
+
+static void AnimateEnity(entity_t* ent)
+{
+	// 0.1 - game animations period
+	ent->frame_lerp += host_frametime / 0.1f;
+	if( ent->frame_lerp >= 1.0f )
+		ent->frame_lerp = 1.0f;
+}
 
 /*
 ==================
@@ -512,8 +522,6 @@ void R_DrawEntitiesOnList (void)
 	vec3_t		dist;
 	float		add;
 
-	extern float	r_verts_weight[2];
-
 	if (!r_drawentities.value)
 		return;
 
@@ -522,11 +530,8 @@ void R_DrawEntitiesOnList (void)
 		currententity = cl_visedicts[i];
 
 		// Panzer - Update entities animation.
-		// TODO - move it to other place
-		// 0.1 - game animations period
-		currententity->frame_lerp += host_frametime / 0.1f;
-		if( currententity->frame_lerp >= 1.0f )
-			currententity->frame_lerp = 1.0f;
+		// TODO - move it to other place.
+		AnimateEnity(currententity);
 
 		if (currententity == &cl_entities[cl.viewentity])
 			continue;	// don't draw the player
@@ -657,6 +662,13 @@ void R_DrawViewModel (void)
 #ifdef QUAKE2
 	cl.light_level = r_viewlighting.ambientlight;
 #endif
+
+	// Panzer - Update viewmodel animation.
+	// TODO - move it to other place.
+	AnimateEnity(currententity);
+
+	r_verts_weight[0] = currententity->frame_lerp;
+	r_verts_weight[1] = 1.0f - currententity->frame_lerp;
 
 	R_AliasDrawModel (&r_viewlighting);
 }
