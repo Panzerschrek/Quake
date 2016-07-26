@@ -587,6 +587,27 @@ void Draw_String (int x, int y, char *str)
 
 /*
 ================
+Draw_StringScaled
+================
+*/
+void Draw_StringScaled (int x, int y, int scale, char *str)
+{
+	if (scale == 1)
+	{
+		Draw_String	(x, y, str);
+		return;
+	}
+
+	while (*str)
+	{
+		Draw_CharacterScaled (x, y, scale, *str);
+		str++;
+		x += 8 * scale;
+	}
+}
+
+/*
+================
 Draw_DebugChar
 
 Draws a single character directly to the upper right corner of the screen.
