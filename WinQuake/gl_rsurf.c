@@ -235,7 +235,7 @@ texture_t *R_TextureAnimation (texture_t *base)
 	int		reletive;
 	int		count;
 
-	if (currententity->frame)
+	if (currententity->frame[0])
 	{
 		if (base->alternate_anims)
 			base = base->alternate_anims;
