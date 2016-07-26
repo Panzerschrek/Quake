@@ -132,6 +132,16 @@ int			scr_center_lines;
 int			scr_erase_lines;
 int			scr_erase_center;
 
+static int GetPicsScale(void)
+{
+	int		scales[2];
+
+	// Get count of original screens in current screen
+	scales[0] = vid.width  / 320;
+	scales[1] = vid.height / 240;
+	return scales[0] < scales[1] ? scales[0] : scales[1];
+}
+
 /*
 ==============
 SCR_CenterPrint
@@ -467,6 +477,7 @@ DrawPause
 void SCR_DrawPause (void)
 {
 	qpic_t	*pic;
+	int		scale;
 
 	if (!scr_showpause.value)		// turn off for screenshots
 		return;
@@ -474,9 +485,14 @@ void SCR_DrawPause (void)
 	if (!cl.paused)
 		return;
 
+	scale = GetPicsScale();
+
 	pic = Draw_CachePic ("gfx/pause.lmp");
-	Draw_Pic ( (vid.width - pic->width)/2, 
-		(vid.height - 48 - pic->height)/2, pic);
+	Draw_PicScaled (
+		(vid.width - pic->width * scale)/2, 
+		(vid.height - (48 + pic->height) * scale)/2,
+		scale,
+		pic);
 }
 
 
@@ -489,13 +505,19 @@ SCR_DrawLoading
 void SCR_DrawLoading (void)
 {
 	qpic_t	*pic;
+	int		scale;
 
 	if (!scr_drawloading)
 		return;
+
+	scale = GetPicsScale();
 		
 	pic = Draw_CachePic ("gfx/loading.lmp");
-	Draw_Pic ( (vid.width - pic->width)/2, 
-		(vid.height - 48 - pic->height)/2, pic);
+	Draw_PicScaled (
+		(vid.width - pic->width * scale)/2, 
+		(vid.height - (48 + pic->height) * scale)/2,
+		scale,
+		pic);
 }
 
 
