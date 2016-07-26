@@ -155,6 +155,8 @@ void	VID_Init (unsigned char *palette)
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	VID_FPSInit();
 }
 
 void	VID_Shutdown (void)
@@ -256,5 +258,6 @@ void GL_BeginRendering (int *x, int *y, int *width, int *height)
 
 void GL_EndRendering (void)
 {
+	VID_FPSUpdate();
 	SDL_GL_SwapWindow( g_sdl_gl.window );
 }

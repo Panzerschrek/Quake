@@ -24,6 +24,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 #include "winquake.h"
 
+#define FPS_CALC_INTERVAL 1.0
+
+static struct
+{
+	int fps_to_draw;
+	int frames_since_last_swap;
+	double last_swap_time;
+} g_fps;
+
+static cvar_t vid_drawfps = { "vid_drawfps", "0", true };
+
 int VID_SelectVideoMode( int display, int width, int height, SDL_DisplayMode* selected )
 {
 	int		i;
@@ -60,4 +71,41 @@ int VID_SwitchToMode( SDL_Window* window, SDL_DisplayMode* mode )
 
 	return result == 0;
 
+}
+
+void VID_FPSInit(void)
+{
+	Cvar_RegisterVariable( &vid_drawfps );
+
+	g_fps.fps_to_draw = 0;
+	g_fps.frames_since_last_swap = 0;
+	g_fps.last_swap_time = Sys_FloatTime();
+}
+
+void VID_FPSUpdate(void)
+{
+	double		current_time;
+	double		time_delta;
+	char		str[64];
+
+	if (!vid_drawfps.value)
+		return;
+
+	g_fps.frames_since_last_swap ++;
+
+	current_time = Sys_FloatTime();
+	time_delta = current_time - g_fps.last_swap_time;
+
+	if (time_delta > FPS_CALC_INTERVAL)
+	{
+		g_fps.fps_to_draw = (int)( ((double)g_fps.frames_since_last_swap + 0.5) / time_delta );
+		if (g_fps.fps_to_draw > 999 )
+			g_fps.fps_to_draw = 999;
+
+		g_fps.last_swap_time = current_time;
+		g_fps.frames_since_last_swap = 0;
+	}
+
+	sprintf( str, "fps: %03d", g_fps.fps_to_draw );
+	Draw_String( vid.width - 8 * 10, 8, str );
 }

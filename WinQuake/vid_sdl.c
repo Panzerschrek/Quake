@@ -290,6 +290,8 @@ void	VID_Init (unsigned char *palette)
 	g_sdl.fullscreen = false;
 
 	UpdateMode(palette);
+
+	VID_FPSInit();
 }
 
 void	VID_Shutdown (void)
@@ -317,6 +319,8 @@ void	VID_Update (vrect_t *rects)
 	int				src_x, src_y, p_x, p_y;
 	int				p_left_x, p_left_y;
 	int				must_lock;
+
+	VID_FPSUpdate();
 
 	must_lock = SDL_MUSTLOCK( g_sdl.window_surface );
 
