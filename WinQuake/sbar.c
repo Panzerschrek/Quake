@@ -297,10 +297,12 @@ Draws one solid graphics character
 */
 void Sbar_DrawCharacter (int x, int y, int num)
 {
+	x *= sb_scale;
+	y *= sb_scale;
 	if (cl.gametype == GAME_DEATHMATCH)
-		Draw_Character ( x /*+ ((vid.width - 320)>>1) */ + 4 , y + vid.height-SBAR_HEIGHT, num);
+		Draw_CharacterScaled ( x/*+ ((vid.width - 320)>>1) */ + 4 , y + vid.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
 	else
-		Draw_Character ( x + ((vid.width - 320)>>1) + 4 , y + vid.height-SBAR_HEIGHT, num);
+		Draw_CharacterScaled ( x + ((vid.width - 320 * sb_scale)>>1) + 4 , y + vid.height-SBAR_HEIGHT * sb_scale, sb_scale, num);
 }
 
 /*
