@@ -223,6 +223,86 @@ void Draw_Character (int x, int y, int num)
 	}
 }
 
+void Draw_CharacterScaled (int x, int y, int scale, int num)
+{
+	byte			*dest;
+	byte			*source;
+	unsigned short	*pusdest;
+	int				drawline;	
+	int				row, col;
+	int				s_x, s_y, j;
+
+	if( scale == 1 )
+	{
+		Draw_Character (x, y, num);
+		return;
+	}
+
+	num &= 255;
+	
+	if (y * scale <= -8)
+		return;			// totally off screen
+
+#ifdef PARANOID
+	if (y > vid.height - 8 * scale || x < 0 || x > vid.width - 8 * scale)
+		Sys_Error ("Con_DrawCharacter: (%i, %i)", x, y);
+	if (num < 0 || num > 255)
+		Sys_Error ("Con_DrawCharacter: char %i", num);
+#endif
+
+	row = num>>4;
+	col = num&15;
+	source = draw_chars + (row<<10) + (col<<3);
+
+	if (y < 0)
+	{	// clipped
+		drawline = 8 * scale + y;
+		source -= 128*y;
+		y = 0;
+	}
+	else
+		drawline = 8 * scale;
+
+
+	if (r_pixbytes == 1)
+	{
+		dest = vid.conbuffer + y*vid.conrowbytes + x;
+	
+		while (drawline != 0)
+		{
+			for (s_y = 0; s_y < scale; s_y++, dest += vid.conrowbytes)
+			{
+				for (j = 0; j < 8; j++)
+					if (source[j])
+						for (s_x = 0; s_x < scale; s_x++)
+							dest[ j * scale + s_x ] = source[j];
+			}
+
+			source += 128;
+			drawline-= scale;
+		}
+	}
+	else
+	{
+		pusdest = (unsigned short *)
+				((byte *)vid.conbuffer + y*vid.conrowbytes + (x<<1));
+	
+		while (drawline != 0)
+		{
+			for (s_y = 0; s_y < scale; s_y++, pusdest += vid.conrowbytes)
+			{
+				for (j = 0; j < 8; j++)
+					if (source[j])
+						for (s_x = 0; s_x < scale; s_x++)
+							pusdest[ j * scale + s_x ] = d_8to16table[source[j]];
+			}
+
+			source += 128;
+			drawline-= scale;
+		}
+	}
+}
+
 /*
 ================
 Draw_String
@@ -235,6 +315,27 @@ void Draw_String (int x, int y, char *str)
 		Draw_Character (x, y, *str);
 		str++;
 		x += 8;
+	}
+}
+
+/*
+================
+Draw_StringScaled
+================
+*/
+void Draw_StringScaled (int x, int y, int scale, char *str)
+{
+	if (scale == 1)
+	{
+		Draw_String	(x, y, str);
+		return;
+	}
+
+	while (*str)
+	{
+		Draw_CharacterScaled (x, y, scale, *str);
+		str++;
+		x += 8 * scale;
 	}
 }
 
@@ -331,6 +432,58 @@ void Draw_Pic (int x, int y, qpic_t *pic)
 	}
 }
 
+/*
+=============
+Draw_PicScaled
+=============
+*/
+void Draw_PicScaled (int x, int y, int scale, qpic_t *pic)
+{
+	byte	*dest, *source;
+	int		p_x, p_y;
+	int		s_x, s_y;
+
+	if( scale == 1 )
+	{
+		Draw_Pic (x, y, pic);
+		return;
+	}
+
+	if ((x < 0) ||
+		(x + scale * pic->width > vid.width) ||
+		(y < 0) ||
+		(y + scale * pic->height > vid.height))
+	{
+		Sys_Error ("Draw_Pic: bad coordinates");
+	}
+	
+	for (p_y = 0; p_y < pic->height; p_y++)
+	{
+		for (s_y = 0; s_y < scale; s_y++)
+		{
+			source = pic->data + p_y * pic->width;
+			dest = vid.buffer + x + ( y + p_y * scale + s_y ) * vid.rowbytes;
+
+			if (scale == 2)
+				for (p_x = 0; p_x < pic->width; p_x++, source++, dest+= 2)
+					dest[0]= dest[1] = *source;
+			
+			else if (scale == 3)
+				for (p_x = 0; p_x < pic->width; p_x++, source++, dest+= 3)
+					dest[0]= dest[1] = dest[2] = *source;
+			
+			else if (scale == 4)
+				for (p_x = 0; p_x < pic->width; p_x++, source++, dest+= 4)
+					dest[0]= dest[1] = dest[2]= dest[3] = *source;
+
+			else
+				for (p_x = 0; p_x < pic->width; p_x++, source++)
+					for (s_x = 0; s_x < scale; s_x++, dest++)
+						*dest = *source;
+		}
+	}
+}
+
 
 /*
 =============
@@ -418,6 +571,70 @@ void Draw_TransPic (int x, int y, qpic_t *pic)
 	}
 }
 
+/*
+=============
+Draw_TransPicScaled
+=============
+*/
+void Draw_TransPicScaled (int x, int y, int scale, qpic_t *pic)
+{
+	byte	*dest, *source;
+	int		p_x, p_y;
+	int		s_x, s_y;
+
+	if( scale == 1 )
+	{
+		Draw_TransPic (x, y, pic);
+		return;
+	}
+
+	if ((x < 0) ||
+		(x + scale * pic->width > vid.width) ||
+		(y < 0) ||
+		(y + scale * pic->height > vid.height))
+	{
+		Sys_Error ("Draw_Pic: bad coordinates");
+	}
+	
+	for (p_y = 0; p_y < pic->height; p_y++)
+	{
+		for (s_y = 0; s_y < scale; s_y++)
+		{
+			source = pic->data + p_y * pic->width;
+			dest = vid.buffer + x + ( y + p_y * scale + s_y ) * vid.rowbytes;
+
+			if (scale == 2)
+				for (p_x = 0; p_x < pic->width; p_x++, source++, dest+= 2)
+				{
+					if (*source == TRANSPARENT_COLOR) continue;
+					dest[0]= dest[1] = *source;
+				}
+			
+			else if (scale == 3)
+				for (p_x = 0; p_x < pic->width; p_x++, source++, dest+= 3)
+				{
+					if (*source == TRANSPARENT_COLOR) continue;
+					dest[0]= dest[1] = dest[2] = *source;
+				}
+			
+			else if (scale == 4)
+				for (p_x = 0; p_x < pic->width; p_x++, source++, dest+= 4)
+				{
+					if (*source == TRANSPARENT_COLOR) continue;
+					dest[0]= dest[1] = dest[2]= dest[3] = *source;
+				}
+
+			else
+				for (p_x = 0; p_x < pic->width; p_x++, source++)
+				{
+					if (*source == TRANSPARENT_COLOR) continue;
+					for (s_x = 0; s_x < scale; s_x++, dest++)
+						*dest = *source;
+				}
+		}
+	}
+}
+
 
 /*
 =============
@@ -501,6 +718,70 @@ void Draw_TransPicTranslate (int x, int y, qpic_t *pic, byte *translation)
 
 			pusdest += vid.rowbytes >> 1;
 			source += pic->width;
+		}
+	}
+}
+
+/*
+=============
+Draw_TransPicTranslateScaled
+=============
+*/
+void Draw_TransPicTranslateScaled (int x, int y, int scale, qpic_t *pic, byte *translation)
+{
+	byte	*dest, *source;
+	int		p_x, p_y;
+	int		s_x, s_y;
+
+	if( scale == 1 )
+	{
+		Draw_TransPicTranslate (x, y, pic, translation);
+		return;
+	}
+
+	if ((x < 0) ||
+		(x + scale * pic->width > vid.width) ||
+		(y < 0) ||
+		(y + scale * pic->height > vid.height))
+	{
+		Sys_Error ("Draw_Pic: bad coordinates");
+	}
+	
+	for (p_y = 0; p_y < pic->height; p_y++)
+	{
+		for (s_y = 0; s_y < scale; s_y++)
+		{
+			source = pic->data + p_y * pic->width;
+			dest = vid.buffer + x + ( y + p_y * scale + s_y ) * vid.rowbytes;
+
+			if (scale == 2)
+				for (p_x = 0; p_x < pic->width; p_x++, source++, dest+= 2)
+				{
+					if (*source == TRANSPARENT_COLOR) continue;
+					dest[0]= dest[1] = translation[*source];
+				}
+			
+			else if (scale == 3)
+				for (p_x = 0; p_x < pic->width; p_x++, source++, dest+= 3)
+				{
+					if (*source == TRANSPARENT_COLOR) continue;
+					dest[0]= dest[1] = dest[2] = translation[*source];
+				}
+			
+			else if (scale == 4)
+				for (p_x = 0; p_x < pic->width; p_x++, source++, dest+= 4)
+				{
+					if (*source == TRANSPARENT_COLOR) continue;
+					dest[0]= dest[1] = dest[2]= dest[3] = translation[*source];
+				}
+
+			else
+				for (p_x = 0; p_x < pic->width; p_x++, source++)
+				{
+					if (*source == TRANSPARENT_COLOR) continue;
+					for (s_x = 0; s_x < scale; s_x++, dest++)
+						*dest = translation[*source];
+				}
 		}
 	}
 }

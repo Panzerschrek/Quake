@@ -132,6 +132,16 @@ int			scr_center_lines;
 int			scr_erase_lines;
 int			scr_erase_center;
 
+static int GetPicsScale(void)
+{
+	int		scales[2];
+
+	// Get count of original screens in current screen
+	scales[0] = vid.width  / 320;
+	scales[1] = vid.height / 240;
+	return scales[0] < scales[1] ? scales[0] : scales[1];
+}
+
 /*
 ==============
 SCR_CenterPrint
@@ -257,7 +267,8 @@ static void SCR_CalcRefdef (void)
 	vrect_t		vrect;
 	float		size;
 	int		h;
-	qboolean		full = false;
+	qboolean	full = false;
+	int			sb_lines_shown;
 
 
 	scr_fullupdate = 0;		// force a background redraw
@@ -293,6 +304,12 @@ static void SCR_CalcRefdef (void)
 	else
 		sb_lines = 24+16+8;
 
+	// Setup viewrect at half of status bar size, for scaled status bar.
+	if (sb_scale == 1)
+		sb_lines_shown = sb_lines;
+	else
+		sb_lines_shown = (sb_lines * sb_scale) >> 1;
+
 	if (scr_viewsize.value >= 100.0) {
 		full = true;
 		size = 100.0;
@@ -306,7 +323,7 @@ static void SCR_CalcRefdef (void)
 	}
 	size /= 100.0;
 
-	h = vid.height - sb_lines;
+	h = vid.height - sb_lines_shown;
 
 	r_refdef.vrect.width = vid.width * size;
 	if (r_refdef.vrect.width < 96)
@@ -316,8 +333,8 @@ static void SCR_CalcRefdef (void)
 	}
 
 	r_refdef.vrect.height = vid.height * size;
-	if (r_refdef.vrect.height > vid.height - sb_lines)
-		r_refdef.vrect.height = vid.height - sb_lines;
+	if (r_refdef.vrect.height > vid.height - sb_lines_shown)
+		r_refdef.vrect.height = vid.height - sb_lines_shown;
 	if (r_refdef.vrect.height > vid.height)
 			r_refdef.vrect.height = vid.height;
 	r_refdef.vrect.x = (vid.width - r_refdef.vrect.width)/2;
@@ -460,6 +477,7 @@ DrawPause
 void SCR_DrawPause (void)
 {
 	qpic_t	*pic;
+	int		scale;
 
 	if (!scr_showpause.value)		// turn off for screenshots
 		return;
@@ -467,9 +485,14 @@ void SCR_DrawPause (void)
 	if (!cl.paused)
 		return;
 
+	scale = GetPicsScale();
+
 	pic = Draw_CachePic ("gfx/pause.lmp");
-	Draw_Pic ( (vid.width - pic->width)/2, 
-		(vid.height - 48 - pic->height)/2, pic);
+	Draw_PicScaled (
+		(vid.width - pic->width * scale)/2, 
+		(vid.height - (48 + pic->height) * scale)/2,
+		scale,
+		pic);
 }
 
 
@@ -482,13 +505,19 @@ SCR_DrawLoading
 void SCR_DrawLoading (void)
 {
 	qpic_t	*pic;
+	int		scale;
 
 	if (!scr_drawloading)
 		return;
+
+	scale = GetPicsScale();
 		
 	pic = Draw_CachePic ("gfx/loading.lmp");
-	Draw_Pic ( (vid.width - pic->width)/2, 
-		(vid.height - 48 - pic->height)/2, pic);
+	Draw_PicScaled (
+		(vid.width - pic->width * scale)/2, 
+		(vid.height - (48 + pic->height) * scale)/2,
+		scale,
+		pic);
 }
 
 
@@ -787,24 +816,23 @@ void SCR_TileClear (void)
 {
 	if (r_refdef.vrect.x > 0) {
 		// left
-		Draw_TileClear (0, 0, r_refdef.vrect.x, vid.height - sb_lines);
+		Draw_TileClear (0, 0, r_refdef.vrect.x, vid.height);
 		// right
 		Draw_TileClear (r_refdef.vrect.x + r_refdef.vrect.width, 0, 
 			vid.width - r_refdef.vrect.x + r_refdef.vrect.width, 
-			vid.height - sb_lines);
+			vid.height);
 	}
-	if (r_refdef.vrect.y > 0) {
-		// top
-		Draw_TileClear (r_refdef.vrect.x, 0, 
-			r_refdef.vrect.x + r_refdef.vrect.width, 
-			r_refdef.vrect.y);
-		// bottom
-		Draw_TileClear (r_refdef.vrect.x,
-			r_refdef.vrect.y + r_refdef.vrect.height, 
-			r_refdef.vrect.width, 
-			vid.height - sb_lines - 
-			(r_refdef.vrect.height + r_refdef.vrect.y));
-	}
+
+	// top
+	Draw_TileClear (r_refdef.vrect.x, 0, 
+		r_refdef.vrect.x + r_refdef.vrect.width, 
+		r_refdef.vrect.y);
+	// bottom
+	Draw_TileClear (r_refdef.vrect.x,
+		r_refdef.vrect.y + r_refdef.vrect.height, 
+		r_refdef.vrect.width, 
+		vid.height - 
+		(r_refdef.vrect.height + r_refdef.vrect.y));
 }
 
 /*

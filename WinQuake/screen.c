@@ -79,6 +79,17 @@ int			scr_center_lines;
 int			scr_erase_lines;
 int			scr_erase_center;
 
+
+static int GetPicsScale(void)
+{
+	int		scales[2];
+
+	// Get count of original screens in current screen
+	scales[0] = vid.width  / 320;
+	scales[1] = vid.height / 240;
+	return scales[0] < scales[1] ? scales[0] : scales[1];
+}
+
 /*
 ==============
 SCR_CenterPrint
@@ -221,6 +232,7 @@ static void SCR_CalcRefdef (void)
 {
 	vrect_t		vrect;
 	float		size;
+	int			sb_lines_shown;
 
 	scr_fullupdate = 0;		// force a background redraw
 	vid.recalc_refdef = 0;
@@ -258,6 +270,12 @@ static void SCR_CalcRefdef (void)
 	else
 		sb_lines = 24+16+8;
 
+	// Setup viewrect at half of status bar size, for scaled status bar.
+	if (sb_scale == 1)
+		sb_lines_shown = sb_lines;
+	else
+		sb_lines_shown = (sb_lines * sb_scale) >> 1;
+
 // these calculations mirror those in R_Init() for r_refdef, but take no
 // account of water warping
 	vrect.x = 0;
@@ -265,7 +283,7 @@ static void SCR_CalcRefdef (void)
 	vrect.width = vid.width;
 	vrect.height = vid.height;
 
-	R_SetVrect (&vrect, &scr_vrect, sb_lines);
+	R_SetVrect (&vrect, &scr_vrect, sb_lines_shown);
 
 // guard against going from one mode to another that's less than half the
 // vertical resolution
@@ -273,7 +291,7 @@ static void SCR_CalcRefdef (void)
 		scr_con_current = vid.height;
 
 // notify the refresh of the change
-	R_ViewChanged (&vrect, sb_lines, vid.aspect);
+	R_ViewChanged (&vrect, sb_lines_shown, vid.aspect);
 }
 
 
@@ -402,6 +420,7 @@ DrawPause
 void SCR_DrawPause (void)
 {
 	qpic_t	*pic;
+	int		scale;
 
 	if (!scr_showpause.value)		// turn off for screenshots
 		return;
@@ -409,9 +428,14 @@ void SCR_DrawPause (void)
 	if (!cl.paused)
 		return;
 
+	scale = GetPicsScale();
+
 	pic = Draw_CachePic ("gfx/pause.lmp");
-	Draw_Pic ( (vid.width - pic->width)/2, 
-		(vid.height - 48 - pic->height)/2, pic);
+	Draw_PicScaled (
+		(vid.width - pic->width * scale)/2, 
+		(vid.height - (48 + pic->height) * scale)/2,
+		scale,
+		pic);
 }
 
 
@@ -424,13 +448,19 @@ SCR_DrawLoading
 void SCR_DrawLoading (void)
 {
 	qpic_t	*pic;
+	int		scale;
 
 	if (!scr_drawloading)
 		return;
+
+	scale = GetPicsScale();
 		
 	pic = Draw_CachePic ("gfx/loading.lmp");
-	Draw_Pic ( (vid.width - pic->width)/2, 
-		(vid.height - 48 - pic->height)/2, pic);
+	Draw_PicScaled (
+		(vid.width - pic->width * scale)/2, 
+		(vid.height - (48 + pic->height) * scale)/2,
+		scale,
+		pic);
 }
 
 
