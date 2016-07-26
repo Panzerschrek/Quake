@@ -27,6 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "winquake.h"
 #include "d_local.h"
 
+#include "vid_common.h"
+
+#define MAX_SCALER 32
 
 typedef union
 {
@@ -60,6 +63,9 @@ struct
 	SDL_Window*		window;
 	SDL_Surface*	window_surface;
 
+	int				scaler;
+	qboolean		fullscreen;
+
 	struct
 	{
 		int component_index[4];
@@ -71,7 +77,9 @@ static qboolean g_initialized = false;
 
 cvar_t	vid_width  = { "vid_width" , "640", true };
 cvar_t	vid_height = { "vid_height", "480", true };
-
+cvar_t	vid_scaler = { "vid_scaler", "1", true };
+cvar_t	vid_display = { "vid_display", "0", true };
+cvar_t	vid_fullscreen = { "vid_fullscreen", "0", true };
 
 static void MenuDrawFn(void)
 {
@@ -121,28 +129,90 @@ static void GetPixelComponentsOrder( const SDL_PixelFormat*	pixel_format )
 static void UpdateMode (unsigned char *palette)
 {
 	SDL_PixelFormat*	pixel_format;
+	SDL_DisplayMode		display_mode;
+	int					width, height;
+	int					system_width, system_height;
+
+	g_sdl.fullscreen = false;
+	{
+		system_width  = (int)vid_width .value;
+		system_height = (int)vid_height.value;
+
+		g_sdl.scaler = vid_scaler.value;
+		if (g_sdl.scaler > MAX_SCALER)
+			g_sdl.scaler = MAX_SCALER;
+		if (g_sdl.scaler < 1 )
+			g_sdl.scaler = 1;
+
+		if (system_width  < MIN_WIDTH )
+			system_width = MIN_WIDTH;
+		if (system_height < MIN_HEIGHT)
+			system_height = MIN_HEIGHT;
+
+		width  = system_width  / g_sdl.scaler;
+		height = system_height / g_sdl.scaler;
+
+		// Decrease scaler, if it is too big
+		while (width < MIN_WIDTH || height < MIN_HEIGHT)
+		{
+			g_sdl.scaler--;
+			width  = system_width  / g_sdl.scaler;
+			height = system_height / g_sdl.scaler;
+		}
+
+		// Increase scaler, if it is too small (for very wide displays)
+		while (width > MAXWIDTH || height > MAXHEIGHT)
+		{
+			g_sdl.scaler++;
+			width  = system_width  / g_sdl.scaler;
+			height = system_height / g_sdl.scaler;
+		}
+	}
 
 	if ( SDL_InitSubSystem(SDL_INIT_VIDEO) < 0 )
 		Sys_Error("Could not initialize SDL video.");
+
+	if (vid_fullscreen.value)
+	{
+		int ok =
+			VID_SelectVideoMode(
+				vid_display.value,
+				system_width, system_height,
+				&display_mode );
+
+		if ( ok )
+			g_sdl.fullscreen = true;
+		else
+			Cvar_Set( vid_fullscreen.name, "0" );
+	}
 
 	g_sdl.window =
 		SDL_CreateWindow(
 			"Quake",
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			(int)vid_width.value, (int)vid_height.value,
-			SDL_WINDOW_SHOWN | (SDL_WINDOW_FULLSCREEN & 0) );
+			system_width, system_height,
+			SDL_WINDOW_SHOWN | (g_sdl.fullscreen ? SDL_WINDOW_FULLSCREEN : 0) );
 
 	if (!g_sdl.window)
 		Sys_Error("Can not create window.");
+
+	if (g_sdl.fullscreen)
+	{
+		int ok = VID_SwitchToMode( g_sdl.window, &display_mode );
+
+		// reset fullscreen settings, if we have problems
+		g_sdl.fullscreen = ok;
+		Cvar_Set( vid_fullscreen.name, ok ? "1" : "0" );
+	}
 
 	g_sdl.window_surface = SDL_GetWindowSurface( g_sdl.window );
 
 	pixel_format = g_sdl.window_surface->format;
 	GetPixelComponentsOrder( pixel_format );
 
-	vid.width  = g_sdl.window_surface->w;
-	vid.height = g_sdl.window_surface->h;
-	vid.rowbytes = g_sdl.window_surface->pitch / pixel_format->BytesPerPixel;
+	vid.width  = width ;
+	vid.height = height;
+	vid.rowbytes = vid.width;
 	vid.numpages = 1;
 	vid.maxwarpwidth  = WARP_WIDTH ;
 	vid.maxwarpheight = WARP_HEIGHT;
@@ -212,7 +282,12 @@ void	VID_Init (unsigned char *palette)
 {
 	Cvar_RegisterVariable( &vid_width  );
 	Cvar_RegisterVariable( &vid_height );
+	Cvar_RegisterVariable( &vid_scaler );
+	Cvar_RegisterVariable( &vid_display );
+	Cvar_RegisterVariable( &vid_fullscreen );
 	Cmd_AddCommand( "vid_restart", RestartCommand );
+
+	g_sdl.fullscreen = false;
 
 	UpdateMode(palette);
 }
@@ -235,12 +310,95 @@ void	VID_Shutdown (void)
 
 void	VID_Update (vrect_t *rects)
 {
-	int				i;
-	screen_pixel_t*	p;
+	screen_pixel_t*	dst;
+	int				dst_rowbytes;
+	byte*			src;
+	screen_pixel_t	pix;
+	int				src_x, src_y, p_x, p_y;
+	int				p_left_x, p_left_y;
+	int				must_lock;
 
-	p = g_sdl.window_surface->pixels;
-	for (i = 0; i < vid.width * vid.height; i++)
-		p[i].pix = g_palette[ vid.buffer[i] ].pix;
+	must_lock = SDL_MUSTLOCK( g_sdl.window_surface );
+
+	if (must_lock)
+		SDL_LockSurface( g_sdl.window_surface );
+
+	dst_rowbytes = g_sdl.window_surface->pitch;
+
+	if (g_sdl.scaler == 1)
+	{
+		for (p_y = 0; p_y < vid.height; p_y++)
+		{
+			dst = (screen_pixel_t*)
+				( ((byte*)g_sdl.window_surface->pixels) + p_y * dst_rowbytes );
+
+			src = vid.buffer + vid.width * p_y;
+
+			for (p_x = 0; p_x < vid.width; p_x++)
+				dst[ p_x ].pix = g_palette[ src[p_x] ].pix;
+		}
+	}
+	else
+	{
+		p_left_x = g_sdl.window_surface->w - vid.width  * g_sdl.scaler;
+		p_left_y = g_sdl.window_surface->h - vid.height * g_sdl.scaler;
+
+		src = vid.buffer;
+
+		// for source lines
+		for (src_y = 0; src_y < vid.height; src_y++)
+		{
+			src = vid.buffer + vid.width * src_y;
+
+			for (p_y = 0; p_y < g_sdl.scaler; p_y++)
+			{
+				dst = (screen_pixel_t*)
+					( ((byte*)g_sdl.window_surface->pixels) + (src_y * g_sdl.scaler + p_y ) * dst_rowbytes );
+
+				// Unwind loop for some scales
+				if (g_sdl.scaler == 2)
+					for (src_x = 0; src_x < vid.width; src_x++, dst+= 2)
+						dst[0] = dst[1] = g_palette[ src[src_x] ];
+
+				else if (g_sdl.scaler == 3)
+					for (src_x = 0; src_x < vid.width; src_x++, dst+= 3)
+						dst[0] = dst[1] = dst[2] = g_palette[ src[src_x] ];
+
+				else if (g_sdl.scaler == 4)
+					for (src_x = 0; src_x < vid.width; src_x++, dst+= 4)
+						dst[0] = dst[1] = dst[2] = dst[3] = g_palette[ src[src_x] ];
+
+				else if (g_sdl.scaler == 5)
+					for (src_x = 0; src_x < vid.width; src_x++, dst+= 5)
+						dst[0] = dst[1] = dst[2] = dst[3] = dst[4] = g_palette[ src[src_x] ];
+
+				else
+					for (src_x = 0; src_x < vid.width; src_x++)
+					{
+						pix = g_palette[ src[src_x] ];
+						for (p_x = 0; p_x < g_sdl.scaler; p_x++, dst++)
+							*dst = pix;
+					}
+
+				// fill left pixels near screen edge
+				pix = g_palette[ src[ vid.width - 1 ] ];
+				for (p_x = 0; p_x < p_left_x; p_x++, dst++ )
+					*dst = pix;
+			}
+		}
+
+		// Copy last effective line from framebuffer to left framebuffer lines
+		for (p_y = 0; p_y < p_left_y; p_y++)
+		{
+			memcpy(
+				((byte*)g_sdl.window_surface->pixels) + (vid.height * g_sdl.scaler + p_y ) * dst_rowbytes,
+				((byte*)g_sdl.window_surface->pixels) + (vid.height * g_sdl.scaler - 1   ) * dst_rowbytes,
+				dst_rowbytes );
+		}
+	}
+
+	if (must_lock)
+		SDL_UnlockSurface( g_sdl.window_surface );
 
 	SDL_UpdateWindowSurface( g_sdl.window );
 }

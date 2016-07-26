@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include "vid_common.h"
+
 
 // Some subsystem needs it
 modestate_t	modestate = MS_UNINIT;
@@ -52,8 +54,12 @@ struct
 
 void	VID_Init (unsigned char *palette)
 {
-	int		param_width ;
-	int		param_height;
+	SDL_DisplayMode	display_mode;
+	int			param_width ;
+	int			param_height;
+	qboolean	fullscreen;
+	int			param_display;
+	int			display;
 
 	param_width  = COM_CheckParm( "-width" );
 	param_height = COM_CheckParm( "-height" );
@@ -67,6 +73,14 @@ void	VID_Init (unsigned char *palette)
 		vid.width  = 640;
 		vid.height = 480;
 	}
+
+	fullscreen = COM_CheckParm( "-fullscreen" ) != 0;
+
+	param_display = COM_CheckParm( "-display" );
+	if (param_display != 0)
+		display = Q_atoi( com_argv[ param_display  + 1 ] );
+	else
+		display = 0;
 
 	vid.rowbytes = 0;
 	vid.numpages = 2;
@@ -88,6 +102,9 @@ void	VID_Init (unsigned char *palette)
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 		Sys_Error("Could not initialize SDL video.");
 
+	if (fullscreen)
+		fullscreen = VID_SelectVideoMode( display, vid.width, vid.height, &display_mode );
+
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 1 );
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
 
@@ -100,10 +117,13 @@ void	VID_Init (unsigned char *palette)
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
 			vid.width, vid.height,
-			SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN );
+			SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | ( fullscreen ? SDL_WINDOW_FULLSCREEN : 0 ) );
 
 	if (!g_sdl_gl.window)
 		Sys_Error("Can not create window.");
+
+	if (fullscreen)
+		fullscreen = VID_SwitchToMode( g_sdl_gl.window, &display_mode );
 
 	g_sdl_gl.context = SDL_GL_CreateContext( g_sdl_gl.window );
 

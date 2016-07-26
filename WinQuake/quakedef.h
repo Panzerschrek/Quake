@@ -70,6 +70,9 @@ void	VID_UnlockBuffer (void);
 // fall over
 #define	ROLL	2
 
+// Minimal size of game window
+#define MIN_WIDTH		320
+#define MIN_HEIGHT		200
 
 #define	MAX_QPATH		64			// max length of a quake game pathname
 #define	MAX_OSPATH		128			// max length of a filesystem pathname

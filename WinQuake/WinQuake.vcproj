@@ -3537,6 +3537,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\vid_common.c"
+				>
+			</File>
+			<File
 				RelativePath=".\vid_sdl.c"
 				>
 				<FileConfiguration
@@ -3955,6 +3959,10 @@
 			</File>
 			<File
 				RelativePath="vid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vid_common.h"
 				>
 			</File>
 			<File
