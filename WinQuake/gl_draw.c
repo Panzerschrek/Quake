@@ -529,6 +529,49 @@ void Draw_Character (int x, int y, int num)
 
 /*
 ================
+Draw_CharacterScaled
+================
+*/
+void Draw_CharacterScaled (int x, int y, int scale, int num)
+{
+	byte			*dest;
+	byte			*source;
+	unsigned short	*pusdest;
+	int				drawline;	
+	int				row, col;
+	float			frow, fcol, size;
+
+	if (num == 32)
+		return;		// space
+
+	num &= 255;
+	
+	if (y * scale <= -8)
+		return;			// totally off screen
+
+	row = num>>4;
+	col = num&15;
+
+	frow = row*0.0625;
+	fcol = col*0.0625;
+	size = 0.0625;
+
+	GL_Bind (char_texture);
+
+	glBegin (GL_QUADS);
+	glTexCoord2f (fcol, frow);
+	glVertex2f (x, y);
+	glTexCoord2f (fcol + size, frow);
+	glVertex2f (x+8*scale, y);
+	glTexCoord2f (fcol + size, frow + size);
+	glVertex2f (x+8*scale, y+8*scale);
+	glTexCoord2f (fcol, frow + size);
+	glVertex2f (x, y+8*scale);
+	glEnd ();
+}
+
+/*
+================
 Draw_String
 ================
 */
@@ -740,6 +783,49 @@ void Draw_TransPicTranslate (int x, int y, qpic_t *pic, byte *translation)
 	glVertex2f (x+pic->width, y+pic->height);
 	glTexCoord2f (0, 1);
 	glVertex2f (x, y+pic->height);
+	glEnd ();
+}
+
+void Draw_TransPicTranslateScaled (int x, int y, int scale, qpic_t *pic, byte *translation)
+{
+	int				v, u, c;
+	unsigned		trans[64*64], *dest;
+	byte			*src;
+	int				p;
+
+	GL_Bind (translate_texture);
+
+	c = pic->width * pic->height;
+
+	dest = trans;
+	for (v=0 ; v<64 ; v++, dest += 64)
+	{
+		src = &menuplyr_pixels[ ((v*pic->height)>>6) *pic->width];
+		for (u=0 ; u<64 ; u++)
+		{
+			p = src[(u*pic->width)>>6];
+			if (p == 255)
+				dest[u] = p;
+			else
+				dest[u] =  d_8to24table[translation[p]];
+		}
+	}
+
+	glTexImage2D (GL_TEXTURE_2D, 0, gl_alpha_format, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glColor3f (1,1,1);
+	glBegin (GL_QUADS);
+	glTexCoord2f (0, 0);
+	glVertex2f (x, y);
+	glTexCoord2f (1, 0);
+	glVertex2f (x+pic->width*scale, y);
+	glTexCoord2f (1, 1);
+	glVertex2f (x+pic->width*scale, y+pic->height*scale);
+	glTexCoord2f (0, 1);
+	glVertex2f (x, y+pic->height*scale);
 	glEnd ();
 }
 
