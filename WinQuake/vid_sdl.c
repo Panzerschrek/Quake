@@ -59,6 +59,7 @@ struct
 {
 	SDL_Window*		window;
 	SDL_Surface*	window_surface;
+	qboolean		fullscreen;
 
 	struct
 	{
@@ -71,7 +72,8 @@ static qboolean g_initialized = false;
 
 cvar_t	vid_width  = { "vid_width" , "640", true };
 cvar_t	vid_height = { "vid_height", "480", true };
-
+cvar_t	vid_display = { "vid_display", "0", true };
+cvar_t	vid_fullscreen = { "vid_fullscreen", "0", true };
 
 static void MenuDrawFn(void)
 {
@@ -121,19 +123,70 @@ static void GetPixelComponentsOrder( const SDL_PixelFormat*	pixel_format )
 static void UpdateMode (unsigned char *palette)
 {
 	SDL_PixelFormat*	pixel_format;
+	SDL_DisplayMode		display_mode;
+	int					width, height;
+
+	width  = (int)vid_width .value;
+	height = (int)vid_height.value;
+	g_sdl.fullscreen = false;
 
 	if ( SDL_InitSubSystem(SDL_INIT_VIDEO) < 0 )
 		Sys_Error("Could not initialize SDL video.");
+
+	if (vid_fullscreen.value)
+	{
+		int	display_count;
+		int	mode_count;
+		int i;
+		int	display;
+
+		display_count = SDL_GetNumVideoDisplays();
+
+		if ((int)vid_display.value >= display_count) vid_display.value = 0;
+		if ((int)vid_display.value < 0) vid_display.value = 0;
+		display = (int)vid_display.value;
+
+		mode_count = SDL_GetNumDisplayModes( display );
+
+		for (i = 0; i < mode_count; i++)
+		{
+			SDL_DisplayMode mode;
+			SDL_GetDisplayMode( display, i, &mode );
+			if (mode.w == width && mode.h == height && SDL_BYTESPERPIXEL(mode.format) == 4)
+			{
+				g_sdl.fullscreen = true; // found necessary mode
+				display_mode = mode;
+				break;
+			}
+		}
+
+		// not found necessary mode, reset fullscreen setting
+		if (!g_sdl.fullscreen )
+			Cvar_Set( vid_fullscreen.name, "0" );
+	}
 
 	g_sdl.window =
 		SDL_CreateWindow(
 			"Quake",
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			(int)vid_width.value, (int)vid_height.value,
-			SDL_WINDOW_SHOWN | (SDL_WINDOW_FULLSCREEN & 0) );
+			width, height,
+			SDL_WINDOW_SHOWN | (g_sdl.fullscreen ? SDL_WINDOW_FULLSCREEN : 0) );
 
 	if (!g_sdl.window)
 		Sys_Error("Can not create window.");
+
+	if (g_sdl.fullscreen)
+	{
+		int result = SDL_SetWindowDisplayMode( g_sdl.window, &display_mode );
+		Sys_Printf( "UpdateMode: %s %dx%dx%d %dHz\n",
+			result ? "warning, could not set display mode" : "set display mode",
+			display_mode.w, display_mode.h,
+			SDL_BITSPERPIXEL(display_mode.format), display_mode.refresh_rate);
+
+		// reset fullscreen settings, if we have problems
+		g_sdl.fullscreen = !result;
+		Cvar_Set( vid_fullscreen.name, result ? "0" : "1" );
+	}
 
 	g_sdl.window_surface = SDL_GetWindowSurface( g_sdl.window );
 
@@ -212,7 +265,11 @@ void	VID_Init (unsigned char *palette)
 {
 	Cvar_RegisterVariable( &vid_width  );
 	Cvar_RegisterVariable( &vid_height );
+	Cvar_RegisterVariable( &vid_display );
+	Cvar_RegisterVariable( &vid_fullscreen );
 	Cmd_AddCommand( "vid_restart", RestartCommand );
+
+	g_sdl.fullscreen = false;
 
 	UpdateMode(palette);
 }
@@ -237,10 +294,19 @@ void	VID_Update (vrect_t *rects)
 {
 	int				i;
 	screen_pixel_t*	p;
+	int			must_lock;
+
+	must_lock = SDL_MUSTLOCK( g_sdl.window_surface );
+
+	if (must_lock)
+		SDL_LockSurface( g_sdl.window_surface );
 
 	p = g_sdl.window_surface->pixels;
 	for (i = 0; i < vid.width * vid.height; i++)
 		p[i].pix = g_palette[ vid.buffer[i] ].pix;
+
+	if (must_lock)
+		SDL_UnlockSurface( g_sdl.window_surface );
 
 	SDL_UpdateWindowSurface( g_sdl.window );
 }
