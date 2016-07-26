@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "winquake.h"
 #include "d_local.h"
 
+#include "vid_common.h"
+
 
 typedef union
 {
@@ -135,33 +137,15 @@ static void UpdateMode (unsigned char *palette)
 
 	if (vid_fullscreen.value)
 	{
-		int	display_count;
-		int	mode_count;
-		int i;
-		int	display;
+		int ok =
+			VID_SelectVideoMode(
+				vid_display.value,
+				width, height,
+				&display_mode );
 
-		display_count = SDL_GetNumVideoDisplays();
-
-		if ((int)vid_display.value >= display_count) vid_display.value = 0;
-		if ((int)vid_display.value < 0) vid_display.value = 0;
-		display = (int)vid_display.value;
-
-		mode_count = SDL_GetNumDisplayModes( display );
-
-		for (i = 0; i < mode_count; i++)
-		{
-			SDL_DisplayMode mode;
-			SDL_GetDisplayMode( display, i, &mode );
-			if (mode.w == width && mode.h == height && SDL_BYTESPERPIXEL(mode.format) == 4)
-			{
-				g_sdl.fullscreen = true; // found necessary mode
-				display_mode = mode;
-				break;
-			}
-		}
-
-		// not found necessary mode, reset fullscreen setting
-		if (!g_sdl.fullscreen )
+		if ( ok )
+			g_sdl.fullscreen = true;
+		else
 			Cvar_Set( vid_fullscreen.name, "0" );
 	}
 
@@ -177,15 +161,11 @@ static void UpdateMode (unsigned char *palette)
 
 	if (g_sdl.fullscreen)
 	{
-		int result = SDL_SetWindowDisplayMode( g_sdl.window, &display_mode );
-		Sys_Printf( "UpdateMode: %s %dx%dx%d %dHz\n",
-			result ? "warning, could not set display mode" : "set display mode",
-			display_mode.w, display_mode.h,
-			SDL_BITSPERPIXEL(display_mode.format), display_mode.refresh_rate);
+		int ok = VID_SwitchToMode( g_sdl.window, &display_mode );
 
 		// reset fullscreen settings, if we have problems
-		g_sdl.fullscreen = !result;
-		Cvar_Set( vid_fullscreen.name, result ? "0" : "1" );
+		g_sdl.fullscreen = ok;
+		Cvar_Set( vid_fullscreen.name, ok ? "1" : "0" );
 	}
 
 	g_sdl.window_surface = SDL_GetWindowSurface( g_sdl.window );
