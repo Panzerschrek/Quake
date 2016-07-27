@@ -41,8 +41,6 @@ qboolean isPermedia = true;
 int		texture_mode = GL_LINEAR_MIPMAP_LINEAR;
 int		texture_extension_number = 1;
 
-BINDTEXFUNCPTR bindTexFunc;
-
 float gldepthmin = -1.0f, gldepthmax = 1.0f;
 
 struct
@@ -134,8 +132,6 @@ void	VID_Init (unsigned char *palette)
 	SDL_GL_SetSwapInterval(1);
 
 	VID_SetPalette(palette);
-
-	bindTexFunc = glBindTexture;
 	
 	glClearColor (1,0,0,0);
 	glCullFace(GL_FRONT);

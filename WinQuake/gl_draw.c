@@ -77,11 +77,7 @@ void GL_Bind (int texnum)
 	if (currenttexture == texnum)
 		return;
 	currenttexture = texnum;
-#ifdef _WIN32
-	bindTexFunc (GL_TEXTURE_2D, texnum);
-#else
 	glBindTexture(GL_TEXTURE_2D, texnum);
-#endif
 }
 
 
@@ -1434,16 +1430,19 @@ int GL_LoadPicTexture (qpic_t *pic)
 
 /****************************************/
 
-static GLenum oldtarget = TEXTURE0_SGIS;
+static GLenum oldtarget = GL_TEXTURE0;
 
 void GL_SelectTexture (GLenum target) 
 {
 	if (!gl_mtexable)
 		return;
-	qglSelectTextureSGIS(target);
+
+	// Panzer - TODO
+	//glActiveTexture( GL_TEXTURE2D, GL_TEXTURE0 );
+
 	if (target == oldtarget) 
 		return;
-	cnttextures[oldtarget-TEXTURE0_SGIS] = currenttexture;
-	currenttexture = cnttextures[target-TEXTURE0_SGIS];
+	cnttextures[oldtarget-GL_TEXTURE0] = currenttexture;
+	currenttexture = cnttextures[target-GL_TEXTURE0];
 	oldtarget = target;
 }
