@@ -657,19 +657,6 @@ dynamic:
 
 /*
 ================
-R_MirrorChain
-================
-*/
-void R_MirrorChain (msurface_t *s)
-{
-	if (mirror)
-		return;
-	mirror = true;
-	mirror_plane = s->plane;
-}
-
-/*
-================
 R_DrawWaterSurfaces
 ================
 */
@@ -768,11 +755,6 @@ void DrawTextureChains (void)
 			continue;
 		if (i == skytexturenum)
 			R_DrawSkyChain (s);
-		else if (i == mirrortexturenum && r_mirroralpha.value != 1.0)
-		{
-			R_MirrorChain (s);
-			continue;
-		}
 		else
 		{
 			if ((s->flags & SURF_DRAWTURB) && r_wateralpha.value != 1.0)
@@ -995,12 +977,8 @@ void R_RecursiveWorldNode (mnode_t *node)
 				// if sorting by texture, just store it out
 				if (gl_texsort.value)
 				{
-					if (!mirror
-					|| surf->texinfo->texture != cl.worldmodel->textures[mirrortexturenum])
-					{
-						surf->texturechain = surf->texinfo->texture->texturechain;
-						surf->texinfo->texture->texturechain = surf;
-					}
+					surf->texturechain = surf->texinfo->texture->texturechain;
+					surf->texinfo->texture->texturechain = surf;
 				} else if (surf->flags & SURF_DRAWSKY) {
 					surf->texturechain = skychain;
 					skychain = surf;
@@ -1068,9 +1046,6 @@ void R_MarkLeaves (void)
 	byte	solid[4096];
 
 	if (r_oldviewleaf == r_viewleaf && !r_novis.value)
-		return;
-	
-	if (mirror)
 		return;
 
 	r_visframecount++;
