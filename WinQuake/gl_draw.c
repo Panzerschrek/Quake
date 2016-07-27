@@ -45,7 +45,7 @@ typedef struct
 byte		conback_buffer[sizeof(qpic_t) + sizeof(glpic_t)];
 qpic_t		*conback = (qpic_t *)&conback_buffer;
 
-int		gl_lightmap_format = 4;
+int		gl_lightmap_format = GL_RGBA;
 int		gl_solid_format = 3;
 int		gl_alpha_format = 4;
 
@@ -1260,14 +1260,11 @@ static GLenum oldtarget = GL_TEXTURE0;
 
 void GL_SelectTexture (GLenum target) 
 {
-	if (!gl_mtexable)
-		return;
-
-	// Panzer - TODO
-	//glActiveTexture( GL_TEXTURE2D, GL_TEXTURE0 );
-
 	if (target == oldtarget) 
 		return;
+
+	glActiveTexture( target );
+
 	cnttextures[oldtarget-GL_TEXTURE0] = currenttexture;
 	currenttexture = cnttextures[target-GL_TEXTURE0];
 	oldtarget = target;

@@ -26,6 +26,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <SDL_opengl.h>
 #include "vid_common.h"
 
+// gl functions pointers
+#define PROCESS_GL_FUNC( type, name ) type name
+#include "gl_funcs_list.h"
+#undef PROCESS_GL_FUNC
+
 
 // Some subsystem needs it
 modestate_t	modestate = MS_UNINIT;
@@ -35,7 +40,6 @@ cvar_t	gl_ztrick = {"gl_ztrick","0"};
 unsigned short	d_8to16table[256];
 unsigned		d_8to24table[256];
 
-qboolean gl_mtexable = false;
 qboolean isPermedia = true;
 int		texture_mode = GL_LINEAR_MIPMAP_LINEAR;
 int		texture_extension_number = 1;
@@ -48,6 +52,17 @@ struct
 	SDL_GLContext* context;
 
 } g_sdl_gl;
+
+static void GetGLFuncs(void)
+{
+	#define PROCESS_GL_FUNC( type, name )\
+		name = (type) SDL_GL_GetProcAddress( #name );\
+		if (!name) \
+			Sys_Printf( "Warning, function \""#name"\" not found\n" );
+
+	#include "gl_funcs_list.h"
+	#undef PROCESS_GL_FUNC
+}
 
 void	VID_Init (unsigned char *palette)
 {
@@ -102,7 +117,7 @@ void	VID_Init (unsigned char *palette)
 	if (fullscreen)
 		fullscreen = VID_SelectVideoMode( display, vid.width, vid.height, &display_mode );
 
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 1 );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
 
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1);
@@ -130,6 +145,8 @@ void	VID_Init (unsigned char *palette)
 	SDL_GL_MakeCurrent( g_sdl_gl.window, g_sdl_gl.context );
 	SDL_GL_SetSwapInterval(1);
 
+	GetGLFuncs();
+
 	VID_SetPalette(palette);
 	
 	glClearColor (1,0,0,0);
@@ -148,8 +165,6 @@ void	VID_Init (unsigned char *palette)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	VID_FPSInit();
 }

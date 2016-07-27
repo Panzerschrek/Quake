@@ -29,6 +29,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <SDL_opengl.h>
 
+// gl functions pointers prototypes
+#define PROCESS_GL_FUNC( type, name ) extern type name
+#include "gl_funcs_list.h"
+#undef PROCESS_GL_FUNC
+
+
 void GL_BeginRendering (int *x, int *y, int *width, int *height);
 void GL_EndRendering (void);
 
