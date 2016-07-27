@@ -187,7 +187,6 @@ void	VID_SetPalette (unsigned char *palette)
 {
 	byte	*pal;
 	unsigned r,g,b;
-	unsigned v;
 	unsigned short i;
 	unsigned	*table;
 
@@ -202,13 +201,10 @@ void	VID_SetPalette (unsigned char *palette)
 		g = pal[1];
 		b = pal[2];
 		pal += 3;
-		
-//		v = (255<<24) + (r<<16) + (g<<8) + (b<<0);
-//		v = (255<<0) + (r<<8) + (g<<16) + (b<<24);
-		v = (255<<24) + (r<<0) + (g<<8) + (b<<16);
-		*table++ = v;
+
+		d_8to24table[i] = (255<<24) + (r<<0) + (g<<8) + (b<<16);
 	}
-	d_8to24table[255] &= 0xffffff;	// 255 is transparent
+	d_8to24table[255] = 0x00000000;	// 255 is transparent - make in black and transparent
 }
 
 void	VID_ShiftPalette (unsigned char *palette)
