@@ -90,7 +90,6 @@ cvar_t	gl_clear = {"gl_clear","0"};
 cvar_t	gl_cull = {"gl_cull","1"};
 cvar_t	gl_texsort = {"gl_texsort","1"};
 cvar_t	gl_smoothmodels = {"gl_smoothmodels","1"};
-cvar_t	gl_affinemodels = {"gl_affinemodels","0"};
 cvar_t	gl_polyblend = {"gl_polyblend","1"};
 cvar_t	gl_flashblend = {"gl_flashblend","1"};
 cvar_t	gl_playermip = {"gl_playermip","0"};
@@ -586,14 +585,9 @@ void R_DrawAliasModel (entity_t *e)
 	if (gl_smoothmodels.value)
 		glShadeModel (GL_SMOOTH);
 
-	if (gl_affinemodels.value)
-		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-
 	R_SetupAliasFrame (e, paliashdr);
 
 	glShadeModel (GL_FLAT);
-	if (gl_affinemodels.value)
-		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	glPopMatrix ();
 
