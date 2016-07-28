@@ -987,9 +987,14 @@ void R_DoWarp(void)
 		0 );
 
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
+	GL_BindShader( SHADER_SCREEN_WARP );
+	GL_ShaderUniformInt( "tex", 0 );
+	GL_ShaderUniformFloat( "time", cl.time );
+	GL_ShaderUniformVec2( "tex_size", r_refdef.vrect.width, r_refdef.vrect.height );
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -1008,6 +1013,8 @@ void R_DoWarp(void)
 	glTexCoord2f( 1, 1 );
 	glVertex2f(  1,  1 );
 	glEnd ();
+
+	GL_BindShader( SHADER_NONE );
 
 	glEnable (GL_DEPTH_TEST);
 	glEnable (GL_ALPHA_TEST);

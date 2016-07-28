@@ -1806,6 +1806,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\gl_shader.c"
+				>
+			</File>
+			<File
 				RelativePath="gl_warp.c"
 				>
 				<FileConfiguration
@@ -3796,6 +3800,10 @@
 			</File>
 			<File
 				RelativePath="gl_model.h"
+				>
+			</File>
+			<File
+				RelativePath=".\gl_shader.h"
 				>
 			</File>
 			<File

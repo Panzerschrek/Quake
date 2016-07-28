@@ -198,11 +198,13 @@ void R_Init (void)
 
 	Cvar_RegisterVariable (&gl_doubleeyes);
 
+	GL_InitShaders();
+
 	R_InitParticles ();
 	R_InitParticleTexture ();
 
 	glGenTextures( 16, playertextures );
-	glGenTextures( 1, warptexture );
+	glGenTextures( 1, &warptexture );
 }
 
 /*
