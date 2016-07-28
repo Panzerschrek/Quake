@@ -75,7 +75,7 @@ void R_InitParticleTexture (void)
 	//
 	// particle texture
 	//
-	particletexture = texture_extension_number++;
+	glGenTextures( 1, &particletexture );
     GL_Bind(particletexture);
 
 	for (x=0 ; x<8 ; x++)
@@ -211,8 +211,7 @@ void R_Init (void)
 	Test_Init ();
 #endif
 
-	playertextures = texture_extension_number;
-	texture_extension_number += 16;
+	glGenTextures( 16, playertextures );
 }
 
 /*
@@ -284,7 +283,7 @@ void R_TranslatePlayerSkin (int playernum)
 
 	// because this happens during gameplay, do it fast
 	// instead of sending it through gl_upload 8
-    GL_Bind(playertextures + playernum);
+    GL_Bind(playertextures[playernum]);
 
 	scaled_width = gl_max_size.value < 512 ? gl_max_size.value : 512;
 	scaled_height = gl_max_size.value < 256 ? gl_max_size.value : 256;

@@ -26,14 +26,14 @@ int			skytexturenum;
 
 int		lightmap_bytes = 4;		// 1, 2, or 4
 
-int		lightmap_textures;
+#define	MAX_LIGHTMAPS	64
+int		lightmap_textures[MAX_LIGHTMAPS];
 
 unsigned		blocklights[18*18];
 
 #define	BLOCK_WIDTH		128
 #define	BLOCK_HEIGHT	128
 
-#define	MAX_LIGHTMAPS	64
 int			active_lightmaps;
 
 typedef struct glRect_s {
@@ -333,7 +333,7 @@ void R_DrawSequentialPoly (msurface_t *s)
 		GL_Bind (t->gl_texturenum);
 		// Binds lightmap to texenv 1
 		GL_EnableMultitexture(); // Same as SelectTexture (TEXTURE1)
-		GL_Bind (lightmap_textures + s->lightmaptexturenum);
+		GL_Bind (lightmap_textures[ s->lightmaptexturenum ]);
 		i = s->lightmaptexturenum;
 		if (lightmap_modified[i])
 		{
@@ -407,7 +407,7 @@ void R_DrawSequentialPoly (msurface_t *s)
 	GL_SelectTexture(GL_TEXTURE0);
 	GL_Bind (t->gl_texturenum);
 	GL_EnableMultitexture();
-	GL_Bind (lightmap_textures + s->lightmaptexturenum);
+	GL_Bind (lightmap_textures[ s->lightmaptexturenum ]);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	i = s->lightmaptexturenum;
 	if (lightmap_modified[i])
@@ -1288,16 +1288,14 @@ void GL_BuildLightmaps (void)
 {
 	int		i, j;
 	model_t	*m;
-	extern qboolean isPermedia;
 
 	memset (allocated, 0, sizeof(allocated));
 
 	r_framecount = 1;		// no dlightcache
 
-	if (!lightmap_textures)
+	if (lightmap_textures[0] == 0)
 	{
-		lightmap_textures = texture_extension_number;
-		texture_extension_number += MAX_LIGHTMAPS;
+		glGenTextures( MAX_LIGHTMAPS, lightmap_textures );
 	}
 
 	for (j=1 ; j<MAX_MODELS ; j++)
@@ -1337,7 +1335,7 @@ void GL_BuildLightmaps (void)
 		lightmap_rectchange[i].t = BLOCK_HEIGHT;
 		lightmap_rectchange[i].w = 0;
 		lightmap_rectchange[i].h = 0;
-		GL_Bind(lightmap_textures + i);
+		GL_Bind(lightmap_textures[i]);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexImage2D (GL_TEXTURE_2D, 0, lightmap_bytes

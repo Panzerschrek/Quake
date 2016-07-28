@@ -42,7 +42,7 @@ int			currenttexture = -1;		// to avoid unnecessary texture sets
 int			cnttextures[2] = {-1, -1};     // cached
 
 int			particletexture;	// little dot for particles
-int			playertextures;		// up to 16 color translated skins
+int			playertextures[16];		// up to 16 color translated skins
 
 //
 // view origin
@@ -574,7 +574,7 @@ void R_DrawAliasModel (entity_t *e)
 	{
 		i = currententity - cl_entities;
 		if (i >= 1 && i<=cl.maxclients /* && !strcmp (currententity->model->name, "progs/player.mdl") */)
-		    GL_Bind(playertextures - 1 + i);
+		    GL_Bind(playertextures[ -1 + i ]);
 	}
 
 	if (gl_smoothmodels.value)

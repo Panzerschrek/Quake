@@ -37,12 +37,7 @@ modestate_t	modestate = MS_UNINIT;
 cvar_t		_windowed_mouse = {"_windowed_mouse","0", true};
 cvar_t	gl_ztrick = {"gl_ztrick","0"};
 
-unsigned short	d_8to16table[256];
 unsigned		d_8to24table[256];
-
-qboolean isPermedia = true;
-int		texture_mode = GL_LINEAR_MIPMAP_LINEAR;
-int		texture_extension_number = 1;
 
 float gldepthmin = -1.0f, gldepthmax = 1.0f;
 

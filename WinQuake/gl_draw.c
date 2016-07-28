@@ -44,8 +44,8 @@ byte		conback_buffer[sizeof(qpic_t) + sizeof(glpic_t)];
 qpic_t		*conback = (qpic_t *)&conback_buffer;
 
 int		gl_lightmap_format = GL_RGBA;
-int		gl_solid_format = 3;
-int		gl_alpha_format = 4;
+int		gl_solid_format = GL_RGBA;
+int		gl_alpha_format = GL_RGBA;
 
 int		gl_filter_min = GL_LINEAR_MIPMAP_LINEAR;
 int		gl_filter_max = GL_LINEAR;
@@ -95,7 +95,7 @@ void GL_Bind (int texnum)
 int			scrap_allocated[MAX_SCRAPS][BLOCK_WIDTH];
 byte		scrap_texels[MAX_SCRAPS][BLOCK_WIDTH*BLOCK_HEIGHT*4];
 qboolean	scrap_dirty;
-int			scrap_texnum;
+int			scrap_texnum[2];
 
 // returns a texture number and the position inside it
 int Scrap_AllocBlock (int w, int h, int *x, int *y)
@@ -148,7 +148,7 @@ void Scrap_Upload (void)
 	scrap_uploads++;
 
 	for (texnum=0 ; texnum<MAX_SCRAPS ; texnum++) {
-		GL_Bind(scrap_texnum + texnum);
+		GL_Bind(scrap_texnum[texnum]);
 		GL_Upload8 (scrap_texels[texnum], BLOCK_WIDTH, BLOCK_HEIGHT, false, true);
 	}
 	scrap_dirty = false;
@@ -194,8 +194,8 @@ qpic_t *Draw_PicFromWad (char *name)
 		for (i=0 ; i<p->height ; i++)
 			for (j=0 ; j<p->width ; j++, k++)
 				scrap_texels[texnum][(y+i)*BLOCK_WIDTH + x + j] = p->data[k];
-		texnum += scrap_texnum;
-		gl->texnum = texnum;
+
+		gl->texnum = scrap_texnum[texnum];
 		gl->sl = (x+0.01)/(float)BLOCK_WIDTH;
 		gl->sh = (x+p->width-0.01)/(float)BLOCK_WIDTH;
 		gl->tl = (y+0.01)/(float)BLOCK_WIDTH;
@@ -393,11 +393,10 @@ void Draw_Init (void)
 	Hunk_FreeToLowMark(start);
 
 	// save a texture slot for translated picture
-	translate_texture = texture_extension_number++;
+	glGenTextures( 1, &translate_texture );
 
 	// save slots for scraps
-	scrap_texnum = texture_extension_number;
-	texture_extension_number += MAX_SCRAPS;
+	glGenTextures( 2, scrap_texnum );
 
 	//
 	// get the other pics we need
@@ -1164,18 +1163,16 @@ int GL_LoadTexture (char *identifier, int width, int height, byte *data, qboolea
 	}
 
 	strcpy (glt->identifier, identifier);
-	glt->texnum = texture_extension_number;
+	glGenTextures( 1, &glt->texnum );
 	glt->width = width;
 	glt->height = height;
 	glt->mipmap = mipmap;
 
-	GL_Bind(texture_extension_number );
+	GL_Bind( glt->texnum );
 
 	GL_Upload8 (data, width, height, mipmap, alpha);
 
-	texture_extension_number++;
-
-	return texture_extension_number-1;
+	return glt->texnum;
 }
 
 /*
