@@ -207,10 +207,6 @@ void R_Init (void)
 	R_InitParticles ();
 	R_InitParticleTexture ();
 
-#ifdef GLTEST
-	Test_Init ();
-#endif
-
 	glGenTextures( 16, playertextures );
 }
 
