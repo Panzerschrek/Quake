@@ -92,8 +92,10 @@ void GL_Bind (int texnum)
 #define	BLOCK_WIDTH		256
 #define	BLOCK_HEIGHT	256
 
+#define SCRAP_BORDER 2
+
 int			scrap_allocated[MAX_SCRAPS][BLOCK_WIDTH];
-byte		scrap_texels[MAX_SCRAPS][BLOCK_WIDTH*BLOCK_HEIGHT*4];
+int			scrap_texels[MAX_SCRAPS][BLOCK_WIDTH*BLOCK_HEIGHT];
 qboolean	scrap_dirty;
 int			scrap_texnum[2];
 
@@ -109,7 +111,7 @@ int Scrap_AllocBlock (int w, int h, int *x, int *y)
 	{
 		best = BLOCK_HEIGHT;
 
-		for (i=0 ; i<BLOCK_WIDTH-w ; i++)
+		for (i=SCRAP_BORDER ; i< BLOCK_WIDTH -w - SCRAP_BORDER; i++)
 		{
 			best2 = 0;
 
@@ -130,8 +132,9 @@ int Scrap_AllocBlock (int w, int h, int *x, int *y)
 		if (best + h > BLOCK_HEIGHT)
 			continue;
 
-		for (i=0 ; i<w ; i++)
-			scrap_allocated[texnum][*x + i] = best + h;
+		for (i=0 ; i<w + SCRAP_BORDER; i++)
+			scrap_allocated[texnum][*x + i] = best + h + SCRAP_BORDER;
+
 
 		return texnum;
 	}
@@ -149,7 +152,7 @@ void Scrap_Upload (void)
 
 	for (texnum=0 ; texnum<MAX_SCRAPS ; texnum++) {
 		GL_Bind(scrap_texnum[texnum]);
-		GL_Upload8 (scrap_texels[texnum], BLOCK_WIDTH, BLOCK_HEIGHT, false, true);
+		GL_Upload32 (scrap_texels[texnum], BLOCK_WIDTH, BLOCK_HEIGHT, false, true);
 	}
 	scrap_dirty = false;
 }
@@ -193,13 +196,13 @@ qpic_t *Draw_PicFromWad (char *name)
 		k = 0;
 		for (i=0 ; i<p->height ; i++)
 			for (j=0 ; j<p->width ; j++, k++)
-				scrap_texels[texnum][(y+i)*BLOCK_WIDTH + x + j] = p->data[k];
+				scrap_texels[texnum][(y+i)*BLOCK_WIDTH + x + j] = d_8to24table[p->data[k]];
 
 		gl->texnum = scrap_texnum[texnum];
-		gl->sl = (x+0.01)/(float)BLOCK_WIDTH;
-		gl->sh = (x+p->width-0.01)/(float)BLOCK_WIDTH;
-		gl->tl = (y+0.01)/(float)BLOCK_WIDTH;
-		gl->th = (y+p->height-0.01)/(float)BLOCK_WIDTH;
+		gl->sl = x/(float)BLOCK_WIDTH;
+		gl->sh = (x+p->width)/(float)BLOCK_WIDTH;
+		gl->tl = y/(float)BLOCK_WIDTH;
+		gl->th = (y+p->height)/(float)BLOCK_WIDTH;
 
 		pic_count++;
 		pic_texels += p->width*p->height;
