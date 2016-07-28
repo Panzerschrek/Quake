@@ -662,7 +662,6 @@ void R_DrawParticles (void)
 
     GL_Bind(particletexture);
 	glEnable (GL_BLEND);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBegin (GL_TRIANGLES);
 
 	VectorScale (vup, 1.5, up);
@@ -792,7 +791,6 @@ void R_DrawParticles (void)
 #ifdef GLQUAKE
 	glEnd ();
 	glDisable (GL_BLEND);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 #else
 	D_EndParticles ();
 #endif

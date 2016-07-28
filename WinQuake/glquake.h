@@ -17,42 +17,22 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// disable data conversion warnings
 
-#pragma warning(disable : 4244)     // MIPS
-#pragma warning(disable : 4136)     // X86
-#pragma warning(disable : 4051)     // ALPHA
-  
+
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <SDL_opengl.h>
+
+// gl functions pointers prototypes
+#define PROCESS_GL_FUNC( type, name ) extern type name
+#include "gl_funcs_list.h"
+#undef PROCESS_GL_FUNC
+
 
 void GL_BeginRendering (int *x, int *y, int *width, int *height);
 void GL_EndRendering (void);
-
-
-#ifdef _WIN32
-// Function prototypes for the Texture Object Extension routines
-typedef GLboolean (APIENTRY *ARETEXRESFUNCPTR)(GLsizei, const GLuint *,
-                    const GLboolean *);
-typedef void (APIENTRY *BINDTEXFUNCPTR)(GLenum, GLuint);
-typedef void (APIENTRY *DELTEXFUNCPTR)(GLsizei, const GLuint *);
-typedef void (APIENTRY *GENTEXFUNCPTR)(GLsizei, GLuint *);
-typedef GLboolean (APIENTRY *ISTEXFUNCPTR)(GLuint);
-typedef void (APIENTRY *PRIORTEXFUNCPTR)(GLsizei, const GLuint *,
-                    const GLclampf *);
-typedef void (APIENTRY *TEXSUBIMAGEPTR)(int, int, int, int, int, int, int, int, void *);
-
-extern	BINDTEXFUNCPTR bindTexFunc;
-extern	DELTEXFUNCPTR delTexFunc;
-extern	TEXSUBIMAGEPTR TexSubImage2DFunc;
-#endif
-
-extern	int texture_extension_number;
-extern	int		texture_mode;
 
 extern	float	gldepthmin, gldepthmax;
 
@@ -72,12 +52,6 @@ extern glvert_t glv;
 
 extern	int glx, gly, glwidth, glheight;
 
-#ifdef _WIN32
-extern	PROC glArrayElementEXT;
-extern	PROC glColorPointerEXT;
-extern	PROC glTexturePointerEXT;
-extern	PROC glVertexPointerEXT;
-#endif
 
 // r_local.h -- private refresh defs
 
@@ -180,7 +154,7 @@ extern	qboolean	envmap;
 extern	int	currenttexture;
 extern	int	cnttextures[2];
 extern	int	particletexture;
-extern	int	playertextures;
+extern	int	playertextures[16];
 
 extern	int	skytexturenum;		// index in cl.loadmodel, not gl texture object
 
@@ -193,17 +167,14 @@ extern	cvar_t	r_waterwarp;
 extern	cvar_t	r_fullbright;
 extern	cvar_t	r_lightmap;
 extern	cvar_t	r_shadows;
-extern	cvar_t	r_mirroralpha;
 extern	cvar_t	r_wateralpha;
 extern	cvar_t	r_dynamic;
 extern	cvar_t	r_novis;
 
 extern	cvar_t	gl_clear;
 extern	cvar_t	gl_cull;
-extern	cvar_t	gl_poly;
 extern	cvar_t	gl_texsort;
 extern	cvar_t	gl_smoothmodels;
-extern	cvar_t	gl_affinemodels;
 extern	cvar_t	gl_polyblend;
 extern	cvar_t	gl_keeptjunctions;
 extern	cvar_t	gl_reporttjunctions;
@@ -218,29 +189,10 @@ extern	int		gl_alpha_format;
 extern	cvar_t	gl_max_size;
 extern	cvar_t	gl_playermip;
 
-extern	int			mirrortexturenum;	// quake texturenum, not gltexturenum
-extern	qboolean	mirror;
-extern	mplane_t	*mirror_plane;
-
 extern	float	r_world_matrix[16];
 
 void R_TranslatePlayerSkin (int playernum);
 void GL_Bind (int texnum);
-
-// Multitexture
-#define    TEXTURE0_SGIS				0x835E
-#define    TEXTURE1_SGIS				0x835F
-
-#ifndef _WIN32
-#define APIENTRY /* */
-#endif
-
-typedef void (APIENTRY *lpMTexFUNC) (GLenum, GLfloat, GLfloat);
-typedef void (APIENTRY *lpSelTexFUNC) (GLenum);
-extern lpMTexFUNC qglMTexCoord2fSGIS;
-extern lpSelTexFUNC qglSelectTextureSGIS;
-
-extern qboolean gl_mtexable;
 
 void GL_DisableMultitexture(void);
 void GL_EnableMultitexture(void);

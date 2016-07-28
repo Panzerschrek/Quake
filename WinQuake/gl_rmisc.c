@@ -75,7 +75,7 @@ void R_InitParticleTexture (void)
 	//
 	// particle texture
 	//
-	particletexture = texture_extension_number++;
+	glGenTextures( 1, &particletexture );
     GL_Bind(particletexture);
 
 	for (x=0 ; x<8 ; x++)
@@ -89,8 +89,6 @@ void R_InitParticleTexture (void)
 		}
 	}
 	glTexImage2D (GL_TEXTURE_2D, 0, gl_alpha_format, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -183,7 +181,6 @@ void R_Init (void)
 	Cvar_RegisterVariable (&r_drawentities);
 	Cvar_RegisterVariable (&r_drawviewmodel);
 	Cvar_RegisterVariable (&r_shadows);
-	Cvar_RegisterVariable (&r_mirroralpha);
 	Cvar_RegisterVariable (&r_wateralpha);
 	Cvar_RegisterVariable (&r_dynamic);
 	Cvar_RegisterVariable (&r_novis);
@@ -193,12 +190,10 @@ void R_Init (void)
 	Cvar_RegisterVariable (&gl_clear);
 	Cvar_RegisterVariable (&gl_texsort);
 
- 	if (gl_mtexable)
-		Cvar_SetValue ("gl_texsort", 0.0);
+	Cvar_SetValue ("gl_texsort", 0.0);
 
 	Cvar_RegisterVariable (&gl_cull);
 	Cvar_RegisterVariable (&gl_smoothmodels);
-	Cvar_RegisterVariable (&gl_affinemodels);
 	Cvar_RegisterVariable (&gl_polyblend);
 	Cvar_RegisterVariable (&gl_flashblend);
 	Cvar_RegisterVariable (&gl_playermip);
@@ -212,12 +207,7 @@ void R_Init (void)
 	R_InitParticles ();
 	R_InitParticleTexture ();
 
-#ifdef GLTEST
-	Test_Init ();
-#endif
-
-	playertextures = texture_extension_number;
-	texture_extension_number += 16;
+	glGenTextures( 16, playertextures );
 }
 
 /*
@@ -289,56 +279,14 @@ void R_TranslatePlayerSkin (int playernum)
 
 	// because this happens during gameplay, do it fast
 	// instead of sending it through gl_upload 8
-    GL_Bind(playertextures + playernum);
+    GL_Bind(playertextures[playernum]);
 
-#if 0
-	byte	translated[320*200];
-
-	for (i=0 ; i<s ; i+=4)
-	{
-		translated[i] = translate[original[i]];
-		translated[i+1] = translate[original[i+1]];
-		translated[i+2] = translate[original[i+2]];
-		translated[i+3] = translate[original[i+3]];
-	}
-
-
-	// don't mipmap these, because it takes too long
-	GL_Upload8 (translated, paliashdr->skinwidth, paliashdr->skinheight, false, false, true);
-#else
 	scaled_width = gl_max_size.value < 512 ? gl_max_size.value : 512;
 	scaled_height = gl_max_size.value < 256 ? gl_max_size.value : 256;
 
 	// allow users to crunch sizes down even more if they want
 	scaled_width >>= (int)gl_playermip.value;
 	scaled_height >>= (int)gl_playermip.value;
-
-	if (VID_Is8bit()) { // 8bit texture upload
-		byte *out2;
-
-		out2 = (byte *)pixels;
-		memset(pixels, 0, sizeof(pixels));
-		fracstep = inwidth*0x10000/scaled_width;
-		for (i=0 ; i<scaled_height ; i++, out2 += scaled_width)
-		{
-			inrow = original + inwidth*(i*inheight/scaled_height);
-			frac = fracstep >> 1;
-			for (j=0 ; j<scaled_width ; j+=4)
-			{
-				out2[j] = translate[inrow[frac>>16]];
-				frac += fracstep;
-				out2[j+1] = translate[inrow[frac>>16]];
-				frac += fracstep;
-				out2[j+2] = translate[inrow[frac>>16]];
-				frac += fracstep;
-				out2[j+3] = translate[inrow[frac>>16]];
-				frac += fracstep;
-			}
-		}
-
-		GL_Upload8_EXT ((byte *)pixels, scaled_width, scaled_height, false, false);
-		return;
-	}
 
 	for (i=0 ; i<256 ; i++)
 		translate32[i] = d_8to24table[translate[i]];
@@ -363,10 +311,8 @@ void R_TranslatePlayerSkin (int playernum)
 	}
 	glTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-#endif
 
 }
 
@@ -398,15 +344,12 @@ void R_NewMap (void)
 
 	// identify sky texture
 	skytexturenum = -1;
-	mirrortexturenum = -1;
 	for (i=0 ; i<cl.worldmodel->numtextures ; i++)
 	{
 		if (!cl.worldmodel->textures[i])
 			continue;
 		if (!Q_strncmp(cl.worldmodel->textures[i]->name,"sky",3) )
 			skytexturenum = i;
-		if (!Q_strncmp(cl.worldmodel->textures[i]->name,"window02_1",10) )
-			mirrortexturenum = i;
  		cl.worldmodel->textures[i]->texturechain = NULL;
 	}
 #ifdef QUAKE2

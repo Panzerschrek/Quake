@@ -26,22 +26,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <SDL_opengl.h>
 #include "vid_common.h"
 
+// gl functions pointers
+#define PROCESS_GL_FUNC( type, name ) type name
+#include "gl_funcs_list.h"
+#undef PROCESS_GL_FUNC
+
 
 // Some subsystem needs it
 modestate_t	modestate = MS_UNINIT;
 cvar_t		_windowed_mouse = {"_windowed_mouse","0", true};
 cvar_t	gl_ztrick = {"gl_ztrick","0"};
 
-unsigned short	d_8to16table[256];
 unsigned		d_8to24table[256];
-unsigned char	d_15to8table[65536];
-
-qboolean gl_mtexable = false;
-qboolean isPermedia = true;
-int		texture_mode = GL_LINEAR_MIPMAP_LINEAR;
-int		texture_extension_number = 1;
-
-BINDTEXFUNCPTR bindTexFunc;
 
 float gldepthmin = -1.0f, gldepthmax = 1.0f;
 
@@ -51,6 +47,17 @@ struct
 	SDL_GLContext* context;
 
 } g_sdl_gl;
+
+static void GetGLFuncs(void)
+{
+	#define PROCESS_GL_FUNC( type, name )\
+		name = (type) SDL_GL_GetProcAddress( #name );\
+		if (!name) \
+			Sys_Printf( "Warning, function \""#name"\" not found\n" );
+
+	#include "gl_funcs_list.h"
+	#undef PROCESS_GL_FUNC
+}
 
 void	VID_Init (unsigned char *palette)
 {
@@ -105,7 +112,7 @@ void	VID_Init (unsigned char *palette)
 	if (fullscreen)
 		fullscreen = VID_SelectVideoMode( display, vid.width, vid.height, &display_mode );
 
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 1 );
+	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
 
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1);
@@ -133,9 +140,9 @@ void	VID_Init (unsigned char *palette)
 	SDL_GL_MakeCurrent( g_sdl_gl.window, g_sdl_gl.context );
 	SDL_GL_SetSwapInterval(1);
 
-	VID_SetPalette(palette);
+	GetGLFuncs();
 
-	bindTexFunc = glBindTexture;
+	VID_SetPalette(palette);
 	
 	glClearColor (1,0,0,0);
 	glCullFace(GL_FRONT);
@@ -153,8 +160,6 @@ void	VID_Init (unsigned char *palette)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	VID_FPSInit();
 }
@@ -177,15 +182,8 @@ void	VID_SetPalette (unsigned char *palette)
 {
 	byte	*pal;
 	unsigned r,g,b;
-	unsigned v;
-	int     r1,g1,b1;
-	int		j,k,l,m;
 	unsigned short i;
 	unsigned	*table;
-	FILE *f;
-	char s[255];
-	HWND hDlg, hProgress;
-	float gamma;
 
 //
 // 8 8 8 encoding
@@ -198,39 +196,10 @@ void	VID_SetPalette (unsigned char *palette)
 		g = pal[1];
 		b = pal[2];
 		pal += 3;
-		
-//		v = (255<<24) + (r<<16) + (g<<8) + (b<<0);
-//		v = (255<<0) + (r<<8) + (g<<16) + (b<<24);
-		v = (255<<24) + (r<<0) + (g<<8) + (b<<16);
-		*table++ = v;
-	}
-	d_8to24table[255] &= 0xffffff;	// 255 is transparent
 
-	// JACK: 3D distance calcs - k is last closest, l is the distance.
-	// FIXME: Precalculate this and cache to disk.
-	for (i=0; i < (1<<15); i++) {
-		/* Maps
-			000000000000000
-			000000000011111 = Red  = 0x1F
-			000001111100000 = Blue = 0x03E0
-			111110000000000 = Grn  = 0x7C00
-		*/
-		r = ((i & 0x1F) << 3)+4;
-		g = ((i & 0x03E0) >> 2)+4;
-		b = ((i & 0x7C00) >> 7)+4;
-		pal = (unsigned char *)d_8to24table;
-		for (v=0,k=0,l=10000*10000; v<256; v++,pal+=4) {
-			r1 = r-pal[0];
-			g1 = g-pal[1];
-			b1 = b-pal[2];
-			j = (r1*r1)+(g1*g1)+(b1*b1);
-			if (j<l) {
-				k=v;
-				l=j;
-			}
-		}
-		d_15to8table[i]=k;
+		d_8to24table[i] = (255<<24) + (r<<0) + (g<<8) + (b<<16);
 	}
+	d_8to24table[255] = 0x00000000;	// 255 is transparent - make in black and transparent
 }
 
 void	VID_ShiftPalette (unsigned char *palette)
@@ -241,11 +210,6 @@ void	VID_ShiftPalette (unsigned char *palette)
 void VID_HandlePause (qboolean pause)
 {
 	// panzer - stub, do something with it later
-}
-
-qboolean VID_Is8bit(void)
-{
-	return false;
 }
 
 void GL_BeginRendering (int *x, int *y, int *width, int *height)

@@ -1065,7 +1065,8 @@ void R_InitSky (texture_t *mt)
 
 
 	if (!solidskytexture)
-		solidskytexture = texture_extension_number++;
+		glGenTextures( 1, &solidskytexture );
+
 	GL_Bind (solidskytexture );
 	glTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -1083,7 +1084,8 @@ void R_InitSky (texture_t *mt)
 		}
 
 	if (!alphaskytexture)
-		alphaskytexture = texture_extension_number++;
+		glGenTextures( 1, &alphaskytexture );
+
 	GL_Bind(alphaskytexture);
 	glTexImage2D (GL_TEXTURE_2D, 0, gl_alpha_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
