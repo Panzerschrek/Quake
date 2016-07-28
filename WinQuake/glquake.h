@@ -31,7 +31,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #undef PROCESS_GL_FUNC
 
 
-void GL_BeginRendering (int *x, int *y, int *width, int *height);
 void GL_EndRendering (void);
 
 extern	float	gldepthmin, gldepthmax;
@@ -49,8 +48,6 @@ typedef struct
 } glvert_t;
 
 extern glvert_t glv;
-
-extern	int glx, gly, glwidth, glheight;
 
 
 // r_local.h -- private refresh defs

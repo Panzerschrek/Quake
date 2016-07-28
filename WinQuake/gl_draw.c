@@ -923,7 +923,7 @@ Setup as if the screen was 320*200
 */
 void GL_Set2D (void)
 {
-	glViewport (glx, gly, glwidth, glheight);
+	glViewport (0, 0, vid.width, vid.height);
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity ();

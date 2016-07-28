@@ -70,8 +70,6 @@ console is:
 */
 
 
-int			glx, gly, glwidth, glheight;
-
 // only the refresh window will be updated unless these variables are flagged 
 int			scr_copytop;
 int			scr_copyeverything;
@@ -644,26 +642,26 @@ void SCR_ScreenShot_f (void)
  	}
 
 
-	buffer = malloc(glwidth*glheight*3 + 18);
+	buffer = malloc(vid.width*vid.height*3 + 18);
 	memset (buffer, 0, 18);
 	buffer[2] = 2;		// uncompressed type
-	buffer[12] = glwidth&255;
-	buffer[13] = glwidth>>8;
-	buffer[14] = glheight&255;
-	buffer[15] = glheight>>8;
+	buffer[12] = vid.width &255;
+	buffer[13] = vid.width >>8;
+	buffer[14] = vid.height&255;
+	buffer[15] = vid.height>>8;
 	buffer[16] = 24;	// pixel size
 
-	glReadPixels (glx, gly, glwidth, glheight, GL_RGB, GL_UNSIGNED_BYTE, buffer+18 ); 
+	glReadPixels (0, 0, vid.width, vid.height, GL_RGB, GL_UNSIGNED_BYTE, buffer+18 ); 
 
 	// swap rgb to bgr
-	c = 18+glwidth*glheight*3;
+	c = 18+vid.width*vid.height*3;
 	for (i=18 ; i<c ; i+=3)
 	{
 		temp = buffer[i];
 		buffer[i] = buffer[i+2];
 		buffer[i+2] = temp;
 	}
-	COM_WriteFile (pcxname, buffer, glwidth*glheight*3 + 18 );
+	COM_WriteFile (pcxname, buffer, vid.width*vid.height*3 + 18 );
 
 	free (buffer);
 	Con_Printf ("Wrote %s\n", pcxname);
@@ -873,8 +871,6 @@ void SCR_UpdateScreen (void)
 	if (!scr_initialized || !con_initialized)
 		return;				// not initialized yet
 
-
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	
 	//
 	// determine size of refresh window

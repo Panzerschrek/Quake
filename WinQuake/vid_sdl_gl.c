@@ -212,14 +212,6 @@ void VID_HandlePause (qboolean pause)
 	// panzer - stub, do something with it later
 }
 
-void GL_BeginRendering (int *x, int *y, int *width, int *height)
-{
-	*x = 0;
-	*y = 0;
-	*width  = vid.width ;
-	*height = vid.height;
-}
-
 void GL_EndRendering (void)
 {
 	VID_FPSUpdate();
