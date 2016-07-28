@@ -321,7 +321,7 @@ void R_DrawSequentialPoly (msurface_t *s)
 	// normal lightmaped poly
 	//
 
-	if (! (s->flags & (SURF_DRAWSKY|SURF_DRAWTURB|SURF_UNDERWATER) ) )
+	if (! (s->flags & (SURF_DRAWSKY|SURF_DRAWTURB) ) )
 	{
 		R_RenderDynamicLightmaps (s);
 
@@ -395,50 +395,6 @@ void R_DrawSequentialPoly (msurface_t *s)
 		glDisable (GL_BLEND);
 		return;
 	}
-
-	//
-	// underwater warped with lightmap
-	//
-	R_RenderDynamicLightmaps (s);
-
-	p = s->polys;
-
-	t = R_TextureAnimation (s->texinfo->texture);
-	GL_SelectTexture(GL_TEXTURE0);
-	GL_Bind (t->gl_texturenum);
-	GL_EnableMultitexture();
-	GL_Bind (lightmap_textures[ s->lightmaptexturenum ]);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	i = s->lightmaptexturenum;
-	if (lightmap_modified[i])
-	{
-		lightmap_modified[i] = false;
-		theRect = &lightmap_rectchange[i];
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, theRect->t, 
-			BLOCK_WIDTH, theRect->h, gl_lightmap_format, GL_UNSIGNED_BYTE,
-			lightmaps+(i* BLOCK_HEIGHT + theRect->t) *BLOCK_WIDTH*lightmap_bytes);
-		theRect->l = BLOCK_WIDTH;
-		theRect->t = BLOCK_HEIGHT;
-		theRect->h = 0;
-		theRect->w = 0;
-	}
-
-	glBegin (GL_TRIANGLE_FAN);
-	v = p->verts[0];
-	for (i=0 ; i<p->numverts ; i++, v+= VERTEXSIZE)
-	{
-		glMultiTexCoord2f (GL_TEXTURE0, v[3], v[4]);
-		glMultiTexCoord2f (GL_TEXTURE1, v[5], v[6]);
-
-		nv[0] = v[0] + 8*sin(v[1]*0.05+realtime)*sin(v[2]*0.05+realtime);
-		nv[1] = v[1] + 8*sin(v[0]*0.05+realtime)*sin(v[2]*0.05+realtime);
-		nv[2] = v[2];
-
-		glVertex3fv (nv);
-	}
-	glEnd ();
-
-	GL_DisableMultitexture ();
 
 }
 
@@ -970,8 +926,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 				if (surf->visframe != r_framecount)
 					continue;
 
-				// don't backface underwater surfaces, because they warp
-				if ( !(surf->flags & SURF_UNDERWATER) && ( (dot < 0) ^ !!(surf->flags & SURF_PLANEBACK)) )
+				if ( ( (dot < 0) ^ !!(surf->flags & SURF_PLANEBACK)) )
 					continue;		// wrong side
 
 				// if sorting by texture, just store it out
