@@ -202,6 +202,7 @@ void R_Init (void)
 	R_InitParticleTexture ();
 
 	glGenTextures( 16, playertextures );
+	glGenTextures( 1, warptexture );
 }
 
 /*

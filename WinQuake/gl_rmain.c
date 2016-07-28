@@ -25,6 +25,10 @@ entity_t	r_worldentity;
 
 qboolean	r_cache_thrash;		// compatability
 
+qboolean	r_dowarp = false;
+int			warp_width ;
+int			warp_height;
+
 vec3_t		modelorg, r_entorigin;
 entity_t	*currententity;
 
@@ -43,6 +47,7 @@ int			cnttextures[2] = {-1, -1};     // cached
 
 int			particletexture;	// little dot for particles
 int			playertextures[16];		// up to 16 color translated skins
+int			warptexture; // buffer for drawing warp view
 
 //
 // view origin
@@ -848,6 +853,7 @@ void R_SetupFrame (void)
 	c_brush_polys = 0;
 	c_alias_polys = 0;
 
+	r_dowarp = r_viewleaf->contents <= CONTENTS_WATER;
 }
 
 
@@ -897,7 +903,29 @@ void R_SetupGL (void)
 		w = h = 256;
 	}
 
-	glViewport (x, y2, w, h);
+	if (r_dowarp)
+	{
+		// Draw in low resolution,
+		// but no less, then 320x200 / 2, and not bigger, than r_refdef.vrect.size
+		warp_width  = w / 3;
+		warp_height = h / 3;
+
+		if (warp_width  < 320 / 2)
+			warp_width  = 320 / 2;
+		if (warp_width  > r_refdef.vrect.width )
+			warp_width  = r_refdef.vrect.width;
+
+		if (warp_height < 200 / 2)
+			warp_height = 200 / 2;
+		if (warp_height > r_refdef.vrect.height )
+			warp_height = r_refdef.vrect.height;
+	
+
+		glViewport (x, y2, warp_width, warp_height);
+	}
+	else
+		glViewport (x, y2, w, h);
+
     screenaspect = (float)r_refdef.vrect.width/r_refdef.vrect.height;
 //	yfov = 2*atan((float)r_refdef.vrect.height/r_refdef.vrect.width)*180/M_PI;
     MYgluPerspective (r_refdef.fov_y,  screenaspect,  4,  4096);
@@ -927,6 +955,62 @@ void R_SetupGL (void)
 	glDisable(GL_BLEND);
 	glDisable(GL_ALPHA_TEST);
 	glEnable(GL_DEPTH_TEST);
+}
+
+/*
+===============
+R_DoWarp
+===============
+*/
+
+void R_DoWarp(void)
+{
+	if (!r_dowarp)
+		return;
+
+	glDisable (GL_ALPHA_TEST);
+	glDisable (GL_DEPTH_TEST);
+
+	GL_Bind(warptexture);
+
+	glViewport (
+		r_refdef.vrect.x,
+		vid.height - (r_refdef.vrect.y + r_refdef.vrect.height),
+		r_refdef.vrect.width,
+		r_refdef.vrect.height);
+
+	glCopyTexImage2D(
+		GL_TEXTURE_2D,
+		0, GL_RGBA,
+		r_refdef.vrect.x, vid.height - (r_refdef.vrect.y + r_refdef.vrect.height),
+		warp_width, warp_height,
+		0 );
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+
+	glBegin (GL_QUADS);
+	glTexCoord2f( 1, 0 );
+	glVertex2f(  1, -1 );
+	glTexCoord2f( 0, 0 );
+	glVertex2f( -1, -1 );
+	glTexCoord2f( 0, 1 );
+	glVertex2f( -1,  1 );
+	glTexCoord2f( 1, 1 );
+	glVertex2f(  1,  1 );
+	glEnd ();
+
+	glEnable (GL_DEPTH_TEST);
+	glEnable (GL_ALPHA_TEST);
 }
 
 /*
@@ -1054,6 +1138,8 @@ void R_RenderView (void)
 //  End of all fog code...
 
 	R_PolyBlend ();
+
+	R_DoWarp();
 
 	if (r_speeds.value)
 	{

@@ -152,6 +152,7 @@ extern	int	currenttexture;
 extern	int	cnttextures[2];
 extern	int	particletexture;
 extern	int	playertextures[16];
+extern	int	warptexture;
 
 extern	int	skytexturenum;		// index in cl.loadmodel, not gl texture object
 
