@@ -25,6 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MAX_UNIFORMS 16
 #define MAX_UNIFORM_NAME_LEN 16
 
+#define PI_S "3.1415926535"
+
 typedef struct
 {
 	GLuint		handle;
@@ -105,13 +107,41 @@ uniform float time;\
 \
 void main(void)\
 {\
-	const float pi = 3.1415926535;\
-	float time_freq = pi * 0.6;\
-	vec2 omega = 0.01 * pi * tex_size;\
+	float time_freq = "PI_S" * 0.6;\
+	vec2 omega = 0.01 * "PI_S" * tex_size;\
 	vec2 amplitude = 6.0 / tex_size;\
 	vec2 tc = gl_TexCoord[0].xy;\
 	tc = tc + amplitude * sin( time_freq * vec2(time, time) + omega * tc.yx );\
 	gl_FragColor = texture2D( tex, tc );\
+}\
+";
+
+static const char water_turb_shader_v[]= "\
+#version 120\n\
+\
+void main(void)\
+{\
+	gl_TexCoord[0] = gl_MultiTexCoord0;\
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+}\
+";
+
+static const char water_turb_shader_f[]= "\
+#version 120\n\
+\
+uniform sampler2D tex;\
+uniform float time;\
+uniform float alpha;\
+\
+void main(void)\
+{\
+	const float pi = 3.1415926535;\
+	float time_freq = "PI_S" * 0.4;\
+	float omega = 2.0 * "PI_S";\
+	float amplitude = 0.0625;\
+	vec2 tc = gl_TexCoord[0].xy;\
+	tc = tc + amplitude * sin( time_freq * vec2(time, time) + omega * tc.yx );\
+	gl_FragColor = vec4( texture2D( tex, tc ).xyz, alpha );\
 }\
 ";
 
@@ -120,6 +150,12 @@ void GL_InitShaders(void)
 	programs[ SHADER_NONE ].handle = 0;
 
 	InitProgram( SHADER_SCREEN_WARP, warp_shader_v, warp_shader_f );
+
+	InitProgram( SHADER_WATER_TURB, water_turb_shader_v, water_turb_shader_f );
+	GL_BindShader( SHADER_WATER_TURB );
+	GL_ShaderUniformInt( "tex", 0 );
+
+	GL_BindShader( SHADER_NONE );
 }
 
 void GL_BindShader(gl_shader_t shader)

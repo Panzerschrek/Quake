@@ -832,6 +832,16 @@ void R_SetupFrame (void)
 	if (cl.maxclients > 1)
 		Cvar_Set ("r_fullbright", "0");
 
+	// Setup globals in shaders
+	GL_BindShader( SHADER_SCREEN_WARP );
+	GL_ShaderUniformFloat( "time", cl.time );
+
+	GL_BindShader( SHADER_WATER_TURB );
+	GL_ShaderUniformFloat( "time", cl.time );
+	GL_ShaderUniformFloat( "alpha", r_wateralpha.value );
+
+	GL_BindShader( SHADER_NONE );
+
 	R_AnimateLight ();
 
 	r_framecount++;
@@ -993,7 +1003,6 @@ void R_DoWarp(void)
 
 	GL_BindShader( SHADER_SCREEN_WARP );
 	GL_ShaderUniformInt( "tex", 0 );
-	GL_ShaderUniformFloat( "time", cl.time );
 	GL_ShaderUniformVec2( "tex_size", r_refdef.vrect.width, r_refdef.vrect.height );
 	
 	glMatrixMode(GL_PROJECTION);

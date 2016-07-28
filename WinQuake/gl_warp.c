@@ -188,7 +188,6 @@ float	turbsin[] =
 =============
 EmitWaterPolys
 
-Does a water warp on the pre-fragmented glpoly_t chain
 =============
 */
 void EmitWaterPolys (msurface_t *fa)
@@ -196,24 +195,13 @@ void EmitWaterPolys (msurface_t *fa)
 	glpoly_t	*p;
 	float		*v;
 	int			i;
-	float		s, t, os, ot;
-
 
 	for (p=fa->polys ; p ; p=p->next)
 	{
 		glBegin (GL_POLYGON);
 		for (i=0,v=p->verts[0] ; i<p->numverts ; i++, v+=VERTEXSIZE)
 		{
-			os = v[3];
-			ot = v[4];
-
-			s = os + turbsin[(int)((ot*0.125+realtime) * TURBSCALE) & 255];
-			s *= (1.0/64);
-
-			t = ot + turbsin[(int)((os*0.125+realtime) * TURBSCALE) & 255];
-			t *= (1.0/64);
-
-			glTexCoord2f (s, t);
+			glTexCoord2f (v[3], v[4]);
 			glVertex3fv (v);
 		}
 		glEnd ();

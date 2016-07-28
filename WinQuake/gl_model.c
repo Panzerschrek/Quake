@@ -806,16 +806,7 @@ void Mod_LoadFaces (lump_t *l)
 		}
 		
 		if (!Q_strncmp(out->texinfo->texture->name,"*",1))		// turbulent
-		{
 			out->flags |= (SURF_DRAWTURB | SURF_DRAWTILED);
-			for (i=0 ; i<2 ; i++)
-			{
-				out->extents[i] = 16384;
-				out->texturemins[i] = -8192;
-			}
-			GL_SubdivideSurface (out);	// cut up polygon for warps
-			continue;
-		}
 
 	}
 }

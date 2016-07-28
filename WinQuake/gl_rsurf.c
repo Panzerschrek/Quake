@@ -363,14 +363,18 @@ void R_DrawSequentialPoly (msurface_t *s)
 	}
 
 	//
-	// subdivided water surface warp
+	// water surface warp
 	//
 
 	if (s->flags & SURF_DRAWTURB)
 	{
 		GL_DisableMultitexture();
 		GL_Bind (s->texinfo->texture->gl_texturenum);
+
+		GL_BindShader( SHADER_WATER_TURB );
 		EmitWaterPolys (s);
+		GL_BindShader( SHADER_NONE );
+
 		return;
 	}
 
@@ -634,17 +638,15 @@ void R_DrawWaterSurfaces (void)
 	if (r_wateralpha.value < 1.0)
 		glEnable (GL_BLEND);
 
-	glColor4f (1,1,1,r_wateralpha.value);
+	GL_BindShader( SHADER_WATER_TURB );
 
 	if (!gl_texsort.value) {
-		if (!waterchain)
-			return;
 
 		for ( s = waterchain ; s ; s=s->texturechain) {
 			GL_Bind (s->texinfo->texture->gl_texturenum);
 			EmitWaterPolys (s);
 		}
-		
+
 		waterchain = NULL;
 	} else {
 
@@ -671,10 +673,10 @@ void R_DrawWaterSurfaces (void)
 
 	}
 
+	GL_BindShader( SHADER_NONE );
+
 	if (r_wateralpha.value < 1.0)
 		glDisable (GL_BLEND);
-
-	glColor4f (1,1,1,1);
 
 }
 
@@ -1265,8 +1267,7 @@ void GL_BuildLightmaps (void)
 		for (i=0 ; i<m->numsurfaces ; i++)
 		{
 			GL_CreateSurfaceLightmap (m->surfaces + i);
-			if ( m->surfaces[i].flags & SURF_DRAWTURB )
-				continue;
+
 #ifndef QUAKE2
 			if ( m->surfaces[i].flags & SURF_DRAWSKY )
 				continue;
