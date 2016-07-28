@@ -145,6 +145,37 @@ void main(void)\
 }\
 ";
 
+static const char sky_shader_v[]= "\
+#version 120\n\
+\
+void main(void)\
+{\
+	gl_TexCoord[0] = gl_MultiTexCoord0;\
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+}\
+";
+
+static const char sky_shader_f[]= "\
+#version 120\n\
+\
+uniform sampler2D tex0;\
+uniform sampler2D tex1;\
+uniform float time;\
+\
+void main(void)\
+{\
+	const float speed0 = 1.0 / 16.0;\
+	const float speed1 = 1.0 /  8.0;\
+	vec3 n = normalize( gl_TexCoord[0].xyz );\
+	vec2 tc = n.xy * ( 1.25 / ( abs(n.z) + 0.25 ) );\
+	vec2 tc0 = tc + time * speed0 * vec2(1.0, 1.0);\
+	vec2 tc1 = tc + time * speed1 * vec2(1.0, 1.0);\
+	vec4 c0 = texture2D( tex0, tc0 );\
+	vec4 c1 = texture2D( tex1, tc1 );\
+	gl_FragColor = mix( c0, c1, c1.a );\
+}\
+";
+
 void GL_InitShaders(void)
 {
 	programs[ SHADER_NONE ].handle = 0;
@@ -154,6 +185,11 @@ void GL_InitShaders(void)
 	InitProgram( SHADER_WATER_TURB, water_turb_shader_v, water_turb_shader_f );
 	GL_BindShader( SHADER_WATER_TURB );
 	GL_ShaderUniformInt( "tex", 0 );
+
+	InitProgram( SHADER_SKY, sky_shader_v, sky_shader_f );
+	GL_BindShader( SHADER_SKY );
+	GL_ShaderUniformInt( "tex0", 0 );
+	GL_ShaderUniformInt( "tex1", 1 );
 
 	GL_BindShader( SHADER_NONE );
 }

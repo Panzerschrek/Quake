@@ -268,7 +268,6 @@ texture_t *R_TextureAnimation (texture_t *base)
 
 extern	int		solidskytexture;
 extern	int		alphaskytexture;
-extern	float	speedscale;		// for top sky and bottom sky
 
 void DrawGLWaterPoly (glpoly_t *p);
 void DrawGLWaterPolyLightmap (glpoly_t *p);
@@ -379,24 +378,21 @@ void R_DrawSequentialPoly (msurface_t *s)
 	}
 
 	//
-	// subdivided sky warp
+	// sky warp
 	//
 	if (s->flags & SURF_DRAWSKY)
 	{
-		GL_DisableMultitexture();
+		GL_BindShader( SHADER_SKY );
+
 		GL_Bind (solidskytexture);
-		speedscale = realtime*8;
-		speedscale -= (int)speedscale & ~127;
-
-		EmitSkyPolys (s);
-
-		glEnable (GL_BLEND);
+		GL_EnableMultitexture();
 		GL_Bind (alphaskytexture);
-		speedscale = realtime*16;
-		speedscale -= (int)speedscale & ~127;
+
 		EmitSkyPolys (s);
 
-		glDisable (GL_BLEND);
+		GL_DisableMultitexture();
+
+		GL_BindShader( SHADER_NONE );
 		return;
 	}
 
@@ -496,7 +492,8 @@ void R_RenderBrushPoly (msurface_t *fa)
 
 	if (fa->flags & SURF_DRAWSKY)
 	{	// warp texture, no lightmaps
-		EmitBothSkyLayers (fa);
+		// Panzer - this should not happen
+		//EmitBothSkyLayers (fa);
 		return;
 	}
 		
@@ -505,7 +502,8 @@ void R_RenderBrushPoly (msurface_t *fa)
 
 	if (fa->flags & SURF_DRAWTURB)
 	{	// warp texture, no lightmaps
-		EmitWaterPolys (fa);
+		// Panzer - this should not happen
+		//EmitWaterPolys (fa);
 		return;
 	}
 
@@ -1267,11 +1265,6 @@ void GL_BuildLightmaps (void)
 		for (i=0 ; i<m->numsurfaces ; i++)
 		{
 			GL_CreateSurfaceLightmap (m->surfaces + i);
-
-#ifndef QUAKE2
-			if ( m->surfaces[i].flags & SURF_DRAWSKY )
-				continue;
-#endif
 			BuildSurfaceDisplayList (m->surfaces + i);
 		}
 	}

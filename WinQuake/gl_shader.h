@@ -24,6 +24,7 @@ typedef enum
 	SHADER_NONE = 0,
 	SHADER_SCREEN_WARP,
 	SHADER_WATER_TURB,
+	SHADER_SKY,
 	SHADER_NUM,
 } gl_shader_t;
 
