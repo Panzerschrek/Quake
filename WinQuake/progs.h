@@ -53,9 +53,12 @@ typedef struct edict_s
 extern	dprograms_t		*progs;
 extern	dfunction_t		*pr_functions;
 
+#define PR_TMP_STRING_SIZE				256
+#define PR_DYNAMIC_STRINGS_BUFF_SIZE	(65536*4)
 extern	char			*pr_strings;
 extern char				*pr_tmp_string;
-#define PR_TMP_STRING_SIZE 256
+char					*pr_dynamic_strings;
+char					*pr_next_dynamic_string;
 
 extern	ddef_t			*pr_globaldefs;
 extern	ddef_t			*pr_fielddefs;
