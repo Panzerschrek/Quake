@@ -233,7 +233,9 @@ qboolean R_AliasCheckBBox (void)
 	if (allclip)
 		return false;	// trivial reject off one side
 
-	currententity->trivial_accept = !anyclip & !zclipped;
+	// PANZER - hack
+	// Because we interpolate models, we can not 100% be sure about trivial accept
+	currententity->trivial_accept = false;//!anyclip & !zclipped;
 
 	if (currententity->trivial_accept)
 	{
