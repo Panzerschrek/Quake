@@ -24,10 +24,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 dprograms_t		*progs;
 dfunction_t		*pr_functions;
 
-// pr_strings and pr_tmp_string allocated together,
+// pr_strings, pr_tmp_string, pr_dynamic_strings allocated together,
 // we can call G_STRING for pr_tmp_string and recieve valid results.
+// All strings inside VM must be stored in pr_strings, pr_tmp_string or pr_dynamic_strings.
 char			*pr_strings;
 char			*pr_tmp_string;
+char			*pr_dynamic_strings;
+char			*pr_next_dynamic_string;
 
 ddef_t			*pr_fielddefs;
 ddef_t			*pr_globaldefs;
@@ -701,7 +704,15 @@ char *ED_NewString (char *string)
 	int		i,l;
 	
 	l = strlen(string) + 1;
-	new = Hunk_Alloc (l);
+
+	new = pr_next_dynamic_string;
+	pr_next_dynamic_string += l;
+	if (pr_next_dynamic_string - pr_dynamic_strings > PR_DYNAMIC_STRINGS_BUFF_SIZE)
+	{
+		Sys_Error( "ED_NewString: out of string buffer\n" );
+		return NULL;
+	}
+
 	new_p = new;
 
 	for (i=0 ; i< l ; i++)
@@ -1016,9 +1027,10 @@ void PR_LoadProgs (void)
 
 	pr_functions = (dfunction_t *)((byte *)progs + progs->ofs_functions);
 
-	pr_strings = Hunk_AllocName( progs->numstrings + PR_TMP_STRING_SIZE, "pr_strings" );
+	pr_strings = Hunk_AllocName( progs->numstrings + PR_TMP_STRING_SIZE + PR_DYNAMIC_STRINGS_BUFF_SIZE, "pr_strings" );
 	Q_memcpy( pr_strings, ((char*)progs) + progs->ofs_strings, progs->numstrings );
 	pr_tmp_string = pr_strings + progs->numstrings;
+	pr_next_dynamic_string = pr_dynamic_strings = pr_tmp_string + PR_TMP_STRING_SIZE;
 
 	pr_globaldefs = (ddef_t *)((byte *)progs + progs->ofs_globaldefs);
 	pr_fielddefs = (ddef_t *)((byte *)progs + progs->ofs_fielddefs);
