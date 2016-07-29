@@ -625,11 +625,11 @@ void Draw_TransPicScaled (int x, int y, int scale, qpic_t *pic)
 				}
 
 			else
-				for (p_x = 0; p_x < pic->width; p_x++, source++)
+				for (p_x = 0; p_x < pic->width; p_x++, source++, dest += scale)
 				{
 					if (*source == TRANSPARENT_COLOR) continue;
-					for (s_x = 0; s_x < scale; s_x++, dest++)
-						*dest = *source;
+					for (s_x = 0; s_x < scale; s_x++)
+						dest[s_x] = *source;
 				}
 		}
 	}
@@ -776,11 +776,11 @@ void Draw_TransPicTranslateScaled (int x, int y, int scale, qpic_t *pic, byte *t
 				}
 
 			else
-				for (p_x = 0; p_x < pic->width; p_x++, source++)
+				for (p_x = 0; p_x < pic->width; p_x++, source++, dest += scale)
 				{
 					if (*source == TRANSPARENT_COLOR) continue;
-					for (s_x = 0; s_x < scale; s_x++, dest++)
-						*dest = translation[*source];
+					for (s_x = 0; s_x < scale; s_x++)
+						dest[s_x] = translation[*source];
 				}
 		}
 	}
