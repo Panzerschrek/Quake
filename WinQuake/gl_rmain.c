@@ -89,7 +89,6 @@ cvar_t	gl_finish = {"gl_finish","0"};
 cvar_t	gl_clear = {"gl_clear","0"};
 cvar_t	gl_cull = {"gl_cull","1"};
 cvar_t	gl_texsort = {"gl_texsort","1"};
-cvar_t	gl_smoothmodels = {"gl_smoothmodels","1"};
 cvar_t	gl_polyblend = {"gl_polyblend","1"};
 cvar_t	gl_flashblend = {"gl_flashblend","1"};
 cvar_t	gl_playermip = {"gl_playermip","0"};
@@ -575,15 +574,12 @@ void R_DrawAliasModel (entity_t *e)
 		    GL_Bind(playertextures[ -1 + i ]);
 	}
 
-	if (gl_smoothmodels.value)
-		glShadeModel (GL_SMOOTH);
-
+	glShadeModel (GL_SMOOTH);
 	GL_BindShader( SHADER_ALIAS );
 
 	R_SetupAliasFrame (e, paliashdr);
 
 	GL_BindShader( SHADER_NONE );
-
 	glShadeModel (GL_FLAT);
 
 	glPopMatrix ();

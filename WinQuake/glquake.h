@@ -172,7 +172,6 @@ extern	cvar_t	r_novis;
 extern	cvar_t	gl_clear;
 extern	cvar_t	gl_cull;
 extern	cvar_t	gl_texsort;
-extern	cvar_t	gl_smoothmodels;
 extern	cvar_t	gl_polyblend;
 extern	cvar_t	gl_keeptjunctions;
 extern	cvar_t	gl_reporttjunctions;

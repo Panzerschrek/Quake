@@ -136,6 +136,7 @@ void R_RenderDlights (void)
 
 	glColor3f (1,1,1);
 	glDisable (GL_BLEND);
+	glShadeModel(GL_FLAT);
 	glEnable (GL_TEXTURE_2D);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDepthMask (1);
