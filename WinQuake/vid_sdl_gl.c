@@ -35,7 +35,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Some subsystem needs it
 modestate_t	modestate = MS_UNINIT;
 cvar_t		_windowed_mouse = {"_windowed_mouse","0", true};
-cvar_t	gl_ztrick = {"gl_ztrick","0"};
 
 unsigned		d_8to24table[256];
 
