@@ -223,8 +223,6 @@ void R_DrawSpriteModel (entity_t *e)
 
 	glColor3f (1,1,1);
 
-	GL_DisableMultitexture();
-
     GL_Bind(frame->gl_texturenum);
 
 	glEnable (GL_ALPHA_TEST);
@@ -736,8 +734,6 @@ void R_PolyBlend (void)
 		return;
 	if (!v_blend[3])
 		return;
-
-	GL_DisableMultitexture();
 
 	glDisable (GL_ALPHA_TEST);
 	glEnable (GL_BLEND);
