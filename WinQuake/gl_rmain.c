@@ -1055,7 +1055,7 @@ void R_RenderScene (void)
 
 	R_DrawEntitiesOnList ();
 
-	GL_DisableMultitexture();
+	DrawTextureChains ();
 
 	R_RenderDlights ();
 
