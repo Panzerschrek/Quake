@@ -32,8 +32,6 @@ static char     *safeargvs[NUM_SAFE_ARGVS] =
 cvar_t  registered = {"registered","0"};
 cvar_t  cmdline = {"cmdline","0", false, true};
 
-qboolean        com_modified;   // set true if using non-id files
-
 qboolean		proghack;
 
 int             static_registered = 1;  // only for startup check, then set
@@ -42,9 +40,6 @@ qboolean		msg_suppress_1 = 0;
 
 void COM_InitFilesystem (void);
 
-// if a packfile directory differs from this, it is assumed to be hacked
-#define PAK0_COUNT              339
-#define PAK0_CRC                32981
 
 char	com_token[1024];
 int		com_argc;
@@ -1027,8 +1022,6 @@ void COM_CheckRegistered (void)
 	Sys_Error ("This dedicated server requires a full registered copy of Quake");
 #endif
 		Con_Printf ("Playing shareware version.\n");
-		if (com_modified)
-			Sys_Error ("You must have the registered version to use modified games");
 		return;
 	}
 
@@ -1625,7 +1618,6 @@ pack_t *COM_LoadPackFile (char *packfile)
 	pack_t                  *pack;
 	int                             packhandle;
 	dpackfile_t             info[MAX_FILES_IN_PACK];
-	unsigned short          crc;
 
 	if (Sys_FileOpenRead (packfile, &packhandle) == -1)
 	{
@@ -1644,20 +1636,10 @@ pack_t *COM_LoadPackFile (char *packfile)
 	if (numpackfiles > MAX_FILES_IN_PACK)
 		Sys_Error ("%s has %i files", packfile, numpackfiles);
 
-	if (numpackfiles != PAK0_COUNT)
-		com_modified = true;    // not the original file
-
 	newfiles = Hunk_AllocName (numpackfiles * sizeof(packfile_t), "packfile");
 
 	Sys_FileSeek (packhandle, header.dirofs);
 	Sys_FileRead (packhandle, (void *)info, header.dirlen);
-
-// crc the directory to check for modifications
-	CRC_Init (&crc);
-	for (i=0 ; i<header.dirlen ; i++)
-		CRC_ProcessByte (&crc, ((byte *)info)[i]);
-	if (crc != PAK0_CRC)
-		com_modified = true;
 
 // parse the directory
 	for (i=0 ; i<numpackfiles ; i++)
@@ -1788,7 +1770,6 @@ void COM_InitFilesystem (void)
 	i = COM_CheckParm ("-game");
 	if (i && i < com_argc-1)
 	{
-		com_modified = true;
 		COM_AddGameDirectory (va("%s/%s", basedir, com_argv[i+1]));
 	}
 
@@ -1799,7 +1780,6 @@ void COM_InitFilesystem (void)
 	i = COM_CheckParm ("-path");
 	if (i)
 	{
-		com_modified = true;
 		com_searchpaths = NULL;
 		while (++i < com_argc)
 		{
