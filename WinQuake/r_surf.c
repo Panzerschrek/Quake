@@ -281,18 +281,18 @@ void R_DrawSurface (void)
 
 //==============================
 
-	if (r_pixbytes == 1)
-	{
+	//if (r_pixbytes == 1)
+	//{
 		pblockdrawer = surfmiptable[r_drawsurf.surfmip];
 	// TODO: only needs to be set when there is a display settings change
 		horzblockstep = blocksize;
-	}
+	/*}
 	else
 	{
 		pblockdrawer = R_DrawSurfaceBlock16;
 	// TODO: only needs to be set when there is a display settings change
 		horzblockstep = blocksize << 1;
-	}
+	}*/
 
 	smax = mt->width >> r_drawsurf.surfmip;
 	twidth = texwidth;
@@ -646,27 +646,27 @@ void R_GenTile (msurface_t *psurf, void *pdest)
 {
 	if (psurf->flags & SURF_DRAWTURB)
 	{
-		if (r_pixbytes == 1)
-		{
+		//if (r_pixbytes == 1)
+		//{
 			R_GenTurbTile ((pixel_t *)
 				((byte *)psurf->texinfo->texture + psurf->texinfo->texture->offsets[0]), pdest);
-		}
-		else
+		//}
+		/*else
 		{
 			R_GenTurbTile16 ((pixel_t *)
 				((byte *)psurf->texinfo->texture + psurf->texinfo->texture->offsets[0]), pdest);
-		}
+		}*/
 	}
 	else if (psurf->flags & SURF_DRAWSKY)
 	{
-		if (r_pixbytes == 1)
-		{
+		//if (r_pixbytes == 1)
+		//{
 			R_GenSkyTile (pdest);
-		}
-		else
-		{
+		//}
+		//else
+		//{
 			R_GenSkyTile16 (pdest);
-		}
+		//}
 	}
 	else
 	{

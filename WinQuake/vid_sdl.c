@@ -80,6 +80,7 @@ cvar_t	vid_height = { "vid_height", "480", true };
 cvar_t	vid_scaler = { "vid_scaler", "1", true };
 cvar_t	vid_display = { "vid_display", "0", true };
 cvar_t	vid_fullscreen = { "vid_fullscreen", "0", true };
+cvar_t	vid_32bit = { "vid_32bit", "1", true };
 
 static void MenuDrawFn(void)
 {
@@ -132,6 +133,8 @@ static void UpdateMode (unsigned char *palette)
 	SDL_DisplayMode		display_mode;
 	int					width, height;
 	int					system_width, system_height;
+
+	r_pixbytes = vid_32bit.value ? 4 : 1;
 
 	g_sdl.fullscreen = false;
 	{
@@ -212,13 +215,22 @@ static void UpdateMode (unsigned char *palette)
 
 	vid.width  = width ;
 	vid.height = height;
-	vid.rowbytes = vid.width;
 	vid.numpages = 1;
 	vid.maxwarpwidth  = WARP_WIDTH ;
 	vid.maxwarpheight = WARP_HEIGHT;
 	vid.aspect = 1.0f;
 
-	vid.buffer = malloc( vid.width * vid.height );
+	if (r_pixbytes == 4)
+	{
+		vid.buffer = (pixel_t*) g_sdl.window_surface->pixels;
+		vid.rowbytes = g_sdl.window_surface->pitch;
+	}
+	else
+	{
+		vid.buffer = malloc( vid.width * vid.height );
+		vid.rowbytes = vid.width;
+	}
+	
 	vid.recalc_refdef = true;
 
 	vid.conwidth  = vid.width ;
@@ -227,6 +239,7 @@ static void UpdateMode (unsigned char *palette)
 	vid.conbuffer = vid.buffer;
 
 	vid.colormap = host_colormap;
+	vid.colormap16 = d_8to16table;
 	vid.fullbright = 256 - LittleLong (*((int *)vid.colormap + 2048));
 
 	d_pzbuffer = malloc( vid.width * vid.height * sizeof(short) );
@@ -236,7 +249,7 @@ static void UpdateMode (unsigned char *palette)
 
 	VID_SetPalette(palette);
 
-	g_vid_surfcachesize = D_SurfaceCacheForRes (vid.width, vid.height);
+	g_vid_surfcachesize = D_SurfaceCacheForRes (vid.width, vid.height) * r_pixbytes;
 	g_vid_surfcache = malloc( g_vid_surfcachesize );
 	D_InitCaches (g_vid_surfcache, g_vid_surfcachesize);
 
@@ -270,6 +283,7 @@ void	VID_SetPalette (unsigned char *palette)
 		g_palette[i].components[ g_sdl.pixel_format.component_index[COMPONENT_G] ] = palette[i*3+1];
 		g_palette[i].components[ g_sdl.pixel_format.component_index[COMPONENT_B] ] = palette[i*3+2];
 		g_palette[i].components[3] = 255;
+		d_8to24table[i] = g_palette[i].pix;
 	}
 }
 
@@ -285,6 +299,7 @@ void	VID_Init (unsigned char *palette)
 	Cvar_RegisterVariable( &vid_scaler );
 	Cvar_RegisterVariable( &vid_display );
 	Cvar_RegisterVariable( &vid_fullscreen );
+	Cvar_RegisterVariable( &vid_32bit );
 	Cmd_AddCommand( "vid_restart", RestartCommand );
 
 	g_sdl.fullscreen = false;
@@ -301,7 +316,9 @@ void	VID_Shutdown (void)
 
 	D_FlushCaches();
 
-	free( vid.buffer );
+	if (r_pixbytes == 1)
+		free( vid.buffer );
+
 	free( g_vid_surfcache );
 	free( d_pzbuffer );
 
@@ -310,7 +327,7 @@ void	VID_Shutdown (void)
 	g_initialized = true;
 }
 
-void	VID_Update (vrect_t *rects)
+static void VID_Update8(void)
 {
 	screen_pixel_t*	dst;
 	int				dst_rowbytes;
@@ -405,6 +422,19 @@ void	VID_Update (vrect_t *rects)
 		SDL_UnlockSurface( g_sdl.window_surface );
 
 	SDL_UpdateWindowSurface( g_sdl.window );
+}
+
+static void VID_Update32(void)
+{
+	SDL_UpdateWindowSurface( g_sdl.window );
+}
+
+void	VID_Update (vrect_t *rects)
+{
+	if (r_pixbytes == 1)
+		VID_Update8();
+	else
+		VID_Update32();
 }
 
 void VID_HandlePause (qboolean pause)
