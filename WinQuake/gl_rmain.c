@@ -98,6 +98,9 @@ cvar_t	gl_keeptjunctions = {"gl_keeptjunctions","0"};
 cvar_t	gl_reporttjunctions = {"gl_reporttjunctions","0"};
 cvar_t	gl_doubleeyes = {"gl_doubleeys", "1"};
 
+cvar_t gl_lightgamma = {"gl_lightgamma", "1.3", true};
+cvar_t gl_lightoverbright = {"gl_lightoverbright", "1.3", true};
+
 extern	cvar_t	gl_ztrick;
 
 /*
@@ -531,11 +534,6 @@ void R_DrawAliasModel (entity_t *e)
 		if (ambientlight < 8)
 			ambientlight = shadelight = 8;
 
-	// HACK HACK HACK -- no fullbright colors, so make torches full light
-	if (!strcmp (clmodel->name, "progs/flame2.mdl")
-		|| !strcmp (clmodel->name, "progs/flame.mdl") )
-		ambientlight = shadelight = 256;
-
 	shadedots = r_avertexnormal_dots[((int)(e->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
 	shadelight = shadelight / 200.0;
 	
@@ -555,8 +553,6 @@ void R_DrawAliasModel (entity_t *e)
 	//
 	// draw all the triangles
 	//
-
-	GL_DisableMultitexture();
 
     glPushMatrix ();
 	R_RotateForEntity (e);
@@ -585,7 +581,11 @@ void R_DrawAliasModel (entity_t *e)
 	if (gl_smoothmodels.value)
 		glShadeModel (GL_SMOOTH);
 
+	GL_BindShader( SHADER_ALIAS );
+
 	R_SetupAliasFrame (e, paliashdr);
+
+	GL_BindShader( SHADER_NONE );
 
 	glShadeModel (GL_FLAT);
 
@@ -842,6 +842,14 @@ void R_SetupFrame (void)
 
 	GL_BindShader( SHADER_SKY );
 	GL_ShaderUniformFloat( "time", cl.time );
+
+	GL_BindShader( SHADER_WORLD );
+	GL_ShaderUniformFloat( "light_gamma", gl_lightgamma.value );
+	GL_ShaderUniformFloat( "light_overbright", gl_lightoverbright.value );
+
+	GL_BindShader( SHADER_ALIAS );
+	GL_ShaderUniformFloat( "light_gamma", gl_lightgamma.value );
+	GL_ShaderUniformFloat( "light_overbright", gl_lightoverbright.value );
 
 	GL_BindShader( SHADER_NONE );
 

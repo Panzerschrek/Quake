@@ -473,7 +473,7 @@ void DrawTextureChains (void)
 	if (!gl_texsort.value)
 		return;
 
-	glColor3f(1,1,1);
+	GL_BindShader( SHADER_WORLD );
 
 	for (i=0 ; i<cl.worldmodel->numtextures ; i++)
 	{
@@ -494,6 +494,8 @@ void DrawTextureChains (void)
 
 		t->texturechain = NULL;
 	}
+
+	GL_BindShader( SHADER_NONE );
 }
 
 /*
@@ -536,7 +538,6 @@ void R_DrawBrushModel (entity_t *e)
 	if (R_CullBox (mins, maxs))
 		return;
 
-	glColor3f (1,1,1);
 	memset (lightmap_polys, 0, sizeof(lightmap_polys));
 
 	VectorSubtract (r_refdef.vieworg, e->origin, modelorg);
@@ -574,6 +575,8 @@ e->angles[0] = -e->angles[0];	// stupid quake bug
 	R_RotateForEntity (e);
 e->angles[0] = -e->angles[0];	// stupid quake bug
 
+	GL_BindShader( SHADER_WORLD );
+
 	//
 	// draw texture
 	//
@@ -599,6 +602,8 @@ e->angles[0] = -e->angles[0];	// stupid quake bug
 				R_DrawSequentialPoly (psurf);
 		}
 	}
+
+	GL_BindShader( SHADER_NONE );
 
 	glPopMatrix ();
 }
@@ -756,8 +761,11 @@ void R_DrawWorld (void)
 	R_ClearSkyBox ();
 #endif
 
-	glColor3f(1,1,1);
+	GL_BindShader( SHADER_WORLD );
+
 	R_RecursiveWorldNode (cl.worldmodel->nodes);
+
+	GL_BindShader( SHADER_NONE );
 
 #ifdef QUAKE2
 	R_DrawSkyBox ();

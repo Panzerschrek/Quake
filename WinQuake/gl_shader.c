@@ -176,6 +176,71 @@ void main(void)\
 }\
 ";
 
+static const char world_shader_v[]= "\
+#version 120\n\
+\
+void main(void)\
+{\
+	gl_TexCoord[0] = gl_MultiTexCoord0;\
+	gl_TexCoord[1] = gl_MultiTexCoord1;\
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+}\
+";
+
+static const char world_shader_f[]= "\
+#version 120\n\
+\
+uniform sampler2D tex;\
+uniform sampler2D lightmap;\
+uniform float light_gamma = 1.0;\
+uniform float light_overbright = 1.0;\
+\
+void main(void)\
+{\
+	vec4 c = texture2D( tex, gl_TexCoord[0].xy );\
+	float l = texture2D( lightmap, gl_TexCoord[1].xy ).x;\
+	\
+	l = pow(l, light_gamma) * light_overbright;\
+	\
+	/* mix lightmap and selft texture glow, stored in alpha texture component */ \
+	gl_FragColor = vec4( c.xyz * mix( 1.0, l, c.a ), 1.0 );\
+}\
+";
+
+static const char alias_shader_v[]= "\
+#version 120\n\
+\
+varying float f_light;\
+\
+void main(void)\
+{\
+	f_light = gl_Color.r;\
+	gl_TexCoord[0] = gl_MultiTexCoord0;\
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+}\
+";
+
+static const char alias_shader_f[]= "\
+#version 120\n\
+\
+uniform sampler2D tex;\
+uniform float light_gamma = 1.0;\
+uniform float light_overbright = 1.0;\
+\
+varying float f_light;\
+\
+void main(void)\
+{\
+	vec4 c = texture2D( tex, gl_TexCoord[0].xy );\
+	float l = f_light;\
+	\
+	l = pow(l, light_gamma) * light_overbright;\
+	\
+	/* mix lightmap and selft texture glow, stored in alpha texture component */ \
+	gl_FragColor = vec4( c.xyz * mix( 1.0, l, c.a ), 1.0 );\
+}\
+";
+
 void GL_InitShaders(void)
 {
 	programs[ SHADER_NONE ].handle = 0;
@@ -190,6 +255,15 @@ void GL_InitShaders(void)
 	GL_BindShader( SHADER_SKY );
 	GL_ShaderUniformInt( "tex0", 0 );
 	GL_ShaderUniformInt( "tex1", 1 );
+
+	InitProgram( SHADER_WORLD, world_shader_v, world_shader_f );
+	GL_BindShader( SHADER_WORLD );
+	GL_ShaderUniformInt( "tex", 0 );
+	GL_ShaderUniformInt( "lightmap", 1 );
+
+	InitProgram( SHADER_ALIAS, alias_shader_v, alias_shader_f );
+	GL_BindShader( SHADER_ALIAS );
+	GL_ShaderUniformInt( "tex", 0 );
 
 	GL_BindShader( SHADER_NONE );
 }

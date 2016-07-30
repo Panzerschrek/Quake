@@ -198,6 +198,9 @@ void R_Init (void)
 
 	Cvar_RegisterVariable (&gl_doubleeyes);
 
+	Cvar_RegisterVariable (&gl_lightgamma);
+	Cvar_RegisterVariable (&gl_lightoverbright);
+
 	GL_InitShaders();
 
 	R_InitParticles ();
