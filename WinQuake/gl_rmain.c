@@ -25,6 +25,10 @@ entity_t	r_worldentity;
 
 qboolean	r_cache_thrash;		// compatability
 
+qboolean	r_dowarp = false;
+int			warp_width ;
+int			warp_height;
+
 vec3_t		modelorg, r_entorigin;
 entity_t	*currententity;
 
@@ -43,6 +47,7 @@ int			cnttextures[2] = {-1, -1};     // cached
 
 int			particletexture;	// little dot for particles
 int			playertextures[16];		// up to 16 color translated skins
+int			warptexture; // buffer for drawing warp view
 
 //
 // view origin
@@ -84,7 +89,6 @@ cvar_t	gl_finish = {"gl_finish","0"};
 cvar_t	gl_clear = {"gl_clear","0"};
 cvar_t	gl_cull = {"gl_cull","1"};
 cvar_t	gl_texsort = {"gl_texsort","1"};
-cvar_t	gl_smoothmodels = {"gl_smoothmodels","1"};
 cvar_t	gl_polyblend = {"gl_polyblend","1"};
 cvar_t	gl_flashblend = {"gl_flashblend","1"};
 cvar_t	gl_playermip = {"gl_playermip","0"};
@@ -93,7 +97,9 @@ cvar_t	gl_keeptjunctions = {"gl_keeptjunctions","0"};
 cvar_t	gl_reporttjunctions = {"gl_reporttjunctions","0"};
 cvar_t	gl_doubleeyes = {"gl_doubleeys", "1"};
 
-extern	cvar_t	gl_ztrick;
+cvar_t gl_lightgamma = {"gl_lightgamma", "1.3", true};
+cvar_t gl_lightoverbright = {"gl_lightoverbright", "1.3", true};
+
 
 /*
 =================
@@ -214,8 +220,6 @@ void R_DrawSpriteModel (entity_t *e)
 	}
 
 	glColor3f (1,1,1);
-
-	GL_DisableMultitexture();
 
     GL_Bind(frame->gl_texturenum);
 
@@ -526,11 +530,6 @@ void R_DrawAliasModel (entity_t *e)
 		if (ambientlight < 8)
 			ambientlight = shadelight = 8;
 
-	// HACK HACK HACK -- no fullbright colors, so make torches full light
-	if (!strcmp (clmodel->name, "progs/flame2.mdl")
-		|| !strcmp (clmodel->name, "progs/flame.mdl") )
-		ambientlight = shadelight = 256;
-
 	shadedots = r_avertexnormal_dots[((int)(e->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
 	shadelight = shadelight / 200.0;
 	
@@ -550,8 +549,6 @@ void R_DrawAliasModel (entity_t *e)
 	//
 	// draw all the triangles
 	//
-
-	GL_DisableMultitexture();
 
     glPushMatrix ();
 	R_RotateForEntity (e);
@@ -577,11 +574,12 @@ void R_DrawAliasModel (entity_t *e)
 		    GL_Bind(playertextures[ -1 + i ]);
 	}
 
-	if (gl_smoothmodels.value)
-		glShadeModel (GL_SMOOTH);
+	glShadeModel (GL_SMOOTH);
+	GL_BindShader( SHADER_ALIAS );
 
 	R_SetupAliasFrame (e, paliashdr);
 
+	GL_BindShader( SHADER_NONE );
 	glShadeModel (GL_FLAT);
 
 	glPopMatrix ();
@@ -732,8 +730,6 @@ void R_PolyBlend (void)
 	if (!v_blend[3])
 		return;
 
-	GL_DisableMultitexture();
-
 	glDisable (GL_ALPHA_TEST);
 	glEnable (GL_BLEND);
 	glDisable (GL_DEPTH_TEST);
@@ -827,6 +823,27 @@ void R_SetupFrame (void)
 	if (cl.maxclients > 1)
 		Cvar_Set ("r_fullbright", "0");
 
+	// Setup globals in shaders
+	GL_BindShader( SHADER_SCREEN_WARP );
+	GL_ShaderUniformFloat( "time", cl.time );
+
+	GL_BindShader( SHADER_WATER_TURB );
+	GL_ShaderUniformFloat( "time", cl.time );
+	GL_ShaderUniformFloat( "alpha", r_wateralpha.value );
+
+	GL_BindShader( SHADER_SKY );
+	GL_ShaderUniformFloat( "time", cl.time );
+
+	GL_BindShader( SHADER_WORLD );
+	GL_ShaderUniformFloat( "light_gamma", gl_lightgamma.value );
+	GL_ShaderUniformFloat( "light_overbright", gl_lightoverbright.value );
+
+	GL_BindShader( SHADER_ALIAS );
+	GL_ShaderUniformFloat( "light_gamma", gl_lightgamma.value );
+	GL_ShaderUniformFloat( "light_overbright", gl_lightoverbright.value );
+
+	GL_BindShader( SHADER_NONE );
+
 	R_AnimateLight ();
 
 	r_framecount++;
@@ -848,6 +865,7 @@ void R_SetupFrame (void)
 	c_brush_polys = 0;
 	c_alias_polys = 0;
 
+	r_dowarp = r_viewleaf->contents <= CONTENTS_WATER;
 }
 
 
@@ -876,7 +894,6 @@ void R_SetupGL (void)
 	float	screenaspect;
 	float	yfov;
 	int		i;
-	extern	int glwidth, glheight;
 	int		x, x2, y2, y, w, h;
 
 	//
@@ -884,20 +901,10 @@ void R_SetupGL (void)
 	//
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity ();
-	x = r_refdef.vrect.x * glwidth/vid.width;
-	x2 = (r_refdef.vrect.x + r_refdef.vrect.width) * glwidth/vid.width;
-	y = (vid.height-r_refdef.vrect.y) * glheight/vid.height;
-	y2 = (vid.height - (r_refdef.vrect.y + r_refdef.vrect.height)) * glheight/vid.height;
-
-	// fudge around because of frac screen scale
-	if (x > 0)
-		x--;
-	if (x2 < glwidth)
-		x2++;
-	if (y2 < 0)
-		y2--;
-	if (y < glheight)
-		y++;
+	x = r_refdef.vrect.x;
+	x2 = r_refdef.vrect.x + r_refdef.vrect.width;
+	y = vid.height-r_refdef.vrect.y;
+	y2 = vid.height - (r_refdef.vrect.y + r_refdef.vrect.height);
 
 	w = x2 - x;
 	h = y - y2;
@@ -908,7 +915,29 @@ void R_SetupGL (void)
 		w = h = 256;
 	}
 
-	glViewport (glx + x, gly + y2, w, h);
+	if (r_dowarp)
+	{
+		// Draw in low resolution,
+		// but no less, then 320x200 / 2, and not bigger, than r_refdef.vrect.size
+		warp_width  = w / 3;
+		warp_height = h / 3;
+
+		if (warp_width  < 320 / 2)
+			warp_width  = 320 / 2;
+		if (warp_width  > r_refdef.vrect.width )
+			warp_width  = r_refdef.vrect.width;
+
+		if (warp_height < 200 / 2)
+			warp_height = 200 / 2;
+		if (warp_height > r_refdef.vrect.height )
+			warp_height = r_refdef.vrect.height;
+	
+
+		glViewport (x, y2, warp_width, warp_height);
+	}
+	else
+		glViewport (x, y2, w, h);
+
     screenaspect = (float)r_refdef.vrect.width/r_refdef.vrect.height;
 //	yfov = 2*atan((float)r_refdef.vrect.height/r_refdef.vrect.width)*180/M_PI;
     MYgluPerspective (r_refdef.fov_y,  screenaspect,  4,  4096);
@@ -941,6 +970,68 @@ void R_SetupGL (void)
 }
 
 /*
+===============
+R_DoWarp
+===============
+*/
+
+void R_DoWarp(void)
+{
+	if (!r_dowarp)
+		return;
+
+	glDisable (GL_ALPHA_TEST);
+	glDisable (GL_DEPTH_TEST);
+
+	GL_Bind(warptexture);
+
+	glViewport (
+		r_refdef.vrect.x,
+		vid.height - (r_refdef.vrect.y + r_refdef.vrect.height),
+		r_refdef.vrect.width,
+		r_refdef.vrect.height);
+
+	glCopyTexImage2D(
+		GL_TEXTURE_2D,
+		0, GL_RGBA,
+		r_refdef.vrect.x, vid.height - (r_refdef.vrect.y + r_refdef.vrect.height),
+		warp_width, warp_height,
+		0 );
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
+	GL_BindShader( SHADER_SCREEN_WARP );
+	GL_ShaderUniformInt( "tex", 0 );
+	GL_ShaderUniformVec2( "tex_size", r_refdef.vrect.width, r_refdef.vrect.height );
+	
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+
+	glBegin (GL_QUADS);
+	glTexCoord2f( 1, 0 );
+	glVertex2f(  1, -1 );
+	glTexCoord2f( 0, 0 );
+	glVertex2f( -1, -1 );
+	glTexCoord2f( 0, 1 );
+	glVertex2f( -1,  1 );
+	glTexCoord2f( 1, 1 );
+	glVertex2f(  1,  1 );
+	glEnd ();
+
+	GL_BindShader( SHADER_NONE );
+
+	glEnable (GL_DEPTH_TEST);
+	glEnable (GL_ALPHA_TEST);
+}
+
+/*
 ================
 R_RenderScene
 
@@ -963,7 +1054,7 @@ void R_RenderScene (void)
 
 	R_DrawEntitiesOnList ();
 
-	GL_DisableMultitexture();
+	DrawTextureChains ();
 
 	R_RenderDlights ();
 
@@ -979,37 +1070,13 @@ R_Clear
 */
 void R_Clear (void)
 {
-	if (gl_ztrick.value)
-	{
-		static int trickframe;
-
-		if (gl_clear.value)
-			glClear (GL_COLOR_BUFFER_BIT);
-
-		trickframe++;
-		if (trickframe & 1)
-		{
-			gldepthmin = 0;
-			gldepthmax = 0.49999;
-			glDepthFunc (GL_LEQUAL);
-		}
-		else
-		{
-			gldepthmin = 1;
-			gldepthmax = 0.5;
-			glDepthFunc (GL_GEQUAL);
-		}
-	}
+	if (gl_clear.value)
+		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	else
-	{
-		if (gl_clear.value)
-			glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		else
-			glClear (GL_DEPTH_BUFFER_BIT);
-		gldepthmin = 0;
-		gldepthmax = 1;
-		glDepthFunc (GL_LEQUAL);
-	}
+		glClear (GL_DEPTH_BUFFER_BIT);
+	gldepthmin = 0;
+	gldepthmax = 1;
+	glDepthFunc (GL_LEQUAL);
 
 	glDepthRange (gldepthmin, gldepthmax);
 }
@@ -1065,6 +1132,8 @@ void R_RenderView (void)
 //  End of all fog code...
 
 	R_PolyBlend ();
+
+	R_DoWarp();
 
 	if (r_speeds.value)
 	{

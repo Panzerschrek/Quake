@@ -38,7 +38,6 @@ byte	mod_novis[MAX_MAP_LEAFS/8];
 model_t	mod_known[MAX_MOD_KNOWN];
 int		mod_numknown;
 
-cvar_t gl_subdivide_size = {"gl_subdivide_size", "128", true};
 
 /*
 ===============
@@ -47,7 +46,6 @@ Mod_Init
 */
 void Mod_Init (void)
 {
-	Cvar_RegisterVariable (&gl_subdivide_size);
 	memset (mod_novis, 0xff, sizeof(mod_novis));
 }
 
@@ -799,23 +797,11 @@ void Mod_LoadFaces (lump_t *l)
 		if (!Q_strncmp(out->texinfo->texture->name,"sky",3))	// sky
 		{
 			out->flags |= (SURF_DRAWSKY | SURF_DRAWTILED);
-#ifndef QUAKE2
-			GL_SubdivideSurface (out);	// cut up polygon for warps
-#endif
 			continue;
 		}
 		
 		if (!Q_strncmp(out->texinfo->texture->name,"*",1))		// turbulent
-		{
 			out->flags |= (SURF_DRAWTURB | SURF_DRAWTILED);
-			for (i=0 ; i<2 ; i++)
-			{
-				out->extents[i] = 16384;
-				out->texturemins[i] = -8192;
-			}
-			GL_SubdivideSurface (out);	// cut up polygon for warps
-			continue;
-		}
 
 	}
 }

@@ -923,7 +923,7 @@ Setup as if the screen was 320*200
 */
 void GL_Set2D (void)
 {
-	glViewport (glx, gly, glwidth, glheight);
+	glViewport (0, 0, vid.width, vid.height);
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity ();
@@ -1060,39 +1060,44 @@ GL_Upload8
 */
 void GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboolean alpha)
 {
-static	unsigned	trans[640*480];		// FIXME, temporary
+	const byte			c_first_fullbrigh = 256 - 32;
+	static	unsigned	trans[1024*1024];		// FIXME, temporary
 	int			i, s;
 	qboolean	noalpha;
-	int			p;
 
 	s = width*height;
-	// if there are no transparent pixels, make it a 3 component
-	// texture even if it was specified as otherwise
+	if (s > sizeof(trans))
+		Sys_Error ("GL_Upload8: temporary buffer too small\n");
+
 	if (alpha)
 	{
-		noalpha = true;
 		for (i=0 ; i<s ; i++)
-		{
-			p = data[i];
-			if (p == 255)
-				noalpha = false;
-			trans[i] = d_8to24table[p];
-		}
-
-		if (alpha && noalpha)
-			alpha = false;
+			trans[i] = d_8to24table[data[i]];
 	}
 	else
 	{
+		// Mark bright colors as zero alpha in textures for shader.
 		if (s&3)
-			Sys_Error ("GL_Upload8: s&3");
-		for (i=0 ; i<s ; i+=4)
-		{
-			trans[i] = d_8to24table[data[i]];
-			trans[i+1] = d_8to24table[data[i+1]];
-			trans[i+2] = d_8to24table[data[i+2]];
-			trans[i+3] = d_8to24table[data[i+3]];
-		}
+			for (i=0 ; i<s ; i++)
+			{
+				trans[i] = d_8to24table[data[i]];
+				if( data[i] >= c_first_fullbrigh ) trans[i] &= 0x00FFFFFF;
+			}
+		else
+			for (i=0 ; i<s ; i+=4)
+			{
+				trans[i  ] = d_8to24table[data[i  ]];
+				if( data[i  ] >= c_first_fullbrigh ) trans[i  ] &= 0x00FFFFFF;
+
+				trans[i+1] = d_8to24table[data[i+1]];
+				if( data[i+1] >= c_first_fullbrigh ) trans[i+1] &= 0x00FFFFFF;
+
+				trans[i+2] = d_8to24table[data[i+2]];
+				if( data[i+2] >= c_first_fullbrigh ) trans[i+2] &= 0x00FFFFFF;
+
+				trans[i+3] = d_8to24table[data[i+3]];
+				if( data[i+3] >= c_first_fullbrigh ) trans[i+3] &= 0x00FFFFFF;
+			}
 	}
 
 	GL_Upload32 (trans, width, height, mipmap, alpha);

@@ -56,21 +56,11 @@ void	R_InitTextures (void)
 	}	
 }
 
-byte	dottexture[8][8] =
-{
-	{0,1,1,0,0,0,0,0},
-	{1,1,1,1,0,0,0,0},
-	{1,1,1,1,0,0,0,0},
-	{0,1,1,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0},
-};
+
 void R_InitParticleTexture (void)
 {
-	int		x,y;
-	byte	data[8][8][4];
+	int		x,y, dx, dy;
+	byte	data[64][64][4];
 
 	//
 	// particle texture
@@ -78,20 +68,25 @@ void R_InitParticleTexture (void)
 	glGenTextures( 1, &particletexture );
     GL_Bind(particletexture);
 
-	for (x=0 ; x<8 ; x++)
+	// Draw circle in upper right texture quarter.
+	for (x=0 ; x<64 ; x++)
 	{
-		for (y=0 ; y<8 ; y++)
+		for (y=0 ; y<64 ; y++)
 		{
 			data[y][x][0] = 255;
 			data[y][x][1] = 255;
 			data[y][x][2] = 255;
-			data[y][x][3] = dottexture[x][y]*255;
+
+			dx = x - 16;
+			dy = y - 16;
+			if ( dx * dx + dy * dy < 16 * 16)
+				data[y][x][3] = 255;
+			else
+				data[y][x][3] = 0;
 		}
 	}
-	glTexImage2D (GL_TEXTURE_2D, 0, gl_alpha_format, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	GL_Upload32( (unsigned int*) data, 64, 64, true, true );
 }
 
 /*
@@ -118,39 +113,33 @@ void R_Envmap_f (void)
 	r_refdef.viewangles[0] = 0;
 	r_refdef.viewangles[1] = 0;
 	r_refdef.viewangles[2] = 0;
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	R_RenderView ();
 	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 	COM_WriteFile ("env0.rgb", buffer, sizeof(buffer));		
 
 	r_refdef.viewangles[1] = 90;
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	R_RenderView ();
 	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 	COM_WriteFile ("env1.rgb", buffer, sizeof(buffer));		
 
 	r_refdef.viewangles[1] = 180;
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	R_RenderView ();
 	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 	COM_WriteFile ("env2.rgb", buffer, sizeof(buffer));		
 
 	r_refdef.viewangles[1] = 270;
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	R_RenderView ();
 	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 	COM_WriteFile ("env3.rgb", buffer, sizeof(buffer));		
 
 	r_refdef.viewangles[0] = -90;
 	r_refdef.viewangles[1] = 0;
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	R_RenderView ();
 	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 	COM_WriteFile ("env4.rgb", buffer, sizeof(buffer));		
 
 	r_refdef.viewangles[0] = 90;
 	r_refdef.viewangles[1] = 0;
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
 	R_RenderView ();
 	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 	COM_WriteFile ("env5.rgb", buffer, sizeof(buffer));		
@@ -190,10 +179,7 @@ void R_Init (void)
 	Cvar_RegisterVariable (&gl_clear);
 	Cvar_RegisterVariable (&gl_texsort);
 
-	Cvar_SetValue ("gl_texsort", 0.0);
-
 	Cvar_RegisterVariable (&gl_cull);
-	Cvar_RegisterVariable (&gl_smoothmodels);
 	Cvar_RegisterVariable (&gl_polyblend);
 	Cvar_RegisterVariable (&gl_flashblend);
 	Cvar_RegisterVariable (&gl_playermip);
@@ -204,10 +190,16 @@ void R_Init (void)
 
 	Cvar_RegisterVariable (&gl_doubleeyes);
 
+	Cvar_RegisterVariable (&gl_lightgamma);
+	Cvar_RegisterVariable (&gl_lightoverbright);
+
+	GL_InitShaders();
+
 	R_InitParticles ();
 	R_InitParticleTexture ();
 
 	glGenTextures( 16, playertextures );
+	glGenTextures( 1, &warptexture );
 }
 
 /*
@@ -233,7 +225,6 @@ void R_TranslatePlayerSkin (int playernum)
 	unsigned	frac, fracstep;
 	extern	byte		**player_8bit_texels_tbl;
 
-	GL_DisableMultitexture();
 
 	top = cl.scores[playernum].colors & 0xf0;
 	bottom = (cl.scores[playernum].colors &15)<<4;
