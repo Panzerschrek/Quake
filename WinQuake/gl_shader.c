@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #define MAX_UNIFORMS 16
-#define MAX_UNIFORM_NAME_LEN 16
+#define MAX_UNIFORM_NAME_LEN 24
 
 #define PI_S "3.1415926535"
 
