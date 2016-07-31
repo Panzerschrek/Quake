@@ -667,6 +667,7 @@ void D_PolysetDrawSpans32 (spanpackage_t *pspanpackage)
 	int		llight;
 	int		lzi;
 	short	*lpz;
+	unsigned int color, ulight, comp[4];
 
 	do
 	{
@@ -697,19 +698,24 @@ void D_PolysetDrawSpans32 (spanpackage_t *pspanpackage)
 			{
 				if ((lzi >> 16) >= *lpz)
 				{
-					unsigned int color = d_8to24table[*lptex];
+					color = d_8to24table[*lptex];
 					if (*lptex >= 224) // fullbright
 						*lpdest = color;
 					else
 					{
-						unsigned int components[4];
-						components[0] = ( ((color             )>>24) * llight ) >> 14;
-						components[1] = ( ((color & 0x00FF0000)>>16) * llight ) >> 14;
-						components[2] = ( ((color & 0x0000FF00)>> 8) * llight ) >> 14;
-						components[3] = ( ((color & 0x000000FF)    ) * llight ) >> 14;
+						if (llight > 16384) llight = 16384;
+						ulight = 16384u - (unsigned int)llight;
+						comp[0] = ( ((color              )>>24u) * ulight ) >> 13u;
+						if (comp[0] > 255) comp[0] = 255;
+						comp[1] = ( ((color & 0x00FF0000u)>>16u) * ulight ) >> 13u;
+						if (comp[1] > 255) comp[1] = 255;
+						comp[2] = ( ((color & 0x0000FF00u)>> 8u) * ulight ) >> 13u;
+						if (comp[2] > 255) comp[2] = 255;
+						comp[3] = ( ((color & 0x000000FFu)     ) * ulight ) >> 13u;
+						if (comp[3] > 255) comp[3] = 255;
 						*lpdest =
-							(components[0] << 24) | (components[1] << 16) |
-							(components[2] <<  8) | (components[3]      );
+							(comp[0] << 24u) | (comp[1] << 16u) |
+							(comp[2] <<  8u) | (comp[3]       );
 					}
 
 					*lpz = lzi >> 16;
