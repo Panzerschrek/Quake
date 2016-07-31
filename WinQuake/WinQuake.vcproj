@@ -3811,10 +3811,6 @@
 				>
 			</File>
 			<File
-				RelativePath="dosisms.h"
-				>
-			</File>
-			<File
 				RelativePath="draw.h"
 				>
 			</File>
