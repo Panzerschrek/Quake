@@ -3807,6 +3807,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\d_local.h"
+				>
+			</File>
+			<File
 				RelativePath="dosisms.h"
 				>
 			</File>

@@ -80,6 +80,12 @@ cvar_t	vid_height = { "vid_height", "480", true };
 cvar_t	vid_scaler = { "vid_scaler", "1", true };
 cvar_t	vid_display = { "vid_display", "0", true };
 cvar_t	vid_fullscreen = { "vid_fullscreen", "0", true };
+cvar_t	vid_32bit = { "vid_32bit", "1", true };
+
+static qboolean DrawDirect(void)
+{
+	return r_pixbytes == 4 && g_sdl.scaler == 1;
+}
 
 static void MenuDrawFn(void)
 {
@@ -132,6 +138,8 @@ static void UpdateMode (unsigned char *palette)
 	SDL_DisplayMode		display_mode;
 	int					width, height;
 	int					system_width, system_height;
+
+	r_pixbytes = vid_32bit.value ? 4 : 1;
 
 	g_sdl.fullscreen = false;
 	{
@@ -212,13 +220,23 @@ static void UpdateMode (unsigned char *palette)
 
 	vid.width  = width ;
 	vid.height = height;
-	vid.rowbytes = vid.width;
 	vid.numpages = 1;
 	vid.maxwarpwidth  = WARP_WIDTH ;
 	vid.maxwarpheight = WARP_HEIGHT;
+	vid.warpbuffer = malloc( vid.maxwarpwidth * vid.maxwarpheight * r_pixbytes );
 	vid.aspect = 1.0f;
 
-	vid.buffer = malloc( vid.width * vid.height );
+	if (DrawDirect())
+	{
+		vid.buffer = (pixel_t*) g_sdl.window_surface->pixels;
+		vid.rowbytes = g_sdl.window_surface->pitch;
+	}
+	else
+	{
+		vid.buffer = malloc( vid.width * vid.height * r_pixbytes );
+		vid.rowbytes = vid.width * r_pixbytes;
+	}
+	
 	vid.recalc_refdef = true;
 
 	vid.conwidth  = vid.width ;
@@ -227,6 +245,7 @@ static void UpdateMode (unsigned char *palette)
 	vid.conbuffer = vid.buffer;
 
 	vid.colormap = host_colormap;
+	vid.colormap16 = d_8to16table;
 	vid.fullbright = 256 - LittleLong (*((int *)vid.colormap + 2048));
 
 	d_pzbuffer = malloc( vid.width * vid.height * sizeof(short) );
@@ -236,7 +255,7 @@ static void UpdateMode (unsigned char *palette)
 
 	VID_SetPalette(palette);
 
-	g_vid_surfcachesize = D_SurfaceCacheForRes (vid.width, vid.height);
+	g_vid_surfcachesize = D_SurfaceCacheForRes (vid.width, vid.height) * r_pixbytes;
 	g_vid_surfcache = malloc( g_vid_surfcachesize );
 	D_InitCaches (g_vid_surfcache, g_vid_surfcachesize);
 
@@ -253,10 +272,14 @@ static void RestartCommand(void)
 
 void VID_LockBuffer (void)
 {
+	if (DrawDirect() && SDL_MUSTLOCK( g_sdl.window_surface ))
+		SDL_LockSurface( g_sdl.window_surface );
 }
 
 void VID_UnlockBuffer (void)
 {
+	if (DrawDirect() && SDL_MUSTLOCK( g_sdl.window_surface ))
+		SDL_UnlockSurface( g_sdl.window_surface );
 }
 
 
@@ -270,6 +293,7 @@ void	VID_SetPalette (unsigned char *palette)
 		g_palette[i].components[ g_sdl.pixel_format.component_index[COMPONENT_G] ] = palette[i*3+1];
 		g_palette[i].components[ g_sdl.pixel_format.component_index[COMPONENT_B] ] = palette[i*3+2];
 		g_palette[i].components[3] = 255;
+		d_8to24table[i] = g_palette[i].pix;
 	}
 }
 
@@ -285,6 +309,7 @@ void	VID_Init (unsigned char *palette)
 	Cvar_RegisterVariable( &vid_scaler );
 	Cvar_RegisterVariable( &vid_display );
 	Cvar_RegisterVariable( &vid_fullscreen );
+	Cvar_RegisterVariable( &vid_32bit );
 	Cmd_AddCommand( "vid_restart", RestartCommand );
 
 	g_sdl.fullscreen = false;
@@ -301,7 +326,10 @@ void	VID_Shutdown (void)
 
 	D_FlushCaches();
 
-	free( vid.buffer );
+	if (r_pixbytes == 1)
+		free( vid.buffer );
+
+	free( vid.warpbuffer );
 	free( g_vid_surfcache );
 	free( d_pzbuffer );
 
@@ -310,7 +338,7 @@ void	VID_Shutdown (void)
 	g_initialized = true;
 }
 
-void	VID_Update (vrect_t *rects)
+static void VID_Update8(void)
 {
 	screen_pixel_t*	dst;
 	int				dst_rowbytes;
@@ -319,8 +347,6 @@ void	VID_Update (vrect_t *rects)
 	int				src_x, src_y, p_x, p_y;
 	int				p_left_x, p_left_y;
 	int				must_lock;
-
-	VID_FPSUpdate();
 
 	must_lock = SDL_MUSTLOCK( g_sdl.window_surface );
 
@@ -405,6 +431,97 @@ void	VID_Update (vrect_t *rects)
 		SDL_UnlockSurface( g_sdl.window_surface );
 
 	SDL_UpdateWindowSurface( g_sdl.window );
+}
+
+static void VID_Update32(void)
+{
+	int				must_lock;
+	int				dst_rowbytes;
+	int				p_left_x, p_left_y;
+	int				p_x, p_y;
+	int				src_x, src_y;
+	screen_pixel_t	pix;
+	screen_pixel_t*	src;
+	screen_pixel_t*	dst;
+
+
+	if (g_sdl.scaler != 1)
+	{
+		must_lock = SDL_MUSTLOCK( g_sdl.window_surface );
+
+		if (must_lock)
+			SDL_LockSurface( g_sdl.window_surface );
+
+		dst_rowbytes = g_sdl.window_surface->pitch;
+		p_left_x = g_sdl.window_surface->w - vid.width  * g_sdl.scaler;
+		p_left_y = g_sdl.window_surface->h - vid.height * g_sdl.scaler;
+
+		// for source lines
+		for (src_y = 0; src_y < vid.height; src_y++)
+		{
+			src = ((screen_pixel_t*)vid.buffer) + vid.width * src_y;
+
+			for (p_y = 0; p_y < g_sdl.scaler; p_y++)
+			{
+				dst = (screen_pixel_t*)
+					( ((byte*)g_sdl.window_surface->pixels) + (src_y * g_sdl.scaler + p_y ) * dst_rowbytes );
+
+				// Unwind loop for some scales
+				if (g_sdl.scaler == 2)
+					for (src_x = 0; src_x < vid.width; src_x++, dst+= 2)
+						dst[0] = dst[1] = src[src_x];
+
+				else if (g_sdl.scaler == 3)
+					for (src_x = 0; src_x < vid.width; src_x++, dst+= 3)
+						dst[0] = dst[1] = dst[2] = src[src_x];
+
+				else if (g_sdl.scaler == 4)
+					for (src_x = 0; src_x < vid.width; src_x++, dst+= 4)
+						dst[0] = dst[1] = dst[2] = dst[3] = src[src_x];
+
+				else if (g_sdl.scaler == 5)
+					for (src_x = 0; src_x < vid.width; src_x++, dst+= 5)
+						dst[0] = dst[1] = dst[2] = dst[3] = dst[4] = src[src_x];
+
+				else
+					for (src_x = 0; src_x < vid.width; src_x++)
+					{
+						for (p_x = 0; p_x < g_sdl.scaler; p_x++, dst++)
+							*dst = src[src_x];
+					}
+
+				// fill left pixels near screen edge
+				pix = src[ vid.width - 1 ];
+				for (p_x = 0; p_x < p_left_x; p_x++, dst++)
+					*dst = pix;
+			}
+		}
+
+		// Copy last effective line from framebuffer to left framebuffer lines
+		for (p_y = 0; p_y < p_left_y; p_y++)
+		{
+			memcpy(
+				((byte*)g_sdl.window_surface->pixels) + (vid.height * g_sdl.scaler + p_y ) * dst_rowbytes,
+				((byte*)g_sdl.window_surface->pixels) + (vid.height * g_sdl.scaler - 1   ) * dst_rowbytes,
+				dst_rowbytes );
+		}
+
+		if (must_lock)
+			SDL_UnlockSurface( g_sdl.window_surface );
+	}
+
+
+	SDL_UpdateWindowSurface( g_sdl.window );
+}
+
+void	VID_Update (vrect_t *rects)
+{
+	VID_FPSUpdate();
+
+	if (r_pixbytes == 1)
+		VID_Update8();
+	else
+		VID_Update32();
 }
 
 void VID_HandlePause (qboolean pause)

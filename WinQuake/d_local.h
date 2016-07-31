@@ -34,6 +34,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define SURFCACHE_SIZE_AT_320X200	600*1024
 
+typedef struct {
+	void			*pdest;
+	short			*pz;
+	int				count;
+	byte			*ptex;
+	int				sfrac, tfrac, light, zi;
+} spanpackage_t;
+
 typedef struct surfcache_s
 {
 	struct surfcache_s	*next;
@@ -71,13 +79,21 @@ fixed16_t	bbextents, bbextentt;
 
 
 void D_DrawSpans8 (espan_t *pspans);
-void D_DrawSpans16 (espan_t *pspans);
+void D_DrawSpans32 (espan_t *pspans);
 void D_DrawZSpans (espan_t *pspans);
 void Turbulent8 (espan_t *pspan);
-void D_SpriteDrawSpans (sspan_t *pspan);
+void Turbulent32 (espan_t *pspan);
+void D_SpriteDrawSpans8 (sspan_t *pspan);
+void D_SpriteDrawSpans32 (sspan_t *pspan);
 
 void D_DrawSkyScans8 (espan_t *pspan);
-void D_DrawSkyScans16 (espan_t *pspan);
+void D_DrawSkyScans32 (espan_t *pspan);
+
+void D_DrawParticlePixels8(void);
+void D_DrawParticlePixels32(void);
+
+void D_PolysetDrawSpans8 (spanpackage_t *pspanpackage);
+void D_PolysetDrawSpans32 (spanpackage_t *pspanpackage);
 
 void R_ShowSubDiv (void);
 void (*prealspandrawer)(void);
@@ -103,4 +119,8 @@ extern int		d_minmip;
 extern float	d_scalemip[3];
 
 extern void (*d_drawspans) (espan_t *pspan);
-
+extern void (*d_drawturbulent) (espan_t *pspan);
+extern void (*d_drawskyscans) (espan_t *pspan);
+extern void (*d_drawparticlepixels) (void);
+extern void (*d_drawpolysetspans) (spanpackage_t *pspanpackage);
+extern void (*d_spritedrawspans) (sspan_t *pspan);

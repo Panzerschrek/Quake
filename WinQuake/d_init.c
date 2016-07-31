@@ -38,7 +38,11 @@ static float	basemip[NUM_MIPS-1] = {1.0, 0.5*0.8, 0.25*0.8};
 extern int			d_aflatcolor;
 
 void (*d_drawspans) (espan_t *pspan);
-
+void (*d_drawturbulent) (espan_t *pspan);
+void (*d_drawskyscans) (espan_t *pspan);
+void (*d_drawparticlepixels) (void);
+void (*d_drawpolysetspans) (spanpackage_t *pspanpackage);
+void (*d_spritedrawspans) (sspan_t *pspan);
 
 /*
 ===============
@@ -57,7 +61,6 @@ void D_Init (void)
 	r_drawpolys = false;
 	r_worldpolysbacktofront = false;
 	r_recursiveaffinetriangles = true;
-	r_pixbytes = 1;
 	r_aliasuvscale = 1.0;
 }
 
@@ -131,7 +134,7 @@ void D_SetupFrame (void)
 	if (r_dowarp)
 		screenwidth = WARP_WIDTH;
 	else
-		screenwidth = vid.rowbytes;
+		screenwidth = vid.rowbytes / r_pixbytes;
 
 	d_roverwrapped = false;
 	d_initial_rover = sc_rover;
@@ -145,7 +148,24 @@ void D_SetupFrame (void)
 	for (i=0 ; i<(NUM_MIPS-1) ; i++)
 		d_scalemip[i] = basemip[i] * d_mipscale.value;
 
-	d_drawspans = D_DrawSpans8;
+	if (r_pixbytes == 1)
+	{
+		d_drawspans = D_DrawSpans8;
+		d_drawturbulent = Turbulent8;
+		d_drawskyscans = D_DrawSkyScans8;
+		d_drawparticlepixels = D_DrawParticlePixels8;
+		d_drawpolysetspans = D_PolysetDrawSpans8;
+		d_spritedrawspans = D_SpriteDrawSpans8;
+	}
+	else
+	{
+		d_drawspans = D_DrawSpans32;
+		d_drawturbulent = Turbulent32;
+		d_drawskyscans = D_DrawSkyScans32;
+		d_drawparticlepixels = D_DrawParticlePixels32;
+		d_drawpolysetspans = D_PolysetDrawSpans32;
+		d_spritedrawspans = D_SpriteDrawSpans32;
+	}
 
 	d_aflatcolor = 0;
 }

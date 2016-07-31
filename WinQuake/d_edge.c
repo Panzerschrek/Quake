@@ -219,7 +219,7 @@ void D_DrawSurfaces (void)
 					R_MakeSky ();
 				}
 
-				D_DrawSkyScans8 (s->spans);
+				d_drawskyscans (s->spans);
 				D_DrawZSpans (s->spans);
 			}
 			else if (s->flags & SURF_DRAWBACKGROUND)
@@ -257,7 +257,7 @@ void D_DrawSurfaces (void)
 				}
 
 				D_CalcGradients (pface);
-				Turbulent8 (s->spans);
+				d_drawturbulent (s->spans);
 				D_DrawZSpans (s->spans);
 
 				if (s->insubmodel)
