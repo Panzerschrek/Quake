@@ -80,6 +80,9 @@ void D_SpriteDrawSpans (sspan_t *pspan);
 void D_DrawSkyScans8 (espan_t *pspan);
 void D_DrawSkyScans32 (espan_t *pspan);
 
+void D_DrawParticlePixels8(void);
+void D_DrawParticlePixels32(void);
+
 void R_ShowSubDiv (void);
 void (*prealspandrawer)(void);
 surfcache_t	*D_CacheSurface (msurface_t *surface, int miplevel);
@@ -106,3 +109,4 @@ extern float	d_scalemip[3];
 extern void (*d_drawspans) (espan_t *pspan);
 extern void (*d_drawturbulent) (espan_t *pspan);
 extern void (*d_drawskyscans) (espan_t *pspan);
+extern void (*d_drawparticlepixels) (void);

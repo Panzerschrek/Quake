@@ -40,6 +40,7 @@ extern int			d_aflatcolor;
 void (*d_drawspans) (espan_t *pspan);
 void (*d_drawturbulent) (espan_t *pspan);
 void (*d_drawskyscans) (espan_t *pspan);
+void (*d_drawparticlepixels) (void);
 
 /*
 ===============
@@ -150,12 +151,14 @@ void D_SetupFrame (void)
 		d_drawspans = D_DrawSpans8;
 		d_drawturbulent = Turbulent8;
 		d_drawskyscans = D_DrawSkyScans8;
+		d_drawparticlepixels = D_DrawParticlePixels8;
 	}
 	else
 	{
 		d_drawspans = D_DrawSpans32;
 		d_drawturbulent = Turbulent32;
 		d_drawskyscans = D_DrawSkyScans32;
+		d_drawparticlepixels = D_DrawParticlePixels32;
 	}
 
 	d_aflatcolor = 0;
