@@ -788,9 +788,7 @@ void Draw_TransPicTranslate (int x, int y, qpic_t *pic, byte *translation)
 				tbyte = source[u];
 
 				if (tbyte != TRANSPARENT_COLOR)
-				{
-					pusdest[u] = d_8to24table[tbyte];
-				}
+					pusdest[u] = d_8to24table[translation[tbyte]];
 			}
 
 			pusdest += vid.rowbytes >> 2;
