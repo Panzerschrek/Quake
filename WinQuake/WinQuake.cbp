@@ -19,6 +19,21 @@
 					<Add option="-s" />
 				</Linker>
 			</Target>
+			<Target title="ReleaseGL">
+				<Option output="bin\ReleaseGL\GLQuake" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj\ReleaseGL\" />
+				<Option type="1" />
+				<Option compiler="mingw_qt_53" />
+				<Compiler>
+					<Add option="-march=pentium4" />
+					<Add option="-O2" />
+					<Add option="-DGLQUAKE" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="opengl32" />
+				</Linker>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
@@ -78,47 +93,113 @@
 		<Unit filename="cvar.h" />
 		<Unit filename="d_edge.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="d_fill.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="d_iface.h" />
 		<Unit filename="d_ifacea.h" />
 		<Unit filename="d_init.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="d_local.h" />
 		<Unit filename="d_modech.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="d_part.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="d_polyse.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="d_scan.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="d_sky.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="d_sprite.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="d_surf.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="d_vars.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="d_zpoint.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="draw.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="draw.h" />
+		<Unit filename="gl_draw.c">
+			<Option compilerVar="CC" />
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_funcs_list.h">
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_mesh.c">
+			<Option compilerVar="CC" />
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_model.c">
+			<Option compilerVar="CC" />
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_model.h">
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_refrag.c">
+			<Option compilerVar="CC" />
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_rlight.c">
+			<Option compilerVar="CC" />
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_rmain.c">
+			<Option compilerVar="CC" />
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_rmisc.c">
+			<Option compilerVar="CC" />
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_rsurf.c">
+			<Option compilerVar="CC" />
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_screen.c">
+			<Option compilerVar="CC" />
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_shader.c">
+			<Option compilerVar="CC" />
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_shader.h">
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_warp.c">
+			<Option compilerVar="CC" />
+			<Option target="ReleaseGL" />
+		</Unit>
 		<Unit filename="glquake.h" />
 		<Unit filename="host.c">
 			<Option compilerVar="CC" />
@@ -144,6 +225,7 @@
 		<Unit filename="menu.h" />
 		<Unit filename="model.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="model.h" />
 		<Unit filename="modelgen.h" />
@@ -190,31 +272,40 @@
 		<Unit filename="quakedef.h" />
 		<Unit filename="r_aclip.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="r_alias.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="r_bsp.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="r_draw.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="r_edge.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="r_efrag.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="r_light.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="r_local.h" />
 		<Unit filename="r_main.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="r_misc.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="r_part.c">
 			<Option compilerVar="CC" />
@@ -222,15 +313,19 @@
 		<Unit filename="r_shared.h" />
 		<Unit filename="r_sky.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="r_sprite.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="r_surf.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="r_vars.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="render.h" />
 		<Unit filename="resource.h" />
@@ -240,6 +335,7 @@
 		<Unit filename="sbar.h" />
 		<Unit filename="screen.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="server.h" />
 		<Unit filename="snd_dma.c">
@@ -279,6 +375,11 @@
 		<Unit filename="vid_common.h" />
 		<Unit filename="vid_sdl.c">
 			<Option compilerVar="CC" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="vid_sdl_gl.c">
+			<Option compilerVar="CC" />
+			<Option target="ReleaseGL" />
 		</Unit>
 		<Unit filename="view.c">
 			<Option compilerVar="CC" />
