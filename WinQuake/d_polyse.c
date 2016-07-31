@@ -28,14 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 									// 1 extra for spanpackage that marks end
 
 typedef struct {
-	void			*pdest;
-	short			*pz;
-	int				count;
-	byte			*ptex;
-	int				sfrac, tfrac, light, zi;
-} spanpackage_t;
-
-typedef struct {
 	int		isflattop;
 	int		numleftedges;
 	int		*pleftedgevert0;
@@ -434,7 +426,7 @@ void D_PolysetScanLeftEdge (int height)
 		errorterm += erroradjustup;
 		if (errorterm >= 0)
 		{
-			d_pdest += d_pdestextrastep;
+			d_pdest += d_pdestextrastep * r_pixbytes;
 			d_pz += d_pzextrastep;
 			d_aspancount += d_countextrastep;
 			d_ptex += d_ptexextrastep;
@@ -454,7 +446,7 @@ void D_PolysetScanLeftEdge (int height)
 		}
 		else
 		{
-			d_pdest += d_pdestbasestep;
+			d_pdest += d_pdestbasestep * r_pixbytes;
 			d_pz += d_pzbasestep;
 			d_aspancount += ubasestep;
 			d_ptex += d_ptexbasestep;
@@ -663,6 +655,75 @@ void D_PolysetDrawSpans8 (spanpackage_t *pspanpackage)
 
 /*
 ================
+D_PolysetDrawSpans8
+================
+*/
+void D_PolysetDrawSpans32 (spanpackage_t *pspanpackage)
+{
+	int		lcount;
+	int		*lpdest;
+	byte	*lptex;
+	int		lsfrac, ltfrac;
+	int		llight;
+	int		lzi;
+	short	*lpz;
+
+	do
+	{
+		lcount = d_aspancount - pspanpackage->count;
+
+		errorterm += erroradjustup;
+		if (errorterm >= 0)
+		{
+			d_aspancount += d_countextrastep;
+			errorterm -= erroradjustdown;
+		}
+		else
+		{
+			d_aspancount += ubasestep;
+		}
+
+		if (lcount)
+		{
+			lpdest = (int*)pspanpackage->pdest;
+			lptex = pspanpackage->ptex;
+			lpz = pspanpackage->pz;
+			lsfrac = pspanpackage->sfrac;
+			ltfrac = pspanpackage->tfrac;
+			llight = pspanpackage->light;
+			lzi = pspanpackage->zi;
+
+			do
+			{
+				if ((lzi >> 16) >= *lpz)
+				{
+					*lpdest = d_8to24table[ ((byte *)acolormap)[*lptex + (llight & 0xFF00)] ];
+					*lpz = lzi >> 16;
+				}
+				lpdest++;
+				lzi += r_zistepx;
+				lpz++;
+				llight += r_lstepx;
+				lptex += a_ststepxwhole;
+				lsfrac += a_sstepxfrac;
+				lptex += lsfrac >> 16;
+				lsfrac &= 0xFFFF;
+				ltfrac += a_tstepxfrac;
+				if (ltfrac & 0x10000)
+				{
+					lptex += r_affinetridesc.skinwidth;
+					ltfrac &= 0xFFFF;
+				}
+			} while (--lcount);
+		}
+
+		pspanpackage++;
+	} while (pspanpackage->count != -999999);
+}
+
+
+/*
+================
 D_RasterizeAliasPolySmooth
 ================
 */
@@ -709,7 +770,7 @@ void D_RasterizeAliasPolySmooth (void)
 	d_zi = plefttop[5];
 
 	d_pdest = (byte *)d_viewbuffer +
-			ystart * screenwidth + plefttop[0];
+			(ystart * screenwidth + plefttop[0]) * r_pixbytes;
 	d_pz = d_pzbuffer + ystart * d_zwidth + plefttop[0];
 
 	if (initialleftheight == 1)
@@ -796,7 +857,7 @@ void D_RasterizeAliasPolySmooth (void)
 		d_light = plefttop[4];
 		d_zi = plefttop[5];
 
-		d_pdest = (byte *)d_viewbuffer + ystart * screenwidth + plefttop[0];
+		d_pdest = (byte *)d_viewbuffer + (ystart * screenwidth + plefttop[0]) * r_pixbytes;
 		d_pz = d_pzbuffer + ystart * d_zwidth + plefttop[0];
 
 		if (height == 1)
@@ -866,7 +927,7 @@ void D_RasterizeAliasPolySmooth (void)
 	d_countextrastep = ubasestep + 1;
 	originalcount = a_spans[initialrightheight].count;
 	a_spans[initialrightheight].count = -999999; // mark end of the spanpackages
-	D_PolysetDrawSpans8 (a_spans);
+	d_drawpolysetspans (a_spans);
 
 // scan out the bottom part of the right edge, if it exists
 	if (pedgetable->numrightedges == 2)
@@ -890,7 +951,7 @@ void D_RasterizeAliasPolySmooth (void)
 		d_countextrastep = ubasestep + 1;
 		a_spans[initialrightheight + height].count = -999999;
 											// mark end of the spanpackages
-		D_PolysetDrawSpans8 (pstart);
+		d_drawpolysetspans (pstart);
 	}
 }
 

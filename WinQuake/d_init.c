@@ -41,6 +41,7 @@ void (*d_drawspans) (espan_t *pspan);
 void (*d_drawturbulent) (espan_t *pspan);
 void (*d_drawskyscans) (espan_t *pspan);
 void (*d_drawparticlepixels) (void);
+void (*d_drawpolysetspans) (spanpackage_t *pspanpackage);
 
 /*
 ===============
@@ -152,6 +153,7 @@ void D_SetupFrame (void)
 		d_drawturbulent = Turbulent8;
 		d_drawskyscans = D_DrawSkyScans8;
 		d_drawparticlepixels = D_DrawParticlePixels8;
+		d_drawpolysetspans = D_PolysetDrawSpans8;
 	}
 	else
 	{
@@ -159,6 +161,7 @@ void D_SetupFrame (void)
 		d_drawturbulent = Turbulent32;
 		d_drawskyscans = D_DrawSkyScans32;
 		d_drawparticlepixels = D_DrawParticlePixels32;
+		d_drawpolysetspans = D_PolysetDrawSpans32;
 	}
 
 	d_aflatcolor = 0;

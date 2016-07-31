@@ -34,6 +34,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define SURFCACHE_SIZE_AT_320X200	600*1024
 
+typedef struct {
+	void			*pdest;
+	short			*pz;
+	int				count;
+	byte			*ptex;
+	int				sfrac, tfrac, light, zi;
+} spanpackage_t;
+
 typedef struct surfcache_s
 {
 	struct surfcache_s	*next;
@@ -83,6 +91,9 @@ void D_DrawSkyScans32 (espan_t *pspan);
 void D_DrawParticlePixels8(void);
 void D_DrawParticlePixels32(void);
 
+void D_PolysetDrawSpans8 (spanpackage_t *pspanpackage);
+void D_PolysetDrawSpans32 (spanpackage_t *pspanpackage);
+
 void R_ShowSubDiv (void);
 void (*prealspandrawer)(void);
 surfcache_t	*D_CacheSurface (msurface_t *surface, int miplevel);
@@ -110,3 +121,4 @@ extern void (*d_drawspans) (espan_t *pspan);
 extern void (*d_drawturbulent) (espan_t *pspan);
 extern void (*d_drawskyscans) (espan_t *pspan);
 extern void (*d_drawparticlepixels) (void);
+extern void (*d_drawpolysetspans) (spanpackage_t *pspanpackage);
