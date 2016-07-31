@@ -697,7 +697,21 @@ void D_PolysetDrawSpans32 (spanpackage_t *pspanpackage)
 			{
 				if ((lzi >> 16) >= *lpz)
 				{
-					*lpdest = d_8to24table[ ((byte *)acolormap)[*lptex + (llight & 0xFF00)] ];
+					unsigned int color = d_8to24table[*lptex];
+					if (*lptex >= 224) // fullbright
+						*lpdest = color;
+					else
+					{
+						unsigned int components[4];
+						components[0] = ( ((color             )>>24) * llight ) >> 14;
+						components[1] = ( ((color & 0x00FF0000)>>16) * llight ) >> 14;
+						components[2] = ( ((color & 0x0000FF00)>> 8) * llight ) >> 14;
+						components[3] = ( ((color & 0x000000FF)    ) * llight ) >> 14;
+						*lpdest =
+							(components[0] << 24) | (components[1] << 16) |
+							(components[2] <<  8) | (components[3]      );
+					}
+
 					*lpz = lzi >> 16;
 				}
 				lpdest++;
