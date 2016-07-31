@@ -5,13 +5,18 @@
 # Visual studio outputs directories
 WinQuake/Debug
 WinQuake/Release
-WinQuake/gas2masm/Debug
-WinQuake/gas2masm/Release
+WinQuake/release_gl
+WinQuake/debug_gl
 
 # Visual studio stuff
 *.user
 *.suo
 *.ncb
+
+# Code::Blocks stuff
+*.depend
+*.layout
+obj
 
 # Quake files directory
 WinQuake/ID1
