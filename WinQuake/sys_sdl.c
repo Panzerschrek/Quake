@@ -34,7 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-int isDedicated = 0;
+qboolean isDedicated = 0;
 
 #define MAX_FILE_HANDLES 32
 FILE* g_file_handles[ MAX_FILE_HANDLES ] = { 0 };
