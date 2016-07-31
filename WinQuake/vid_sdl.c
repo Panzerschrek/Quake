@@ -223,6 +223,7 @@ static void UpdateMode (unsigned char *palette)
 	vid.numpages = 1;
 	vid.maxwarpwidth  = WARP_WIDTH ;
 	vid.maxwarpheight = WARP_HEIGHT;
+	vid.warpbuffer = malloc( vid.maxwarpwidth * vid.maxwarpheight * r_pixbytes );
 	vid.aspect = 1.0f;
 
 	if (DrawDirect())
@@ -328,6 +329,7 @@ void	VID_Shutdown (void)
 	if (r_pixbytes == 1)
 		free( vid.buffer );
 
+	free( vid.warpbuffer );
 	free( g_vid_surfcache );
 	free( d_pzbuffer );
 

@@ -46,6 +46,7 @@ void D_WarpScreen (void)
 	int		w, h;
 	int		u,v;
 	byte	*dest;
+	int		*dest32;
 	int		*turb;
 	int		*col;
 	byte	**row;
@@ -61,8 +62,10 @@ void D_WarpScreen (void)
 
 	for (v=0 ; v<scr_vrect.height+AMP2*2 ; v++)
 	{
-		rowptr[v] = d_viewbuffer + (r_refdef.vrect.y * screenwidth) +
-				 (screenwidth * (int)((float)v * hratio * h / (h + AMP2 * 2)));
+		rowptr[v] = d_viewbuffer +
+			( (r_refdef.vrect.y * screenwidth) +
+			(screenwidth * (int)((float)v * hratio * h / (h + AMP2 * 2))) )
+			* r_pixbytes;
 	}
 
 	for (u=0 ; u<scr_vrect.width+AMP2*2 ; u++)
@@ -74,17 +77,41 @@ void D_WarpScreen (void)
 	turb = intsintable + ((int)(cl.time*SPEED)&(CYCLE-1));
 	dest = vid.buffer + scr_vrect.y * vid.rowbytes + scr_vrect.x;
 
-	for (v=0 ; v<scr_vrect.height ; v++, dest += vid.rowbytes)
+	if (r_pixbytes == 1)
 	{
-		col = &column[turb[v]];
-		row = &rowptr[v];
-
-		for (u=0 ; u<scr_vrect.width ; u+=4)
+		for (v=0 ; v<scr_vrect.height ; v++, dest += vid.rowbytes)
 		{
-			dest[u+0] = row[turb[u+0]][col[u+0]];
-			dest[u+1] = row[turb[u+1]][col[u+1]];
-			dest[u+2] = row[turb[u+2]][col[u+2]];
-			dest[u+3] = row[turb[u+3]][col[u+3]];
+			col = &column[turb[v]];
+			row = &rowptr[v];
+
+			for (u=0 ; u<scr_vrect.width - 4 ; u+=4)
+			{
+				dest[u+0] = row[turb[u+0]][col[u+0]];
+				dest[u+1] = row[turb[u+1]][col[u+1]];
+				dest[u+2] = row[turb[u+2]][col[u+2]];
+				dest[u+3] = row[turb[u+3]][col[u+3]];
+			}
+			for (; u<scr_vrect.width; u++)
+				dest[u] = row[turb[u]][col[u]];
+		}
+	}
+	else
+	{
+		dest32 = (int*)( vid.buffer + scr_vrect.y * vid.rowbytes + (scr_vrect.x << 2) );
+		for (v=0 ; v<scr_vrect.height ; v++, dest32 += vid.rowbytes >> 2)
+		{
+			col = &column[turb[v]];
+			row = &rowptr[v];
+
+			for (u=0 ; u<scr_vrect.width - 4 ; u+=4)
+			{
+				dest32[u+0] = ((int*)(row[turb[u+0]]))[col[u+0]];
+				dest32[u+1] = ((int*)(row[turb[u+1]]))[col[u+1]];
+				dest32[u+2] = ((int*)(row[turb[u+2]]))[col[u+2]];
+				dest32[u+3] = ((int*)(row[turb[u+3]]))[col[u+3]];
+			}
+			for (; u<scr_vrect.width; u++)
+				dest32[u] = ((int*)(row[turb[u]]))[col[u]];
 		}
 	}
 }
