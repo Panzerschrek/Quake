@@ -543,8 +543,8 @@ D_DrawSpans32
 void D_DrawSpans32 (espan_t *pspan)
 {
 	int				count, spancount;
-	unsigned char	*pbase;
-	int				*pdest;
+	unsigned int	*pbase;
+	unsigned int	*pdest;
 	fixed16_t		s, t, snext, tnext, sstep, tstep;
 	float			sdivz, tdivz, zi, z, du, dv, spancountminus1;
 	float			sdivz8stepu, tdivz8stepu, zi8stepu;
@@ -552,7 +552,7 @@ void D_DrawSpans32 (espan_t *pspan)
 	sstep = 0;	// keep compiler happy
 	tstep = 0;	// ditto
 
-	pbase = (unsigned char *)cacheblock;
+	pbase = (unsigned int *)cacheblock;
 
 	sdivz8stepu = d_sdivzstepu * 8;
 	tdivz8stepu = d_tdivzstepu * 8;
@@ -656,7 +656,7 @@ void D_DrawSpans32 (espan_t *pspan)
 
 			do
 			{
-				*pdest++ = d_8to24table[ *(pbase + (s >> 16) + (t >> 16) * cachewidth) ];
+				*pdest++ = *(pbase + (s >> 16) + (t >> 16) * cachewidth);
 				s += sstep;
 				t += tstep;
 			} while (--spancount > 0);

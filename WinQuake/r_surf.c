@@ -30,7 +30,7 @@ int				lightright, lightleftstep, lightrightstep, blockdivshift;
 unsigned		blockdivmask;
 void			*prowdestbase;
 unsigned char	*pbasesource;
-int				surfrowbytes;	// used by ASM files
+int				surfrowpixels;
 unsigned		*r_lightptr;
 int				r_stepback;
 int				r_lightwidth;
@@ -42,11 +42,24 @@ void R_DrawSurfaceBlock8_mip1 (void);
 void R_DrawSurfaceBlock8_mip2 (void);
 void R_DrawSurfaceBlock8_mip3 (void);
 
-static void	(*surfmiptable[4])(void) = {
+void R_DrawSurfaceBlock32_mip0 (void);
+void R_DrawSurfaceBlock32_mip1 (void);
+void R_DrawSurfaceBlock32_mip2 (void);
+void R_DrawSurfaceBlock32_mip3 (void);
+
+
+static void	(*surfmiptable8[4])(void) = {
 	R_DrawSurfaceBlock8_mip0,
 	R_DrawSurfaceBlock8_mip1,
 	R_DrawSurfaceBlock8_mip2,
 	R_DrawSurfaceBlock8_mip3
+};
+
+static void	(*surfmiptable32[4])(void) = {
+	R_DrawSurfaceBlock32_mip0,
+	R_DrawSurfaceBlock32_mip1,
+	R_DrawSurfaceBlock32_mip2,
+	R_DrawSurfaceBlock32_mip3
 };
 
 
@@ -190,15 +203,18 @@ void R_BuildLightMap (void)
 	if (surf->dlightframe == r_framecount)
 		R_AddDynamicLights ();
 
-// bound, invert, and shift
-	for (i=0 ; i<size ; i++)
+	if (r_pixbytes == 1)
 	{
-		t = (255*256 - (int)blocklights[i]) >> (8 - VID_CBITS);
+	// bound, invert, and shift
+		for (i=0 ; i<size ; i++)
+		{
+			t = (255*256 - (int)blocklights[i]) >> (8 - VID_CBITS);
 
-		if (t < (1 << 6))
-			t = (1 << 6);
+			if (t < (1 << 6))
+				t = (1 << 6);
 
-		blocklights[i] = t;
+			blocklights[i] = t;
+		}
 	}
 }
 
@@ -259,7 +275,7 @@ void R_DrawSurface (void)
 // calculate the lightings
 	R_BuildLightMap ();
 	
-	surfrowbytes = r_drawsurf.rowbytes;
+	surfrowpixels = r_drawsurf.rowpixels;
 
 	mt = r_drawsurf.texture;
 	
@@ -281,18 +297,18 @@ void R_DrawSurface (void)
 
 //==============================
 
-	//if (r_pixbytes == 1)
-	//{
-		pblockdrawer = surfmiptable[r_drawsurf.surfmip];
+	if (r_pixbytes == 1)
+	{
+		pblockdrawer = surfmiptable8[r_drawsurf.surfmip];
 	// TODO: only needs to be set when there is a display settings change
 		horzblockstep = blocksize;
-	/*}
+	}
 	else
 	{
-		pblockdrawer = R_DrawSurfaceBlock16;
+		pblockdrawer = surfmiptable32[r_drawsurf.surfmip];
 	// TODO: only needs to be set when there is a display settings change
-		horzblockstep = blocksize << 1;
-	}*/
+		horzblockstep = blocksize << 2;
+	}
 
 	smax = mt->width >> r_drawsurf.surfmip;
 	twidth = texwidth;
@@ -375,7 +391,7 @@ void R_DrawSurfaceBlock8_mip0 (void)
 			psource += sourcetstep;
 			lightright += lightrightstep;
 			lightleft += lightleftstep;
-			prowdest += surfrowbytes;
+			prowdest += surfrowpixels;
 		}
 
 		if (psource >= r_sourcemax)
@@ -425,7 +441,7 @@ void R_DrawSurfaceBlock8_mip1 (void)
 			psource += sourcetstep;
 			lightright += lightrightstep;
 			lightleft += lightleftstep;
-			prowdest += surfrowbytes;
+			prowdest += surfrowpixels;
 		}
 
 		if (psource >= r_sourcemax)
@@ -475,7 +491,7 @@ void R_DrawSurfaceBlock8_mip2 (void)
 			psource += sourcetstep;
 			lightright += lightrightstep;
 			lightleft += lightleftstep;
-			prowdest += surfrowbytes;
+			prowdest += surfrowpixels;
 		}
 
 		if (psource >= r_sourcemax)
@@ -525,7 +541,7 @@ void R_DrawSurfaceBlock8_mip3 (void)
 			psource += sourcetstep;
 			lightright += lightrightstep;
 			lightleft += lightleftstep;
-			prowdest += surfrowbytes;
+			prowdest += surfrowpixels;
 		}
 
 		if (psource >= r_sourcemax)
@@ -534,53 +550,66 @@ void R_DrawSurfaceBlock8_mip3 (void)
 }
 
 
-/*
-================
-R_DrawSurfaceBlock16
-
-FIXME: make this work
-================
-*/
-void R_DrawSurfaceBlock16 (void)
-{
-	int				k;
-	unsigned char	*psource;
-	int				lighttemp, lightstep, light;
-	unsigned short	*prowdest;
-
-	prowdest = (unsigned short *)prowdestbase;
-
-	for (k=0 ; k<blocksize ; k++)
-	{
-		unsigned short	*pdest;
-		unsigned char	pix;
-		int				b;
-
-		psource = pbasesource;
-		lighttemp = lightright - lightleft;
-		lightstep = lighttemp >> blockdivshift;
-
-		light = lightleft;
-		pdest = prowdest;
-
-		for (b=0; b<blocksize; b++)
-		{
-			pix = *psource;
-			*pdest = vid.colormap16[(light & 0xFF00) + pix];
-			psource += sourcesstep;
-			pdest++;
-			light += lightstep;
-		}
-
-		pbasesource += sourcetstep;
-		lightright += lightrightstep;
-		lightleft += lightleftstep;
-		prowdest = (unsigned short *)((long)prowdest + surfrowbytes);
-	}
-
-	prowdestbase = prowdest;
+#define DEFINE_DRAW_SURF_FUNC(name, mip_level) \
+void name(void)\
+{\
+	int				v, i, b, lightstep, light;\
+	unsigned char	*psource;\
+	unsigned int	*prowdest, color, ulight, comp[4];\
+\
+	psource = pbasesource;\
+	prowdest = prowdestbase;\
+\
+	for (v=0 ; v<r_numvblocks ; v++)\
+	{\
+		lightleft  = (int)r_lightptr[0] << 4;\
+		lightright = (int)r_lightptr[1] << 4;\
+		r_lightptr += r_lightwidth;\
+		lightleftstep  = ((((int)r_lightptr[0])<<4) - lightleft ) >> (4-mip_level);\
+		lightrightstep = ((((int)r_lightptr[1])<<4) - lightright) >> (4-mip_level);\
+\
+		for (i=0 ; i<(1<<(4-mip_level)) ; i++)\
+		{\
+			lightstep = (lightleft - lightright) >> (4-mip_level);\
+\
+			light = lightright;\
+\
+			for (b=(1<<(4-mip_level)) - 1; b>=0; b--)\
+			{\
+				color = d_8to24table[psource[b]];\
+				if (psource[b] >= 224)\
+					prowdest[b] = color;\
+				else\
+				{\
+					if (light < 0) light = 0;\
+					ulight = (unsigned int)light;\
+					comp[0] = ( ((color             )>>24u) * ulight ) >> 19u; if (comp[0] > 255) comp[0] = 255;\
+					comp[1] = ( ((color & 0x00FF0000)>>16u) * ulight ) >> 19u; if (comp[1] > 255) comp[1] = 255;\
+					comp[2] = ( ((color & 0x0000FF00)>> 8u) * ulight ) >> 19u; if (comp[2] > 255) comp[2] = 255;\
+					comp[3] = ( ((color & 0x000000FF)     ) * ulight ) >> 19u; if (comp[3] > 255) comp[3] = 255;\
+					prowdest[b] =\
+						(comp[0] << 24u) | (comp[1] << 16u) |\
+						(comp[2] <<  8u) | (comp[3]       );\
+				}\
+\
+				light += lightstep;\
+			}\
+\
+			psource += sourcetstep;\
+			lightright += lightrightstep;\
+			lightleft  += lightleftstep ;\
+			prowdest += surfrowpixels;\
+		}\
+\
+		if (psource >= r_sourcemax)\
+			psource -= r_stepback;\
+	}\
 }
 
+DEFINE_DRAW_SURF_FUNC(R_DrawSurfaceBlock32_mip0, 0)
+DEFINE_DRAW_SURF_FUNC(R_DrawSurfaceBlock32_mip1, 1)
+DEFINE_DRAW_SURF_FUNC(R_DrawSurfaceBlock32_mip2, 2)
+DEFINE_DRAW_SURF_FUNC(R_DrawSurfaceBlock32_mip3, 3)
 
 
 //============================================================================

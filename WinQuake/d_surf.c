@@ -138,7 +138,7 @@ surfcache_t     *D_SCAlloc (int width, int size)
 	if ((size <= 0) || (size > 0x10000))
 		Sys_Error ("D_SCAlloc: bad cache size %d\n", size);
 	
-	size = (int)&((surfcache_t *)0)->data[size];
+	size = (int)&((surfcache_t *)0)->data[size * r_pixbytes];
 	size = (size + 3) & ~3;
 	if (size > sc_size)
 		Sys_Error ("D_SCAlloc: %i > cache size",size);
@@ -174,7 +174,7 @@ surfcache_t     *D_SCAlloc (int width, int size)
 	}
 
 // create a fragment out of any leftovers
-	if (new->size - size > 256)
+	if (new->size - size > 256 * r_pixbytes)
 	{
 		sc_rover = (surfcache_t *)( (byte *)new + size);
 		sc_rover->size = new->size - size;
@@ -293,7 +293,7 @@ surfcache_t *D_CacheSurface (msurface_t *surface, int miplevel)
 	surfscale = 1.0 / (1<<miplevel);
 	r_drawsurf.surfmip = miplevel;
 	r_drawsurf.surfwidth = surface->extents[0] >> miplevel;
-	r_drawsurf.rowbytes = r_drawsurf.surfwidth;
+	r_drawsurf.rowpixels = r_drawsurf.surfwidth;
 	r_drawsurf.surfheight = surface->extents[1] >> miplevel;
 	
 //
