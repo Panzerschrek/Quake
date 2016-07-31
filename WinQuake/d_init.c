@@ -38,7 +38,8 @@ static float	basemip[NUM_MIPS-1] = {1.0, 0.5*0.8, 0.25*0.8};
 extern int			d_aflatcolor;
 
 void (*d_drawspans) (espan_t *pspan);
-
+void (*d_drawturbulent) (espan_t *pspan);
+void (*d_drawskyscans) (espan_t *pspan);
 
 /*
 ===============
@@ -130,7 +131,7 @@ void D_SetupFrame (void)
 	if (r_dowarp)
 		screenwidth = WARP_WIDTH;
 	else
-		screenwidth = vid.rowbytes;
+		screenwidth = vid.rowbytes / r_pixbytes;
 
 	d_roverwrapped = false;
 	d_initial_rover = sc_rover;
@@ -144,7 +145,18 @@ void D_SetupFrame (void)
 	for (i=0 ; i<(NUM_MIPS-1) ; i++)
 		d_scalemip[i] = basemip[i] * d_mipscale.value;
 
-	d_drawspans = D_DrawSpans8;
+	if (r_pixbytes == 1)
+	{
+		d_drawspans = D_DrawSpans8;
+		d_drawturbulent = Turbulent8;
+		d_drawskyscans = D_DrawSkyScans8;
+	}
+	else
+	{
+		d_drawspans = D_DrawSpans32;
+		d_drawturbulent = Turbulent32;
+		d_drawskyscans = D_DrawSkyScans32;
+	}
 
 	d_aflatcolor = 0;
 }
