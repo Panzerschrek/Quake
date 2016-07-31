@@ -83,7 +83,8 @@ void D_DrawSpans32 (espan_t *pspans);
 void D_DrawZSpans (espan_t *pspans);
 void Turbulent8 (espan_t *pspan);
 void Turbulent32 (espan_t *pspan);
-void D_SpriteDrawSpans (sspan_t *pspan);
+void D_SpriteDrawSpans8 (sspan_t *pspan);
+void D_SpriteDrawSpans32 (sspan_t *pspan);
 
 void D_DrawSkyScans8 (espan_t *pspan);
 void D_DrawSkyScans32 (espan_t *pspan);
@@ -122,3 +123,4 @@ extern void (*d_drawturbulent) (espan_t *pspan);
 extern void (*d_drawskyscans) (espan_t *pspan);
 extern void (*d_drawparticlepixels) (void);
 extern void (*d_drawpolysetspans) (spanpackage_t *pspanpackage);
+extern void (*d_spritedrawspans) (sspan_t *pspan);
