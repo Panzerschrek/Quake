@@ -55,6 +55,7 @@ static void ProcessShader( GLenum shader_type, GLuint prog_handle, const char* t
 	shader_text_lines_size[0]= strlen(text);
 
 	glShaderSource( handle, 1, shader_text_lines, shader_text_lines_size );
+	glCompileShader( handle );
 
 	glGetShaderiv( handle, GL_INFO_LOG_LENGTH, &log_length );
 	if( log_length > 1 )
