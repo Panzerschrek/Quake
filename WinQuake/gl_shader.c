@@ -199,7 +199,7 @@ uniform float light_overbright = 1.0;\
 void main(void)\
 {\
 	vec4 c = texture2D( tex, gl_TexCoord[0].xy );\
-	float l = texture2D( lightmap, gl_TexCoord[1].xy ).x;\
+	float l = 2.0 * texture2D( lightmap, gl_TexCoord[1].xy ).x;\
 	\
 	l = pow(l, light_gamma) * light_overbright;\
 	\
@@ -215,7 +215,7 @@ varying float f_light;\
 \
 void main(void)\
 {\
-	f_light = gl_Color.r;\
+	f_light = 2.0 * gl_Color.r;\
 	gl_TexCoord[0] = gl_MultiTexCoord0;\
 	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
 }\

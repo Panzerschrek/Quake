@@ -189,7 +189,7 @@ store:
 			for (j=0 ; j<smax ; j++)
 			{
 				t = *bl++;
-				t >>= 7;
+				t >>= 8;
 				if (t > 255)
 					t = 255;
 				dest[0] = dest[1] = dest[2] = t;
@@ -207,7 +207,7 @@ store:
 			for (j=0 ; j<smax ; j++)
 			{
 				t = *bl++;
-				t >>= 7;
+				t >>= 8;
 				if (t > 255)
 					t = 255;
 				dest[j] = 255-t;

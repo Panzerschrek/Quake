@@ -97,8 +97,8 @@ cvar_t	gl_keeptjunctions = {"gl_keeptjunctions","0"};
 cvar_t	gl_reporttjunctions = {"gl_reporttjunctions","0"};
 cvar_t	gl_doubleeyes = {"gl_doubleeys", "1"};
 
-cvar_t gl_lightgamma = {"gl_lightgamma", "1.3", true};
-cvar_t gl_lightoverbright = {"gl_lightoverbright", "1.3", true};
+cvar_t gl_lightgamma = {"gl_lightgamma", "1.0", true};
+cvar_t gl_lightoverbright = {"gl_lightoverbright", "1.0", true};
 
 
 /*
@@ -531,7 +531,7 @@ void R_DrawAliasModel (entity_t *e)
 			ambientlight = shadelight = 8;
 
 	shadedots = r_avertexnormal_dots[((int)(e->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
-	shadelight = shadelight / 200.0;
+	shadelight = shadelight / 256.0;
 	
 	an = e->angles[1]/180*M_PI;
 	shadevector[0] = cos(-an);
