@@ -57,7 +57,7 @@ byte		*host_colormap;
 cvar_t	host_framerate = {"host_framerate","0"};	// set for slow motion
 cvar_t	host_speeds = {"host_speeds","0"};			// set for running times
 
-cvar_t	sys_ticrate = {"sys_ticrate","0.05"};
+cvar_t	sys_ticrate = {"sys_ticrate","0.008" /* less then 1/120 */, true};
 cvar_t	serverprofile = {"serverprofile","0"};
 
 cvar_t	fraglimit = {"fraglimit","0",false,true};
@@ -502,7 +502,12 @@ qboolean Host_FilterTime (float time)
 {
 	realtime += time;
 
-	if (!cls.timedemo && realtime - oldrealtime < 1.0/72.0)
+	if (sys_ticrate.value < 0.001f)
+		Cvar_SetValue(sys_ticrate.name, 0.001f);
+	if (sys_ticrate.value > 0.1f)
+		Cvar_SetValue(sys_ticrate.name, 0.1f);
+
+	if (!cls.timedemo && realtime - oldrealtime < sys_ticrate.value)
 		return false;		// framerate is too high
 
 	host_frametime = realtime - oldrealtime;
