@@ -32,7 +32,7 @@ float		scr_conlines;		// lines of console to display
 float		oldscreensize, oldfov;
 cvar_t		scr_viewsize = {"viewsize","100", true};
 cvar_t		scr_fov = {"fov","90"};	// 10 - 170
-cvar_t		scr_conspeed = {"scr_conspeed","300"};
+cvar_t		scr_conspeed = {"scr_conspeed","200"};
 cvar_t		scr_centertime = {"scr_centertime","2"};
 cvar_t		scr_showram = {"showram","1"};
 cvar_t		scr_showturtle = {"showturtle","0"};
@@ -475,6 +475,8 @@ SCR_SetUpToDrawConsole
 */
 void SCR_SetUpToDrawConsole (void)
 {
+	float	con_delta;
+
 	Con_CheckResize ();
 	
 	if (scr_drawloading)
@@ -493,16 +495,17 @@ void SCR_SetUpToDrawConsole (void)
 	else
 		scr_conlines = 0;				// none visible
 	
+	con_delta = scr_conspeed.value * host_frametime * (vid.height / 200.0);
 	if (scr_conlines < scr_con_current)
 	{
-		scr_con_current -= scr_conspeed.value*host_frametime;
+		scr_con_current -= con_delta;
 		if (scr_conlines > scr_con_current)
 			scr_con_current = scr_conlines;
 
 	}
 	else if (scr_conlines > scr_con_current)
 	{
-		scr_con_current += scr_conspeed.value*host_frametime;
+		scr_con_current += con_delta;
 		if (scr_conlines < scr_con_current)
 			scr_con_current = scr_conlines;
 	}
