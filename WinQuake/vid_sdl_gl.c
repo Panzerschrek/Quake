@@ -104,6 +104,8 @@ void	VID_Init (unsigned char *palette)
 	qboolean	fullscreen;
 	int			param_display;
 	int			display;
+	int			param_msaa;
+	int			msaa_samples;
 
 	Cvar_RegisterVariable( &gl_texanisotropy );
 
@@ -124,9 +126,15 @@ void	VID_Init (unsigned char *palette)
 
 	param_display = COM_CheckParm( "-display" );
 	if (param_display != 0)
-		display = Q_atoi( com_argv[ param_display  + 1 ] );
+		display = Q_atoi( com_argv[ param_display + 1 ] );
 	else
 		display = 0;
+
+	param_msaa = COM_CheckParm("-msaa");
+	if (param_msaa != 0)
+		msaa_samples = Q_atoi( com_argv[ param_msaa + 1 ] );
+	else
+		msaa_samples = 0;
 
 	vid.rowbytes = 0;
 	vid.numpages = 2;
@@ -156,6 +164,15 @@ void	VID_Init (unsigned char *palette)
 
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24);
+
+	if (msaa_samples != 0)
+	{
+		if (msaa_samples > 16) msaa_samples = 16;
+		if (msaa_samples <  2) msaa_samples =  2;
+
+		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
+		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, msaa_samples );
+	}
 
 	g_sdl_gl.window =
 		SDL_CreateWindow(
