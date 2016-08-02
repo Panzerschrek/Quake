@@ -188,6 +188,9 @@ extern	int		gl_alpha_format;
 extern	cvar_t	gl_max_size;
 extern	cvar_t	gl_playermip;
 
+extern cvar_t		gl_texanisotropy;
+extern int			gl_max_texanisotropy;
+
 extern	float	r_world_matrix[16];
 
 void R_TranslatePlayerSkin (int playernum);

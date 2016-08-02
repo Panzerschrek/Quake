@@ -1004,6 +1004,7 @@ GL_Upload32
 void GL_Upload32 (unsigned *data, int width, int height, qboolean mipmap, qboolean alpha)
 {
 	int			samples;
+	int			anisotropy;
 
 	if (width  > gl_max_size.value ||
 		height > gl_max_size.value)
@@ -1045,6 +1046,15 @@ done: ;
 	{
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+
+		if (gl_texanisotropy.value > 0.0)
+		{
+			anisotropy = (int)gl_texanisotropy.value;
+			if (anisotropy > gl_max_texanisotropy)
+				anisotropy = gl_max_texanisotropy;
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy );
+		}
 	}
 	else
 	{

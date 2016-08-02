@@ -32,6 +32,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #undef PROCESS_GL_FUNC
 
 
+cvar_t		gl_texanisotropy = { "gl_texanisotropy", "8", true };
+int			gl_max_texanisotropy = 0;
+
 // Some subsystem needs it
 modestate_t	modestate = MS_UNINIT;
 cvar_t		_windowed_mouse = {"_windowed_mouse","0", true};
@@ -58,6 +61,41 @@ static void GetGLFuncs(void)
 	#undef PROCESS_GL_FUNC
 }
 
+static void CheckGLExtensions(void)
+{
+	const GLubyte *ext_str;
+
+	ext_str = glGetString( GL_EXTENSIONS );
+
+	if ( strstr( (const char*)ext_str, "GL_EXT_texture_filter_anisotropic" ) != NULL )
+		glGetIntegerv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &gl_max_texanisotropy );
+	else
+	{
+		Con_Print("Textures anisotropy not supported\n");
+		gl_max_texanisotropy = 0;
+	}
+}
+
+static void SetupGLState(void)
+{
+	glClearColor (1,0,0,0);
+	glCullFace(GL_FRONT);
+	glEnable(GL_TEXTURE_2D);
+
+	glEnable(GL_ALPHA_TEST);
+	glAlphaFunc(GL_GREATER, 0.666);
+
+	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+	glShadeModel (GL_FLAT);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
 void	VID_Init (unsigned char *palette)
 {
 	SDL_DisplayMode	display_mode;
@@ -66,6 +104,8 @@ void	VID_Init (unsigned char *palette)
 	qboolean	fullscreen;
 	int			param_display;
 	int			display;
+
+	Cvar_RegisterVariable( &gl_texanisotropy );
 
 	param_width  = COM_CheckParm( "-width" );
 	param_height = COM_CheckParm( "-height" );
@@ -139,26 +179,13 @@ void	VID_Init (unsigned char *palette)
 	SDL_GL_MakeCurrent( g_sdl_gl.window, g_sdl_gl.context );
 	SDL_GL_SetSwapInterval(1);
 
+	VID_SetPalette(palette);
+
 	GetGLFuncs();
 
-	VID_SetPalette(palette);
+	CheckGLExtensions();
 	
-	glClearColor (1,0,0,0);
-	glCullFace(GL_FRONT);
-	glEnable(GL_TEXTURE_2D);
-
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.666);
-
-	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-	glShadeModel (GL_FLAT);
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	SetupGLState();
 
 	VID_FPSInit();
 }
