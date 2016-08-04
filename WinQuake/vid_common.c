@@ -90,9 +90,6 @@ void VID_UpdateGammaImpl( SDL_Window* window )
 	if(gamma < 0.3) gamma = 0.3;
 	if(gamma > 3.0) gamma = 3.0;
 
-	if (prev_gamma == gamma)
-		return;
-	prev_gamma = gamma;
 
 	for (i = 0; i < 256; i++)
 	{

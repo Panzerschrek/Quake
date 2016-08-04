@@ -58,6 +58,8 @@ unsigned		d_8to24table[256];
 
 static screen_pixel_t g_palette[256];
 
+static byte			g_gammatable[256];
+
 struct
 {
 	SDL_Window*		window;
@@ -81,6 +83,19 @@ cvar_t	vid_scaler = { "vid_scaler", "1", true };
 cvar_t	vid_display = { "vid_display", "0", true };
 cvar_t	vid_fullscreen = { "vid_fullscreen", "0", true };
 cvar_t	vid_32bit = { "vid_32bit", "1", true };
+
+static void BuildGammaTable(double gamma)
+{
+	int i, b;
+
+	for (i = 0; i < 256; i++)
+	{
+		b = pow( (((double)i) + 0.5) / 255.5, gamma ) * 255.0;
+		if (b < 0) b = 0;
+		if (b > 255) b = 255;
+		g_gammatable[i] = b;
+	}
+}
 
 static qboolean DrawDirect(void)
 {
@@ -317,6 +332,8 @@ void	VID_Init (unsigned char *palette)
 
 	g_sdl.fullscreen = false;
 
+	BuildGammaTable(1.0); // Default gamma
+
 	UpdateMode(palette);
 
 	VID_FPSInit();
@@ -327,9 +344,7 @@ void VID_UpdateGamma(void)
 	if (v_use_system_gamma.value)
 		VID_UpdateGammaImpl( g_sdl.window );
 	else
-	{
-		// Panzer - TODO
-	}
+		BuildGammaTable( v_gamma.value );
 }
 
 void	VID_Shutdown (void)
@@ -361,6 +376,22 @@ static void VID_Update8(void)
 	int				src_x, src_y, p_x, p_y;
 	int				p_left_x, p_left_y;
 	int				must_lock;
+	screen_pixel_t*	src_pal;
+	screen_pixel_t	modified_pal[256];
+
+	// Transform palette if we not use system gamma
+	if (!v_use_system_gamma.value && v_gamma.value != 1.0)
+	{
+		int i, j;
+
+		for (i = 0; i < 256; i++)
+			for (j = 0; j < 4; j++)
+				modified_pal[i].components[j] = g_gammatable[ g_palette[i].components[j] ];
+
+		src_pal = modified_pal;
+	}
+	else
+		src_pal = g_palette;
 
 	must_lock = SDL_MUSTLOCK( g_sdl.window_surface );
 
@@ -379,7 +410,7 @@ static void VID_Update8(void)
 			src = vid.buffer + vid.width * p_y;
 
 			for (p_x = 0; p_x < vid.width; p_x++)
-				dst[ p_x ].pix = g_palette[ src[p_x] ].pix;
+				dst[ p_x ].pix = src_pal[ src[p_x] ].pix;
 		}
 	}
 	else
@@ -402,30 +433,30 @@ static void VID_Update8(void)
 				// Unwind loop for some scales
 				if (g_sdl.scaler == 2)
 					for (src_x = 0; src_x < vid.width; src_x++, dst+= 2)
-						dst[0] = dst[1] = g_palette[ src[src_x] ];
+						dst[0] = dst[1] = src_pal[ src[src_x] ];
 
 				else if (g_sdl.scaler == 3)
 					for (src_x = 0; src_x < vid.width; src_x++, dst+= 3)
-						dst[0] = dst[1] = dst[2] = g_palette[ src[src_x] ];
+						dst[0] = dst[1] = dst[2] = src_pal[ src[src_x] ];
 
 				else if (g_sdl.scaler == 4)
 					for (src_x = 0; src_x < vid.width; src_x++, dst+= 4)
-						dst[0] = dst[1] = dst[2] = dst[3] = g_palette[ src[src_x] ];
+						dst[0] = dst[1] = dst[2] = dst[3] = src_pal[ src[src_x] ];
 
 				else if (g_sdl.scaler == 5)
 					for (src_x = 0; src_x < vid.width; src_x++, dst+= 5)
-						dst[0] = dst[1] = dst[2] = dst[3] = dst[4] = g_palette[ src[src_x] ];
+						dst[0] = dst[1] = dst[2] = dst[3] = dst[4] = src_pal[ src[src_x] ];
 
 				else
 					for (src_x = 0; src_x < vid.width; src_x++)
 					{
-						pix = g_palette[ src[src_x] ];
+						pix = src_pal[ src[src_x] ];
 						for (p_x = 0; p_x < g_sdl.scaler; p_x++, dst++)
 							*dst = pix;
 					}
 
 				// fill left pixels near screen edge
-				pix = g_palette[ src[ vid.width - 1 ] ];
+				pix = src_pal[ src[ vid.width - 1 ] ];
 				for (p_x = 0; p_x < p_left_x; p_x++, dst++ )
 					*dst = pix;
 			}
@@ -454,13 +485,52 @@ static void VID_Update32(void)
 	int				p_left_x, p_left_y;
 	int				p_x, p_y;
 	int				src_x, src_y;
+	int				i, count;
 	screen_pixel_t	pix;
 	screen_pixel_t*	src;
 	screen_pixel_t*	dst;
 
 
-	if (g_sdl.scaler != 1)
+	if (g_sdl.scaler == 1)
 	{
+		if (!v_use_system_gamma.value)
+		{
+			// Gamma correct current framebuffer
+			must_lock = SDL_MUSTLOCK( g_sdl.window_surface );
+
+			if (must_lock)
+				SDL_LockSurface( g_sdl.window_surface );
+
+			src = (screen_pixel_t*) vid.buffer;
+			count = (g_sdl.window_surface->h * g_sdl.window_surface->pitch ) >> 2;
+			for (i = 0; i < count; i++, src++)
+			{
+				src->components[0] = g_gammatable[ src->components[0] ];
+				src->components[1] = g_gammatable[ src->components[1] ];
+				src->components[2] = g_gammatable[ src->components[2] ];
+				src->components[3] = g_gammatable[ src->components[3] ];
+			}
+
+			if (must_lock)
+				SDL_UnlockSurface( g_sdl.window_surface );
+		}
+	}
+	else
+	{
+		if (!v_use_system_gamma.value)
+		{
+			// Gamma correct downscaled framebuffer
+			src = (screen_pixel_t*) vid.buffer;
+			count = vid.width * vid.height;
+			for (i = 0; i < count; i++, src++)
+			{
+				src->components[0] = g_gammatable[ src->components[0] ];
+				src->components[1] = g_gammatable[ src->components[1] ];
+				src->components[2] = g_gammatable[ src->components[2] ];
+				src->components[3] = g_gammatable[ src->components[3] ];
+			}
+		}
+
 		must_lock = SDL_MUSTLOCK( g_sdl.window_surface );
 
 		if (must_lock)

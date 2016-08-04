@@ -276,6 +276,8 @@ qboolean V_CheckGamma (void)
 		return false;
 	oldgammavalue = v_gamma.value;
 	
+	VID_UpdateGamma ();
+
 	vid.recalc_refdef = 1;				// force a surface cache flush
 	
 	return true;
@@ -566,8 +568,6 @@ void V_UpdatePalette (void)
 
 	VID_ShiftPalette (pal);	
 #endif
-
-	VID_UpdateGamma ();
 }
 
 
