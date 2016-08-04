@@ -347,6 +347,14 @@ void VID_UpdateGamma(void)
 		BuildGammaTable( v_gamma.value );
 }
 
+void VID_GetComponentsOrder(int* rgba)
+{
+	rgba[0] = g_sdl.pixel_format.component_index[COMPONENT_R];
+	rgba[1] = g_sdl.pixel_format.component_index[COMPONENT_G];
+	rgba[2] = g_sdl.pixel_format.component_index[COMPONENT_B];
+	rgba[3] = g_sdl.pixel_format.component_index[COMPONENT_A];
+}
+
 void	VID_Shutdown (void)
 {
 	if (!g_initialized)

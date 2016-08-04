@@ -76,6 +76,9 @@ void	VID_Shutdown (void);
 
 void VID_UpdateGamma(void);
 
+void VID_GetComponentsOrder(int* rgba);
+// Returns number of red, green, blue, alpha components in destination video buffer
+
 void	VID_Update (vrect_t *rects);
 // flushes the given rectangles from the view buffer to the screen
 

@@ -1002,6 +1002,8 @@ SetVisibilityByPassages ();
 	if (r_dowarp)
 		D_WarpScreen ();
 
+	D_ViewBlend();
+
 	V_SetContentsColor (r_viewleaf->contents);
 
 	if (r_timegraph.value)

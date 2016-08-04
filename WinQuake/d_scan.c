@@ -32,6 +32,52 @@ int				r_turb_spancount;
 
 void D_DrawTurbulent8Span (void);
 
+/*
+================
+D_ViewBlend
+
+make fullscreen blending (32bit only)
+================
+*/
+
+void D_ViewBlend (void)
+{
+	byte			*	p;
+	int					y, i;
+	int					blend[4];
+	int					one_minus_a;
+	float				a;
+	int					rgba_indeces[4];
+
+	if (r_pixbytes != 4)
+		return;
+
+	if (v_blend[3] < 1.0f / 128.0f)
+		return;
+
+	VID_GetComponentsOrder(rgba_indeces);
+
+	a = 255.0f * v_blend[3];
+	blend[ rgba_indeces[0] ] = 256.0f * a * v_blend[0];
+	blend[ rgba_indeces[1] ] = 256.0f * a * v_blend[1];
+	blend[ rgba_indeces[2] ] = 256.0f * a * v_blend[2];
+	blend[ rgba_indeces[3] ] = 256.0f * a * v_blend[3];
+	one_minus_a = 255.0f - a;
+
+
+	for (y = scr_vrect.y; y < scr_vrect.y + scr_vrect.height; y++)
+	{
+		p = vid.buffer + y * vid.rowbytes + (scr_vrect.x << 2);
+		for (i = 0; i < scr_vrect.width; i++, p+= 4)
+		{
+			p[0] = ( p[0] * one_minus_a + blend[0] ) >> 8;
+			p[1] = ( p[1] * one_minus_a + blend[1] ) >> 8;
+			p[2] = ( p[2] * one_minus_a + blend[2] ) >> 8;
+			p[3] = ( p[3] * one_minus_a + blend[3] ) >> 8;
+		}
+	}
+}
+
 
 /*
 =============
