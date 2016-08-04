@@ -213,6 +213,9 @@ static void UpdateMode (unsigned char *palette)
 		Cvar_Set( vid_fullscreen.name, ok ? "1" : "0" );
 	}
 
+	VID_SaveSystemGamma( g_sdl.window );
+	VID_UpdateGamma();
+
 	g_sdl.window_surface = SDL_GetWindowSurface( g_sdl.window );
 
 	pixel_format = g_sdl.window_surface->format;
@@ -319,6 +322,16 @@ void	VID_Init (unsigned char *palette)
 	VID_FPSInit();
 }
 
+void VID_UpdateGamma(void)
+{
+	if (v_use_system_gamma.value)
+		VID_UpdateGammaImpl( g_sdl.window );
+	else
+	{
+		// Panzer - TODO
+	}
+}
+
 void	VID_Shutdown (void)
 {
 	if (!g_initialized)
@@ -333,6 +346,7 @@ void	VID_Shutdown (void)
 	free( g_vid_surfcache );
 	free( d_pzbuffer );
 
+	VID_RestoreSystemGamma( g_sdl.window );
 	SDL_DestroyWindow( g_sdl.window );
 
 	g_initialized = true;
