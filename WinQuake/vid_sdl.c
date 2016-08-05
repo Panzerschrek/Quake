@@ -315,11 +315,6 @@ void	VID_SetPalette (unsigned char *palette)
 	}
 }
 
-void	VID_ShiftPalette (unsigned char *palette)
-{
-	// panzer - stub, do something with it later
-}
-
 void	VID_Init (unsigned char *palette)
 {
 	Cvar_RegisterVariable( &vid_width  );
@@ -387,6 +382,34 @@ static void VID_Update8(void)
 	screen_pixel_t*	src_pal;
 	screen_pixel_t	modified_pal[256];
 
+	src_pal = g_palette;
+
+	// Fullscreen blend - transform palette
+	if (v_blend[3] >= 1.0f / 128.0f)
+	{
+		int			i;
+		int			blend[4];
+		int			one_minus_a;
+		float		a;
+
+		a = 255.0f * v_blend[3];
+		blend[ g_sdl.pixel_format.component_index[COMPONENT_R] ] = 256.0f * a * v_blend[0];
+		blend[ g_sdl.pixel_format.component_index[COMPONENT_G] ] = 256.0f * a * v_blend[1];
+		blend[ g_sdl.pixel_format.component_index[COMPONENT_B] ] = 256.0f * a * v_blend[2];
+		blend[ g_sdl.pixel_format.component_index[COMPONENT_A] ] = 256.0f * a * v_blend[3];
+		one_minus_a = 255.0f - a;
+
+		for (i = 0; i < 256; i++)
+		{
+			modified_pal[i].components[0] = ( g_palette[i].components[0] * one_minus_a + blend[0] ) >> 8;
+			modified_pal[i].components[1] = ( g_palette[i].components[1] * one_minus_a + blend[1] ) >> 8;
+			modified_pal[i].components[2] = ( g_palette[i].components[2] * one_minus_a + blend[2] ) >> 8;
+			modified_pal[i].components[3] = ( g_palette[i].components[3] * one_minus_a + blend[3] ) >> 8;
+		}
+
+		src_pal = modified_pal;
+	}
+
 	// Transform palette if we not use system gamma
 	if (!v_use_system_gamma.value && v_gamma.value != 1.0)
 	{
@@ -394,12 +417,10 @@ static void VID_Update8(void)
 
 		for (i = 0; i < 256; i++)
 			for (j = 0; j < 4; j++)
-				modified_pal[i].components[j] = g_gammatable[ g_palette[i].components[j] ];
+				modified_pal[i].components[j] = g_gammatable[ src_pal[i].components[j] ];
 
 		src_pal = modified_pal;
 	}
-	else
-		src_pal = g_palette;
 
 	must_lock = SDL_MUSTLOCK( g_sdl.window_surface );
 

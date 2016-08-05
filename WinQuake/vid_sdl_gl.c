@@ -255,11 +255,6 @@ void	VID_SetPalette (unsigned char *palette)
 	d_8to24table[255] = 0x00000000;	// 255 is transparent - make in black and transparent
 }
 
-void	VID_ShiftPalette (unsigned char *palette)
-{
-	// panzer - stub, do something with it later
-}
-
 void VID_HandlePause (qboolean pause)
 {
 	// panzer - stub, do something with it later
