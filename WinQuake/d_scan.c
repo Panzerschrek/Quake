@@ -42,7 +42,7 @@ make fullscreen blending (32bit only)
 
 void D_ViewBlend (void)
 {
-	byte			*	p;
+	byte				*p, *p_end;
 	int					y, i;
 	int					blend[4];
 	int					one_minus_a;
@@ -64,18 +64,61 @@ void D_ViewBlend (void)
 	blend[ rgba_indeces[3] ] = 256.0f * a * v_blend[3];
 	one_minus_a = 255.0f - a;
 
+#define DO_BLEND(ACTION)\
+	for (y = scr_vrect.y; y < scr_vrect.y + scr_vrect.height; y++)\
+	{\
+		p = vid.buffer + y * vid.rowbytes + (scr_vrect.x << 2);\
+		p_end = p + (scr_vrect.width << 2);\
+		for (; p < p_end; p+= 4)\
+		{\
+			ACTION\
+		}\
+	}\
 
-	for (y = scr_vrect.y; y < scr_vrect.y + scr_vrect.height; y++)
+	// Optimization - do blend for rgb components, but not for alpha.
+	// Because we do not know at compile-time, which component is alha, make 4 variants of blend loop.
+	switch (rgba_indeces[3])
 	{
-		p = vid.buffer + y * vid.rowbytes + (scr_vrect.x << 2);
-		for (i = 0; i < scr_vrect.width; i++, p+= 4)
-		{
-			p[0] = ( p[0] * one_minus_a + blend[0] ) >> 8;
+	case 0:
+		DO_BLEND
+		(
 			p[1] = ( p[1] * one_minus_a + blend[1] ) >> 8;
 			p[2] = ( p[2] * one_minus_a + blend[2] ) >> 8;
 			p[3] = ( p[3] * one_minus_a + blend[3] ) >> 8;
-		}
+		)
+		break;
+
+	case 1:
+		DO_BLEND
+		(
+			p[0] = ( p[0] * one_minus_a + blend[0] ) >> 8;
+			p[2] = ( p[2] * one_minus_a + blend[2] ) >> 8;
+			p[3] = ( p[3] * one_minus_a + blend[3] ) >> 8;
+		)
+		break;
+
+	case 2:
+		DO_BLEND
+		(
+			p[0] = ( p[0] * one_minus_a + blend[0] ) >> 8;
+			p[1] = ( p[1] * one_minus_a + blend[1] ) >> 8;
+			p[3] = ( p[3] * one_minus_a + blend[3] ) >> 8;
+		)
+		break;
+
+	case 3:
+		DO_BLEND
+		(
+			p[0] = ( p[0] * one_minus_a + blend[0] ) >> 8;
+			p[1] = ( p[1] * one_minus_a + blend[1] ) >> 8;
+			p[2] = ( p[2] * one_minus_a + blend[2] ) >> 8;
+		)
+		break;
+
+	default: break;
 	}
+
+#undef DO_BLEND
 }
 
 
