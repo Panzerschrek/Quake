@@ -26,6 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int			scr_copytop;
 int			scr_copyeverything;
 
+int			sb_lines_shown;
+
 float		scr_con_current;
 float		scr_conlines;		// lines of console to display
 
@@ -232,7 +234,6 @@ static void SCR_CalcRefdef (void)
 {
 	vrect_t		vrect;
 	float		size;
-	int			sb_lines_shown;
 
 	scr_fullupdate = 0;		// force a background redraw
 	vid.recalc_refdef = 0;

@@ -53,6 +53,8 @@ typedef struct {
 
 //===========================================================================
 
+extern int		sb_lines_shown;
+
 extern cvar_t	r_draworder;
 extern cvar_t	r_speeds;
 extern cvar_t	r_timegraph;
