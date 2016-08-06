@@ -188,6 +188,9 @@ void	VID_Init (unsigned char *palette)
 	if (fullscreen)
 		fullscreen = VID_SwitchToMode( g_sdl_gl.window, &display_mode );
 
+	VID_SaveSystemGamma( g_sdl_gl.window );
+	VID_UpdateGamma();
+
 	g_sdl_gl.context = SDL_GL_CreateContext( g_sdl_gl.window );
 
 	if (!g_sdl_gl.context)
@@ -209,8 +212,15 @@ void	VID_Init (unsigned char *palette)
 
 void	VID_Shutdown (void)
 {
+	VID_RestoreSystemGamma( g_sdl_gl.window );
+
 	SDL_GL_DeleteContext( g_sdl_gl.context );
 	SDL_DestroyWindow( g_sdl_gl.window );
+}
+
+void	VID_UpdateGamma	(void)
+{
+	VID_UpdateGammaImpl( g_sdl_gl.window );
 }
 
 void VID_LockBuffer (void)
@@ -243,11 +253,6 @@ void	VID_SetPalette (unsigned char *palette)
 		d_8to24table[i] = (255<<24) + (r<<0) + (g<<8) + (b<<16);
 	}
 	d_8to24table[255] = 0x00000000;	// 255 is transparent - make in black and transparent
-}
-
-void	VID_ShiftPalette (unsigned char *palette)
-{
-	// panzer - stub, do something with it later
 }
 
 void VID_HandlePause (qboolean pause)

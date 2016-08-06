@@ -29,6 +29,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int VID_SelectVideoMode( int display, int width, int height, SDL_DisplayMode* selected );
 int VID_SwitchToMode( SDL_Window* window, SDL_DisplayMode* mode );
 
+void VID_UpdateGammaImpl( SDL_Window* window );
+void VID_SaveSystemGamma( SDL_Window* window );
+void VID_RestoreSystemGamma( SDL_Window* window );
+
 void VID_FPSInit(void);
 void VID_FPSUpdate(void);
 

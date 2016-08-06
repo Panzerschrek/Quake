@@ -32,6 +32,95 @@ int				r_turb_spancount;
 
 void D_DrawTurbulent8Span (void);
 
+/*
+================
+D_ViewBlend
+
+make fullscreen blending (32bit only)
+================
+*/
+
+void D_ViewBlend (void)
+{
+	byte				*p, *p_end;
+	int					y, i;
+	int					blend[4];
+	int					one_minus_a;
+	float				a;
+	int					rgba_indeces[4];
+
+	if (r_pixbytes != 4)
+		return;
+
+	if (v_blend[3] < 1.0f / 128.0f)
+		return;
+
+	VID_GetComponentsOrder(rgba_indeces);
+
+	a = 255.0f * v_blend[3];
+	blend[ rgba_indeces[0] ] = 256.0f * a * v_blend[0];
+	blend[ rgba_indeces[1] ] = 256.0f * a * v_blend[1];
+	blend[ rgba_indeces[2] ] = 256.0f * a * v_blend[2];
+	blend[ rgba_indeces[3] ] = 256.0f * a * v_blend[3];
+	one_minus_a = 255.0f - a;
+
+#define DO_BLEND(ACTION)\
+	for (y = scr_vrect.y; y < scr_vrect.y + scr_vrect.height; y++)\
+	{\
+		p = vid.buffer + y * vid.rowbytes + (scr_vrect.x << 2);\
+		p_end = p + (scr_vrect.width << 2);\
+		for (; p < p_end; p+= 4)\
+		{\
+			ACTION\
+		}\
+	}\
+
+	// Optimization - do blend for rgb components, but not for alpha.
+	// Because we do not know at compile-time, which component is alha, make 4 variants of blend loop.
+	switch (rgba_indeces[3])
+	{
+	case 0:
+		DO_BLEND
+		(
+			p[1] = ( p[1] * one_minus_a + blend[1] ) >> 8;
+			p[2] = ( p[2] * one_minus_a + blend[2] ) >> 8;
+			p[3] = ( p[3] * one_minus_a + blend[3] ) >> 8;
+		)
+		break;
+
+	case 1:
+		DO_BLEND
+		(
+			p[0] = ( p[0] * one_minus_a + blend[0] ) >> 8;
+			p[2] = ( p[2] * one_minus_a + blend[2] ) >> 8;
+			p[3] = ( p[3] * one_minus_a + blend[3] ) >> 8;
+		)
+		break;
+
+	case 2:
+		DO_BLEND
+		(
+			p[0] = ( p[0] * one_minus_a + blend[0] ) >> 8;
+			p[1] = ( p[1] * one_minus_a + blend[1] ) >> 8;
+			p[3] = ( p[3] * one_minus_a + blend[3] ) >> 8;
+		)
+		break;
+
+	case 3:
+		DO_BLEND
+		(
+			p[0] = ( p[0] * one_minus_a + blend[0] ) >> 8;
+			p[1] = ( p[1] * one_minus_a + blend[1] ) >> 8;
+			p[2] = ( p[2] * one_minus_a + blend[2] ) >> 8;
+		)
+		break;
+
+	default: break;
+	}
+
+#undef DO_BLEND
+}
+
 
 /*
 =============

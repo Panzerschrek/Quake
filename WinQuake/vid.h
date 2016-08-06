@@ -63,9 +63,6 @@ extern void (*vid_menukeyfn)(int key);
 void	VID_SetPalette (unsigned char *palette);
 // called at startup and after any gamma correction
 
-void	VID_ShiftPalette (unsigned char *palette);
-// called for bonus and pain flashes, and for underwater color changes
-
 void	VID_Init (unsigned char *palette);
 // Called at startup to set up translation tables, takes 256 8 bit RGB values
 // the palette data will go away after the call, so it must be copied off if
@@ -73,6 +70,11 @@ void	VID_Init (unsigned char *palette);
 
 void	VID_Shutdown (void);
 // Called at shutdown
+
+void VID_UpdateGamma(void);
+
+void VID_GetComponentsOrder(int* rgba);
+// Returns number of red, green, blue, alpha components in destination video buffer
 
 void	VID_Update (vrect_t *rects);
 // flushes the given rectangles from the view buffer to the screen

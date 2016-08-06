@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 #include "winquake.h"
 
+static unsigned short g_system_gamma_ramps[3][256];
+
 #define FPS_CALC_INTERVAL 1.0
 
 static struct
@@ -71,6 +73,50 @@ int VID_SwitchToMode( SDL_Window* window, SDL_DisplayMode* mode )
 
 	return result == 0;
 
+}
+
+void VID_UpdateGammaImpl( SDL_Window* window )
+{
+	unsigned short	ramps[256];
+	int				i, b;
+	double			gamma;
+
+	static double prev_gamma = 0.0;
+
+	if (!v_use_system_gamma.value)
+		return;
+
+	gamma = v_gamma.value;
+	if(gamma < 0.3) gamma = 0.3;
+	if(gamma > 3.0) gamma = 3.0;
+
+
+	for (i = 0; i < 256; i++)
+	{
+		b = pow( (((double)i) + 0.5) / 255.5, gamma ) * 65535.0;
+		if (b < 0) b = 0;
+		if (b > 65535) b = 65535;
+		ramps[i] = b;
+	}
+	SDL_SetWindowGammaRamp( window, ramps, ramps, ramps );
+}
+
+void VID_SaveSystemGamma( SDL_Window* window )
+{
+	SDL_GetWindowGammaRamp(
+		window,
+		g_system_gamma_ramps[0],
+		g_system_gamma_ramps[1],
+		g_system_gamma_ramps[2] );
+}
+
+void VID_RestoreSystemGamma( SDL_Window* window )
+{
+	SDL_SetWindowGammaRamp(
+		window,
+		g_system_gamma_ramps[0],
+		g_system_gamma_ramps[1],
+		g_system_gamma_ramps[2] );
 }
 
 void VID_FPSInit(void)
