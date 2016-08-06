@@ -109,7 +109,8 @@ extern int	d_scantable[MAXHEIGHT];
 
 extern int	d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
 
-extern int	d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;
+extern int		d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;
+extern float	d_pix_mul;
 
 extern pixel_t	*d_viewbuffer;
 
@@ -124,3 +125,5 @@ extern void (*d_drawskyscans) (espan_t *pspan);
 extern void (*d_drawparticlepixels) (void);
 extern void (*d_drawpolysetspans) (spanpackage_t *pspanpackage);
 extern void (*d_spritedrawspans) (sspan_t *pspan);
+
+extern	cvar_t		r_particle_size;

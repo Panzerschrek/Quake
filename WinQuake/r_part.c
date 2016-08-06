@@ -26,6 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ABSOLUTE_MIN_PARTICLES	512		// no fewer than this no matter what's
 										//  on the command line
 
+// Size of particle in world space
+cvar_t	r_particle_size = { "r_particle_size", "2", true };
+
 int		ramp1[8] = {0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61};
 int		ramp2[8] = {0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66};
 int		ramp3[8] = {0x6d, 0x6b, 6, 5, 4, 3};
@@ -46,6 +49,8 @@ R_InitParticles
 void R_InitParticles (void)
 {
 	int		i;
+
+	Cvar_RegisterVariable( &r_particle_size );
 
 	i = COM_CheckParm ("-particles");
 
@@ -659,13 +664,26 @@ void R_DrawParticles (void)
 #ifdef GLQUAKE
 	vec3_t			up, right;
 	float			scale;
+	float			min_distance, max_distance, half_fov_tan, min_pix_size;
 
     GL_Bind(particletexture);
 	glEnable (GL_BLEND);
+	glEnable (GL_ALPHA_TEST);
 	glBegin (GL_TRIANGLES);
 
-	VectorScale (vup, 1.5, up);
-	VectorScale (vright, 1.5, right);
+	VectorScale (vup, 1.5 * r_particle_size.value, up);
+	VectorScale (vright, 1.5 * r_particle_size.value, right);
+
+	half_fov_tan = tan(DEG2RAD(r_refdef.fov_x) * 0.5f );
+
+	// Distance, where size of particle is 1/16 of screen
+	min_distance = 16.0f * r_particle_size.value / ( half_fov_tan * 2.0f );
+
+	// Calculate distance, where size of particle is min_pix_size
+	min_pix_size = (float)r_refdef.vrect.width / 384.0f;
+	if (min_pix_size < 2.0f)
+		min_pix_size = 2.0f;
+	max_distance = r_refdef.vrect.width * r_particle_size.value / ( half_fov_tan * 2.0f * min_pix_size );
 #else
 	D_StartParticles ();
 
@@ -712,10 +730,16 @@ void R_DrawParticles (void)
 		// hack a scale up to keep particles from disapearing
 		scale = (p->org[0] - r_origin[0])*vpn[0] + (p->org[1] - r_origin[1])*vpn[1]
 			+ (p->org[2] - r_origin[2])*vpn[2];
-		if (scale < 20)
-			scale = 1;
-		else
-			scale = 1 + scale * 0.004;
+		if (scale > 0.0f)
+		{
+			if (scale < min_distance)
+				scale = scale / min_distance;
+			else if (scale > max_distance)
+				scale = scale / max_distance;
+			else
+				scale = 1.0;
+		}
+
 		glColor3ubv ((byte *)&d_8to24table[(int)p->color]);
 		glTexCoord2f (0,0);
 		glVertex3fv (p->org);
@@ -791,6 +815,7 @@ void R_DrawParticles (void)
 #ifdef GLQUAKE
 	glEnd ();
 	glDisable (GL_BLEND);
+	glDisable (GL_ALPHA_TEST);
 #else
 	D_EndParticles ();
 #endif

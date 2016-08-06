@@ -326,7 +326,7 @@ void D_DrawParticle (particle_t *pparticle)
 
 	part_izi = (int)(zi * 0x8000);
 
-	part_size = part_izi >> d_pix_shift;
+	part_size = zi * d_pix_mul;
 
 	if (part_size < d_pix_min)
 		part_size = d_pix_min;
