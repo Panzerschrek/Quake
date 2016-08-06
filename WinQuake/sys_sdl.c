@@ -221,11 +221,6 @@ char *Sys_ConsoleInput (void)
 	return NULL;
 }
 
-void Sys_Sleep (void)
-{
-	SDL_Delay(1);
-}
-
 void Sys_SendKeyEvents (void)
 {
 	IN_Commands();
@@ -291,14 +286,8 @@ int main(int argc, const char* argv[])
 
 	while (1)
 	{
-		do
-		{
-			newtime = Sys_FloatTime ();
-			time = newtime - oldtime;
-
-			if( time >= 0.001 ) break;
-			Sys_Sleep();
-		}while(1);
+		newtime = Sys_FloatTime ();
+		time = newtime - oldtime;
 
 		Host_Frame (time);
 		oldtime = newtime;
