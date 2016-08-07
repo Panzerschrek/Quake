@@ -35,4 +35,11 @@ void M_Keydown (int key);
 void M_Draw (void);
 void M_ToggleMenu_f (void);
 
+// Menu utility funcs
+void M_Print (int cx, int cy, char *str);
+void M_DrawSlider (int x, int y, float range);
+void M_DrawCheckbox (int x, int y, int on);
+void M_DrawCharacter (int cx, int line, int num);
+void M_DrawTextBox (int x, int y, int width, int lines);
+
 
