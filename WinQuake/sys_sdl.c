@@ -206,6 +206,8 @@ void Sys_Printf (char *fmt, ...)
 
 void Sys_Quit (void)
 {
+	Host_Shutdown();
+
 	SDL_Quit();
 	exit(0);
 }

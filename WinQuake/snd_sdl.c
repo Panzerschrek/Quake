@@ -143,8 +143,9 @@ void SNDDMA_Shutdown(void)
 	if( !g_sdl_audio.initialized )
 		return;
 
-	SDL_DestroyMutex( g_sdl_audio.mutex );
+	SDL_CloseAudioDevice( g_sdl_audio.device_id );
 	SDL_CloseAudio();
+	SDL_DestroyMutex( g_sdl_audio.mutex );
 
 	g_sdl_audio.initialized = false;
 }
