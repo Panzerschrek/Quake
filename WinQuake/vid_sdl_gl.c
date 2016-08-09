@@ -50,6 +50,165 @@ struct
 
 } g_sdl_gl;
 
+static int g_menu_cursor_line = 0;
+
+enum
+{
+	MENU_LINE_LIGHTING_SCALE,
+	MENU_LINE_LIGHTING_GAMMA,
+	MENU_LINE_TEXTIRES_ANISOTROPY,
+	MENU_LINE_COUNT
+};
+
+#define LIGHTING_SCALE_MIN 0.5
+#define LIGHTING_SCALE_MAX 2.0
+
+#define LIGHTING_GAMMA_MIN 0.5
+#define LIGHTING_GAMMA_MAX 3.0
+
+#define ANISOTROPY_MAX 16.0
+
+static void MenuDrawFn(void)
+{
+	qpic_t	*p;
+	char	str[64];
+	int		y0, y, x_print, x_ctrl, x_cursor;
+	int		cursor_char;
+
+	M_DrawTransPic (16, 4, Draw_CachePic ("gfx/qplaque.lmp") );
+
+	p = Draw_CachePic ("gfx/vidmodes.lmp");
+	M_DrawPic ( (320-p->width)/2, 4, p);
+	
+	y0 = y = 32;
+	x_print = 16;
+	x_ctrl = 220;
+	x_cursor = 200;
+
+	sprintf( str, "    lighting scale %1.1f", gl_lightoverbright.value );
+	M_Print (x_print, y, str);
+	M_DrawSlider(
+		x_ctrl, y,
+		( gl_lightoverbright.value - LIGHTING_SCALE_MIN ) / (LIGHTING_SCALE_MAX - LIGHTING_SCALE_MIN) );
+	y += 8;
+
+	sprintf( str, "    lighting gamma %1.1f", gl_lightgamma.value );
+	M_Print (x_print, y, str);
+	M_DrawSlider(
+		x_ctrl, y,
+		( gl_lightgamma.value - LIGHTING_GAMMA_MIN ) / (LIGHTING_GAMMA_MAX - LIGHTING_GAMMA_MIN) );
+	y += 8;
+
+	if (gl_texanisotropy.value == 0.0 )
+		strcpy(  str, "        anisotropy off" );
+	else
+		sprintf( str, "        anisotropy %d", (int) gl_texanisotropy.value );
+	M_Print (x_print, y, str);
+	M_DrawSlider(
+		x_ctrl, y,
+		gl_texanisotropy.value / ANISOTROPY_MAX );
+	y += 8;
+
+	y += 8;
+	M_PrintWhite (64, y, "some changes will affect");
+	y += 8;
+	M_PrintWhite (64, y, "only after game restart");
+
+	cursor_char = 12+((int)(realtime*4)&1);
+	M_DrawCharacter (x_cursor, y0 + g_menu_cursor_line*8, cursor_char);
+}
+
+static void MenuKeyFn(int key)
+{
+	int			s;
+	qboolean	is_flag_key;
+
+	if (key == K_ESCAPE)
+	{
+		M_Menu_Options_f ();
+		return;
+	}
+
+	if (key == K_DOWNARROW)
+	{
+		S_LocalSound ("misc/menu1.wav");
+		g_menu_cursor_line = (g_menu_cursor_line + 1) % MENU_LINE_COUNT;
+		return;
+	}
+	if (key == K_UPARROW)
+	{
+		S_LocalSound ("misc/menu1.wav");
+		g_menu_cursor_line = (g_menu_cursor_line - 1 + MENU_LINE_COUNT) % MENU_LINE_COUNT;
+		return;
+	}
+
+	is_flag_key = key == K_LEFTARROW || key == K_RIGHTARROW || key == K_ENTER;
+
+	if (g_menu_cursor_line == MENU_LINE_LIGHTING_SCALE)
+	{
+		s = (int)(gl_lightoverbright.value * 10.0 + 0.01);
+		if (key == K_LEFTARROW)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			s--;
+		}
+		if (key == K_RIGHTARROW)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			s++;
+		}
+
+		if (s < LIGHTING_SCALE_MIN * 10.0)
+			s = LIGHTING_SCALE_MIN * 10.0;
+		if (s > LIGHTING_SCALE_MAX * 10.0)
+			s = LIGHTING_SCALE_MAX * 10.0;
+
+		Cvar_SetValue( gl_lightoverbright.name, ((double)s) / 10.0 );
+	}
+	else if (g_menu_cursor_line == MENU_LINE_LIGHTING_GAMMA)
+	{
+		s = (int)(gl_lightgamma.value * 10.0 + 0.01);
+		if (key == K_LEFTARROW)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			s--;
+		}
+		if (key == K_RIGHTARROW)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			s++;
+		}
+
+		if (s < LIGHTING_GAMMA_MIN * 10.0)
+			s = LIGHTING_GAMMA_MIN * 10.0;
+		if (s > LIGHTING_GAMMA_MAX * 10.0)
+			s = LIGHTING_GAMMA_MAX * 10.0;
+
+		Cvar_SetValue( gl_lightgamma.name, ((double)s) / 10.0 );
+	}
+	else if (g_menu_cursor_line == MENU_LINE_TEXTIRES_ANISOTROPY)
+	{
+		s = (int)(gl_texanisotropy.value + 0.01);
+		if (key == K_LEFTARROW)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			s--;
+		}
+		if (key == K_RIGHTARROW)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			s++;
+		}
+
+		if (s < 0)
+			s = 0;
+		if (s > ANISOTROPY_MAX)
+			s = ANISOTROPY_MAX;
+
+		Cvar_SetValue( gl_texanisotropy.name, s );
+	}
+}
+
 static void GetGLFuncs(void)
 {
 	#define PROCESS_GL_FUNC( type, name )\
@@ -208,6 +367,9 @@ void	VID_Init (unsigned char *palette)
 	SetupGLState();
 
 	VID_FPSInit();
+
+	vid_menudrawfn = MenuDrawFn;
+	vid_menukeyfn = MenuKeyFn;
 }
 
 void	VID_Shutdown (void)

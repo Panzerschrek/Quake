@@ -261,7 +261,6 @@ static void MenuKeyFn(int key)
 	}
 }
 
-
 static void BuildGammaTable(double gamma)
 {
 	int i, b;
