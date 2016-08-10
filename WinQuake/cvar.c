@@ -24,6 +24,41 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 cvar_t	*cvar_vars;
 char	*cvar_null_string = "";
 
+#define MAX_HIDDEN_CVARS 64
+cvar_t	hidden_cvars[ MAX_HIDDEN_CVARS ];
+int		hidden_cvars_num = 0;
+
+static void TrySetHiddenCvar (char* cvar_name, char* value)
+{
+	int		i;
+	cvar_t	*var;
+
+	for (i = 0; i < hidden_cvars_num; i++)
+	{
+		if (!Q_strcmp(hidden_cvars[i].name, cvar_name))
+		{
+			var = &hidden_cvars[i];
+			goto do_set;
+		}
+	}
+
+	if (hidden_cvars_num == MAX_HIDDEN_CVARS)
+	{
+		Sys_Error("Out of hidden cvars\n" );
+	}
+	var = &hidden_cvars[ hidden_cvars_num ];
+	hidden_cvars_num++;
+
+do_set:
+	var->name = Z_Malloc (Q_strlen(cvar_name)+1);
+	Q_strcpy (var->name, cvar_name);
+
+	var->string = Z_Malloc (Q_strlen(value)+1);
+	Q_strcpy (var->string, value);
+
+	var->value = Q_atof (var->string);
+}
+
 /*
 ============
 Cvar_FindVar
@@ -191,7 +226,16 @@ qboolean	Cvar_Command (void)
 // check variables
 	v = Cvar_FindVar (Cmd_Argv(0));
 	if (!v)
+	{
+		if (Cmd_Argc() == 2)
+		{
+			// Hack for configs preserving
+			// Write variable to hidden cvars list.
+			// Write value to config while saving config.
+			TrySetHiddenCvar(Cmd_Argv(0), Cmd_Argv(1));
+		}
 		return false;
+	}
 		
 // perform a variable print or set
 	if (Cmd_Argc() == 1)
@@ -216,9 +260,14 @@ with the archive flag set to true.
 void Cvar_WriteVariables (FILE *f)
 {
 	cvar_t	*var;
+	int		i;
 	
 	for (var = cvar_vars ; var ; var = var->next)
 		if (var->archive)
 			fprintf (f, "%s \"%s\"\n", var->name, var->string);
+
+	// Write back to config what we read from it.
+	for (i = 0; i < hidden_cvars_num; i++)
+		fprintf (f, "%s \"%s\"\n", hidden_cvars[i].name, hidden_cvars[i].string);
 }
 
