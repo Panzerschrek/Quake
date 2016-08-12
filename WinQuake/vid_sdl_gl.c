@@ -35,6 +35,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 cvar_t		gl_texanisotropy = { "gl_texanisotropy", "8", true };
 int			gl_max_texanisotropy = 0;
 
+cvar_t	gl_width  = { "gl_width" , "640", false };
+cvar_t	gl_height = { "gl_height", "480", false };
+cvar_t	gl_display = { "gl_display", "0", false };
+cvar_t	gl_fullscreen = { "gl_fullscreen", "0", false };
+cvar_t	gl_msaa = { "gl_msaa", "0", false };
+
 // Some subsystem needs it
 modestate_t	modestate = MS_UNINIT;
 cvar_t		_windowed_mouse = {"_windowed_mouse","0", true};
@@ -209,6 +215,12 @@ static void MenuKeyFn(int key)
 	}
 }
 
+static void LoadGLConfig(void)
+{
+	Cbuf_InsertText ("exec gl_quake.cfg\n");
+	Cbuf_Execute ();
+}
+
 static void GetGLFuncs(void)
 {
 	#define PROCESS_GL_FUNC( type, name )\
@@ -258,42 +270,26 @@ static void SetupGLState(void)
 void	VID_Init (unsigned char *palette)
 {
 	SDL_DisplayMode	display_mode;
-	int			param_width ;
-	int			param_height;
-	qboolean	fullscreen;
-	int			param_display;
-	int			display;
-	int			param_msaa;
-	int			msaa_samples;
+	qboolean		fullscreen;
+	int				display;
+	int				msaa_samples;
 
 	Cvar_RegisterVariable( &gl_texanisotropy );
+	Cvar_RegisterVariable( &gl_width  );
+	Cvar_RegisterVariable( &gl_height );
+	Cvar_RegisterVariable( &gl_display );
+	Cvar_RegisterVariable( &gl_fullscreen );
+	Cvar_RegisterVariable( &gl_msaa );
 
-	param_width  = COM_CheckParm( "-width" );
-	param_height = COM_CheckParm( "-height" );
-	if( param_width  != 0 && param_height != 0 )
-	{
-		vid.width  = Q_atoi( com_argv[ param_width  + 1 ] );
-		vid.height = Q_atoi( com_argv[ param_height + 1 ] );
-	}
-	else
-	{
-		vid.width  = 640;
-		vid.height = 480;
-	}
+	LoadGLConfig();
 
-	fullscreen = COM_CheckParm( "-fullscreen" ) != 0;
+	vid.width  = (int) gl_width. value;
+	vid.height = (int) gl_height.value;
 
-	param_display = COM_CheckParm( "-display" );
-	if (param_display != 0)
-		display = Q_atoi( com_argv[ param_display + 1 ] );
-	else
-		display = 0;
+	fullscreen = (int) gl_fullscreen.value;
+	display = (int)gl_display.value;
 
-	param_msaa = COM_CheckParm("-msaa");
-	if (param_msaa != 0)
-		msaa_samples = Q_atoi( com_argv[ param_msaa + 1 ] );
-	else
-		msaa_samples = 0;
+	msaa_samples = (int) gl_msaa.value;
 
 	vid.rowbytes = 0;
 	vid.numpages = 2;
