@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 #include "winquake.h"
 
+#include <stdio.h>
+
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include "vid_common.h"
@@ -63,6 +65,10 @@ enum
 	MENU_LINE_LIGHTING_SCALE,
 	MENU_LINE_LIGHTING_GAMMA,
 	MENU_LINE_TEXTIRES_ANISOTROPY,
+	MENU_LINE_MSAA,
+	MENU_LINE_FULLSCREEN,
+	MENU_LINE_WIDTH ,
+	MENU_LINE_HEIGHT,
 	MENU_LINE_COUNT
 };
 
@@ -74,11 +80,13 @@ enum
 
 #define ANISOTROPY_MAX 16.0
 
+#define MSAA_MAX 16.0
+
 static void MenuDrawFn(void)
 {
 	qpic_t	*p;
 	char	str[64];
-	int		y0, y, x_print, x_ctrl, x_cursor;
+	int		y0, y, x_print, x_ctrl, x_cursor, y_width, x_width;
 	int		cursor_char;
 
 	M_DrawTransPic (16, 4, Draw_CachePic ("gfx/qplaque.lmp") );
@@ -90,6 +98,7 @@ static void MenuDrawFn(void)
 	x_print = 16;
 	x_ctrl = 220;
 	x_cursor = 200;
+	x_width = 210;
 
 	sprintf( str, "    lighting scale %1.1f", gl_lightoverbright.value );
 	M_Print (x_print, y, str);
@@ -115,13 +124,53 @@ static void MenuDrawFn(void)
 		gl_texanisotropy.value / ANISOTROPY_MAX );
 	y += 8;
 
+	if (gl_msaa.value < 2 )
+		strcpy(  str, "              msaa off" );
+	else
+		sprintf( str, "              msaa %d", (int) gl_msaa.value );
+	M_Print (x_print, y, str);
+	M_DrawSlider(
+		x_ctrl, y, gl_msaa.value < 2 ? 0.0 : ( log(gl_msaa.value) / log(MSAA_MAX) ) );
+	y += 8;
+
+	M_Print (x_print, y, "            fullscreen");
+	M_DrawCheckbox (x_ctrl, y, gl_fullscreen.value);
+	y += 8;
+
+	M_DrawTextBox (x_width, y, 5, 1);
+	y += 8;
+	y_width = y;
+	M_Print (x_print, y, "                 width");
+	sprintf( str, "%d", (int)gl_width.value );
+	M_Print( x_width + 8, y, str );
+	y += 8;
+
+	M_DrawTextBox (x_width, y, 5, 1);
+	y += 8;
+	M_Print (x_print, y, "                height");
+	sprintf( str, "%d", (int)gl_height.value );
+	M_Print( x_width + 8, y, str );
+	y += 8;
+
 	y += 8;
 	M_PrintWhite (64, y, "some changes will affect");
 	y += 8;
 	M_PrintWhite (64, y, "only after game restart");
 
 	cursor_char = 12+((int)(realtime*4)&1);
-	M_DrawCharacter (x_cursor, y0 + g_menu_cursor_line*8, cursor_char);
+
+	if (g_menu_cursor_line == MENU_LINE_WIDTH || g_menu_cursor_line == MENU_LINE_HEIGHT)
+	{
+		cvar_t* var = g_menu_cursor_line == MENU_LINE_WIDTH ? &gl_width : &gl_height;
+		sprintf( str, "%d", (int)var->value );
+
+		M_DrawCharacter (
+			x_width + 8 + 8 * strlen(str),
+			y_width + (g_menu_cursor_line-MENU_LINE_WIDTH)*16,
+			cursor_char - 2);
+	}
+	else
+		M_DrawCharacter (x_cursor, y0 + g_menu_cursor_line*8, cursor_char);
 }
 
 static void MenuKeyFn(int key)
@@ -213,12 +262,93 @@ static void MenuKeyFn(int key)
 
 		Cvar_SetValue( gl_texanisotropy.name, s );
 	}
+	else if (g_menu_cursor_line == MENU_LINE_MSAA)
+	{
+		s = (int)(gl_msaa.value + 0.01);
+		if (key == K_LEFTARROW)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			if (s <= 2)
+				s = 0;
+			else
+				s >>= 1;
+		}
+		if (key == K_RIGHTARROW)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			if ( s <= 0 )
+				s = 2;
+			else
+				s <<= 1;
+		}
+
+		if (s < 0)
+			s = 0;
+		if (s > MSAA_MAX)
+			s = MSAA_MAX;
+
+		Cvar_SetValue( gl_msaa.name, (double)s );
+	}
+	else if (g_menu_cursor_line == MENU_LINE_FULLSCREEN)
+	{
+		if (is_flag_key)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			Cvar_SetValue( gl_fullscreen.name, !((int)gl_fullscreen.value) );
+		}
+	}
+	else if (g_menu_cursor_line == MENU_LINE_WIDTH || g_menu_cursor_line == MENU_LINE_HEIGHT)
+	{
+		cvar_t* var = g_menu_cursor_line == MENU_LINE_WIDTH ? &gl_width : &gl_height;
+
+		if (key >= '0' && key <= '9' && var->value <= 9999)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			var->value *= 10.0;
+			var->value += key - '0';
+		}
+		if (key == K_BACKSPACE)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			var->value = ((int)var->value) / 10;
+		}
+		
+		Cvar_SetValue( var->name, var->value );
+	}
 }
+
+
+/*
+Use special config for GL settings, which we must recieve at startup and never later.
+We can not store this variables in main config, because if we try load it, we receive tons of uglu "cvar_name not found" messages.
+*/
 
 static void LoadGLConfig(void)
 {
 	Cbuf_InsertText ("exec gl_quake.cfg\n");
 	Cbuf_Execute ();
+}
+
+static void SaveGLConfig(void)
+{
+	FILE*		f;
+	char		path[256];
+	const char*	format;
+
+	sprintf( path, "%s/gl_quake.cfg", com_gamedir );
+	f = fopen( path, "wb" );
+	if (f)
+	{
+		format = "%s \"%s\"\n";
+
+		fprintf( f, format, gl_width .name, gl_width .string );
+		fprintf( f, format, gl_height.name, gl_height.string );
+		fprintf( f, format, gl_display.name, gl_display.string );
+		fprintf( f, format, gl_fullscreen.name, gl_fullscreen.string );
+		fprintf( f, format, gl_msaa.name, gl_msaa.string );
+
+		fclose(f);
+	}
 }
 
 static void GetGLFuncs(void)
@@ -374,6 +504,8 @@ void	VID_Shutdown (void)
 
 	SDL_GL_DeleteContext( g_sdl_gl.context );
 	SDL_DestroyWindow( g_sdl_gl.window );
+
+	SaveGLConfig();
 }
 
 void	VID_UpdateGamma	(void)
