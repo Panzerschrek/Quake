@@ -84,6 +84,183 @@ cvar_t	vid_display = { "vid_display", "0", true };
 cvar_t	vid_fullscreen = { "vid_fullscreen", "0", true };
 cvar_t	vid_32bit = { "vid_32bit", "1", true };
 
+static void RestartCommand(void);
+
+static int g_menu_cursor_line = 0;
+#define MAX_MENU_SCALER 9
+
+enum
+{
+	MENU_LINE_SCALER,
+	MENU_LINE_32BIT,
+	MENU_LINE_FULLSCREEN,
+	MENU_LINE_WIDTH ,
+	MENU_LINE_HEIGHT,
+	MENU_LINE_RESTART,
+	MENU_LINE_COUNT
+};
+
+static void MenuDrawFn(void)
+{
+	qpic_t	*p;
+	char	str[64];
+	int		y0, y, x_print, x_ctrl, x_cursor, y_width, x_width, x_apply, y_apply;
+	int		cursor_char;
+
+	M_DrawTransPic (16, 4, Draw_CachePic ("gfx/qplaque.lmp") );
+
+	p = Draw_CachePic ("gfx/vidmodes.lmp");
+	M_DrawPic ( (320-p->width)/2, 4, p);
+
+	
+	y0 = y = 32;
+	x_print = 16;
+	x_ctrl = 220;
+	x_cursor = 200;
+	x_width = 210;
+	x_apply = 168 + 4;
+
+	M_Print (x_print, y, "             scaler   ");
+	sprintf( str,       "                    %dx", (int)vid_scaler.value);
+	M_Print (x_print, y, str);
+	M_DrawSlider( x_ctrl, y, (vid_scaler.value - 1.0) / (MAX_MENU_SCALER-1) );
+	y += 8;
+
+	M_Print (x_print, y, "           32bit color");
+	M_DrawCheckbox (x_ctrl, y, vid_32bit.value);
+	y += 8;
+
+	M_Print (x_print, y, "            fullscreen");
+	M_DrawCheckbox (x_ctrl, y, vid_fullscreen.value);
+	y += 8;
+
+	M_DrawTextBox (x_width, y, 5, 1);
+	y += 8;
+	y_width = y;
+	M_Print (x_print, y, "                 width");
+	sprintf( str, "%d", (int)vid_width.value );
+	M_Print( x_width + 8, y, str );
+	y += 8;
+
+	M_DrawTextBox (x_width, y, 5, 1);
+	y += 8;
+	M_Print (x_print, y, "                height");
+	sprintf( str, "%d", (int)vid_height.value );
+	M_Print( x_width + 8, y, str );
+	y += 8;
+
+	y += 8;
+	M_DrawTextBox (x_apply, y, 5, 1);
+	y += 8;
+	M_Print( x_apply + 8, y, "apply" );
+	y_apply = y;
+	y += 8;
+
+	cursor_char = 12+((int)(realtime*4)&1);
+
+	if (g_menu_cursor_line == MENU_LINE_WIDTH || g_menu_cursor_line == MENU_LINE_HEIGHT)
+	{
+		cvar_t* var = g_menu_cursor_line == MENU_LINE_WIDTH ? &vid_width : &vid_height;
+		sprintf( str, "%d", (int)var->value );
+
+		M_DrawCharacter (
+			x_width + 8 + 8 * strlen(str),
+			y_width + (g_menu_cursor_line-MENU_LINE_WIDTH)*16,
+			cursor_char - 2);
+	}
+	else if (g_menu_cursor_line == MENU_LINE_RESTART)
+		M_DrawCharacter (x_apply - 8, y_apply, cursor_char);
+	else
+		M_DrawCharacter (x_cursor, y0 + g_menu_cursor_line*8, cursor_char);
+}
+
+static void MenuKeyFn(int key)
+{
+	qboolean	is_flag_key;
+
+	if (key == K_ESCAPE)
+	{
+		M_Menu_Options_f ();
+		return;
+	}
+
+	if (key == K_DOWNARROW)
+	{
+		S_LocalSound ("misc/menu1.wav");
+		g_menu_cursor_line = (g_menu_cursor_line + 1) % MENU_LINE_COUNT;
+		return;
+	}
+	if (key == K_UPARROW)
+	{
+		S_LocalSound ("misc/menu1.wav");
+		g_menu_cursor_line = (g_menu_cursor_line - 1 + MENU_LINE_COUNT) % MENU_LINE_COUNT;
+		return;
+	}
+
+	is_flag_key = key == K_LEFTARROW || key == K_RIGHTARROW || key == K_ENTER;
+
+	if (g_menu_cursor_line == MENU_LINE_SCALER)
+	{
+		int scaler = (int)vid_scaler.value;
+		if (key == K_LEFTARROW)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			scaler--;
+		}
+		if (key == K_RIGHTARROW)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			scaler++;
+		}
+
+		if (scaler < 1)
+			scaler = 1;
+		if (scaler > MAX_MENU_SCALER)
+			scaler = MAX_MENU_SCALER;
+
+		Cvar_SetValue( vid_scaler.name, scaler );
+	}
+	else if (g_menu_cursor_line == MENU_LINE_FULLSCREEN)
+	{
+		if (is_flag_key)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			Cvar_SetValue( vid_fullscreen.name, !((int)vid_fullscreen.value) );
+		}
+	}
+	else if (g_menu_cursor_line == MENU_LINE_32BIT)
+	{
+		if (is_flag_key)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			Cvar_SetValue( vid_32bit.name, !((int)vid_32bit.value) );
+		}
+	}
+	else if (g_menu_cursor_line == MENU_LINE_WIDTH || g_menu_cursor_line == MENU_LINE_HEIGHT)
+	{
+		cvar_t* var = g_menu_cursor_line == MENU_LINE_WIDTH ? &vid_width : &vid_height;
+
+		if (key >= '0' && key <= '9' && var->value <= 9999)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			var->value *= 10.0;
+			var->value += key - '0';
+		}
+		if (key == K_BACKSPACE)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			var->value = ((int)var->value) / 10;
+		}
+		
+		Cvar_SetValue( var->name, var->value );
+	}
+	else if (g_menu_cursor_line == MENU_LINE_RESTART)
+	{
+		if (key == K_ENTER)
+			RestartCommand();
+	}
+}
+
 static void BuildGammaTable(double gamma)
 {
 	int i, b;
@@ -100,19 +277,6 @@ static void BuildGammaTable(double gamma)
 static qboolean DrawDirect(void)
 {
 	return r_pixbytes == 4 && g_sdl.scaler == 1;
-}
-
-static void MenuDrawFn(void)
-{
-}
-
-static void MenuKeyFn(int key)
-{
-	if (key == K_ESCAPE)
-	{
-		S_LocalSound ("misc/menu1.wav");
-		M_Menu_Options_f ();
-	}
 }
 
 static void GetPixelComponentsOrder( const SDL_PixelFormat*	pixel_format )
