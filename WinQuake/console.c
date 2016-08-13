@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <fcntl.h>
 #include "quakedef.h"
 
+#include <SDL_version.h>
+
 int 		con_linewidth;
 
 float		con_cursorspeed = 4;
@@ -509,6 +511,54 @@ void Con_DrawInput (void)
 	key_lines[edit_line][key_linepos] = 0;
 }
 
+/*
+================
+Con_DrawVersion
+================
+*/
+void Con_DrawVersion (void)
+{
+	const char	*game_name, *platform;
+	char		buff[128];
+	int			x, i;
+
+	static char	sdl_version[32];
+	{
+		SDL_version ver;
+		static int version_recieved = 0;
+		if (!version_recieved)
+		{
+			version_recieved = 1;
+			SDL_GetVersion(&ver);
+			sprintf( sdl_version, "SDL %d.%d.%d", ver.major, ver.minor, ver.patch );
+		}
+	}
+
+#ifdef GLQUAKE
+	game_name = "PanzerQuake (OpenGL)";
+#else
+	game_name = "PanzerQuake";
+#endif
+#ifdef _WIN32
+	platform = "win";
+#elif defined(__linux__)
+	platform = "lin";
+#else
+	platform = "";
+#endif
+
+	sprintf( buff, "%s %1.2f, %s %s", game_name, VERSION, sdl_version, platform );
+
+	x = vid.width - (strlen(buff) + 1) * 8;
+	i = 0;
+	while (buff[i] != 0)
+	{
+		Draw_Character( x, con_vislines - 12, buff[i] + 128 );
+		x += 8;
+		i++;
+	}
+}
+
 
 /*
 ================
@@ -592,6 +642,8 @@ void Con_DrawConsole (int lines, qboolean drawinput)
 
 // draw the text
 	con_vislines = lines;
+
+	Con_DrawVersion();
 
 	rows = (lines-16)>>3;		// rows of text to draw
 	y = lines - 16 - (rows<<3);	// may start slightly negative

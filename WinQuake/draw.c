@@ -906,30 +906,6 @@ void Draw_TransPicTranslateScaled (int x, int y, int scale, qpic_t *pic, byte *t
 }
 
 
-void Draw_CharToConback (int num, byte *dest)
-{
-	int		row, col;
-	byte	*source;
-	int		drawline;
-	int		x;
-
-	row = num>>4;
-	col = num&15;
-	source = draw_chars + (row<<10) + (col<<3);
-
-	drawline = 8;
-
-	while (drawline--)
-	{
-		for (x=0 ; x<8 ; x++)
-			if (source[x])
-				dest[x] = 0x60 + source[x];
-		source += 128;
-		dest += 320;
-	}
-
-}
-
 /*
 ================
 Draw_ConsoleBackground
@@ -943,27 +919,8 @@ void Draw_ConsoleBackground (int lines)
 	unsigned int	*pusdest;
 	int				f, fstep;
 	qpic_t			*conback;
-	char			ver[100];
 
 	conback = Draw_CachePic ("gfx/conback.lmp");
-
-// hack the version number directly into the pic
-#ifdef _WIN32
-	sprintf (ver, "(WinQuake) %4.2f", (float)VERSION);
-	dest = conback->data + 320*186 + 320 - 11 - 8*strlen(ver);
-#elif defined(X11)
-	sprintf (ver, "(X11 Quake %2.2f) %4.2f", (float)X11_VERSION, (float)VERSION);
-	dest = conback->data + 320*186 + 320 - 11 - 8*strlen(ver);
-#elif defined(__linux__)
-	sprintf (ver, "(Linux Quake %2.2f) %4.2f", (float)LINUX_VERSION, (float)VERSION);
-	dest = conback->data + 320*186 + 320 - 11 - 8*strlen(ver);
-#else
-	dest = conback->data + 320 - 43 + 320*186;
-	sprintf (ver, "%4.2f", VERSION);
-#endif
-
-	for (x=0 ; x<strlen(ver) ; x++)
-		Draw_CharToConback (ver[x], dest+(x<<3));
 	
 // draw the pic
 	if (r_pixbytes == 1)
