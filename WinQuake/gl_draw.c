@@ -272,31 +272,6 @@ qpic_t	*Draw_CachePic (char *path)
 }
 
 
-void Draw_CharToConback (int num, byte *dest)
-{
-	int		row, col;
-	byte	*source;
-	int		drawline;
-	int		x;
-
-	row = num>>4;
-	col = num&15;
-	source = draw_chars + (row<<10) + (col<<3);
-
-	drawline = 8;
-
-	while (drawline--)
-	{
-		for (x=0 ; x<8 ; x++)
-			if (source[x] != 255)
-				dest[x] = 0x60 + source[x];
-		source += 128;
-		dest += 320;
-	}
-
-}
-
-
 /*
 ===============
 Draw_Init
@@ -306,9 +281,6 @@ void Draw_Init (void)
 {
 	int		i;
 	qpic_t	*cb;
-	byte	*dest, *src;
-	int		x, y;
-	char	ver[40];
 	glpic_t	*gl;
 	int		start;
 	byte	*ncdata;
@@ -325,10 +297,6 @@ void Draw_Init (void)
 		Cvar_SetValue( gl_max_size.name, max_size );
 	}
 
-	// load the console background and the charset
-	// by hand, because we need to write the version
-	// string into the background before turning
-	// it into a texture
 	draw_chars = W_GetLumpName ("conchars");
 	for (i=0 ; i<256*64 ; i++)
 		if (draw_chars[i] == 0)
@@ -337,61 +305,20 @@ void Draw_Init (void)
 	// now turn them into textures
 	char_texture = GL_LoadTexture ("charset", 128, 128, draw_chars, false, true);
 
+	// Disable filtrations for chars
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
 	start = Hunk_LowMark();
 
-	cb = (qpic_t *)COM_LoadTempFile ("gfx/conback.lmp");	
+	cb = (qpic_t *)COM_LoadTempFile ("gfx/conback.lmp");
 	if (!cb)
 		Sys_Error ("Couldn't load gfx/conback.lmp");
 	SwapPic (cb);
 
-	// hack the version number directly into the pic
-#if defined(__linux__)
-	sprintf (ver, "(Linux %2.2f, gl %4.2f) %4.2f", (float)LINUX_VERSION, (float)GLQUAKE_VERSION, (float)VERSION);
-#else
-	sprintf (ver, "(gl %4.2f) %4.2f", (float)GLQUAKE_VERSION, (float)VERSION);
-#endif
-	dest = cb->data + 320*186 + 320 - 11 - 8*strlen(ver);
-	y = strlen(ver);
-	for (x=0 ; x<y ; x++)
-		Draw_CharToConback (ver[x], dest+(x<<3));
-
-#if 0
-	conback->width = vid.conwidth;
-	conback->height = vid.conheight;
-
- 	// scale console to vid size
- 	dest = ncdata = Hunk_AllocName(vid.conwidth * vid.conheight, "conback");
- 
- 	for (y=0 ; y<vid.conheight ; y++, dest += vid.conwidth)
- 	{
- 		src = cb->data + cb->width * (y*cb->height/vid.conheight);
- 		if (vid.conwidth == cb->width)
- 			memcpy (dest, src, vid.conwidth);
- 		else
- 		{
- 			f = 0;
- 			fstep = cb->width*0x10000/vid.conwidth;
- 			for (x=0 ; x<vid.conwidth ; x+=4)
- 			{
- 				dest[x] = src[f>>16];
- 				f += fstep;
- 				dest[x+1] = src[f>>16];
- 				f += fstep;
- 				dest[x+2] = src[f>>16];
- 				f += fstep;
- 				dest[x+3] = src[f>>16];
- 				f += fstep;
- 			}
- 		}
- 	}
-#else
 	conback->width = cb->width;
 	conback->height = cb->height;
 	ncdata = cb->data;
-#endif
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	gl = (glpic_t *)conback->data;
 	gl->texnum = GL_LoadTexture ("conback", conback->width, conback->height, ncdata, false, false);
