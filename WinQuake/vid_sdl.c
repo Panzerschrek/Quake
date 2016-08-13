@@ -375,7 +375,7 @@ static void UpdateMode (unsigned char *palette)
 
 	g_sdl.window =
 		SDL_CreateWindow(
-			"Quake",
+			"PanzerQuake",
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 			system_width, system_height,
 			SDL_WINDOW_SHOWN | (g_sdl.fullscreen ? SDL_WINDOW_FULLSCREEN : 0) );

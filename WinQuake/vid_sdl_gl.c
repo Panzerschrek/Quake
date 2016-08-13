@@ -461,7 +461,7 @@ void	VID_Init (unsigned char *palette)
 
 	g_sdl_gl.window =
 		SDL_CreateWindow(
-			"Quake",
+			"PanzerQuake (OpenGL)",
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
 			vid.width, vid.height,
