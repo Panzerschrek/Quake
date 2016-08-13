@@ -264,6 +264,10 @@ qpic_t	*Draw_CachePic (char *path)
 	gl->tl = 0;
 	gl->th = 1;
 
+	// We do not need repeat on GUI textures.
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
 	return &pic->pic;
 }
 
