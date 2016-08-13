@@ -1588,11 +1588,13 @@ void M_Help_Key (int key)
 //=============================================================================
 /* QUIT MENU */
 
+//#define BULLY_QUIT_MESSAGES
+
 int		msgNumber;
 int		m_quit_prevstate;
 qboolean	wasInMenus;
 
-#ifndef	_WIN32
+#ifdef	BULLY_QUIT_MESSAGES
 char *quitMessage [] = 
 {
 /* .........1.........2.... */
@@ -1693,7 +1695,7 @@ void M_Quit_Draw (void)
 		m_state = m_quit;
 	}
 
-#ifdef _WIN32
+#ifndef BULLY_QUIT_MESSAGES
 	M_DrawTextBox (0, 0, 38, 23);
 	M_PrintWhite (16, 12,  "  Quake version 1.09 by id Software\n\n");
 	M_PrintWhite (16, 28,  "Programming        Art \n");
