@@ -906,12 +906,15 @@ void SCR_UpdateScreen (void)
 //
 	D_EnableBackBufferAccess ();	// of all overlay stuff if drawing directly
 
-	if (scr_fullupdate++ < vid.numpages)
-	{	// clear the entire screen
-		scr_copyeverything = 1;
-		Draw_TileClear (0,0,vid.width,vid.height);
-		Sbar_Changed ();
-	}
+	// Draw tile framing
+	Draw_TileClear(0, 0, vid.width, r_refdef.vrect.y ); // Up
+	Draw_TileClear(
+		0, r_refdef.vrect.y + r_refdef.vrect.height,
+		vid.width, vid.height - (r_refdef.vrect.y + r_refdef.vrect.height) ); // Down
+	Draw_TileClear(0, r_refdef.vrect.y, r_refdef.vrect.x, r_refdef.vrect.height ); // Left
+	Draw_TileClear(
+		r_refdef.vrect.x + r_refdef.vrect.width, r_refdef.vrect.y,
+		vid.width - (r_refdef.vrect.x + r_refdef.vrect.width), r_refdef.vrect.height ); // Right
 
 	pconupdate = NULL;
 
