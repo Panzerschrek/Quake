@@ -40,6 +40,20 @@ int			r_numparticles;
 
 vec3_t			r_pright, r_pup, r_ppn;
 
+#ifdef GLQUAKE
+
+// 5 * 4 = 20 bytes struct
+// 20 * 3 = 60 bytes per particle
+typedef struct particels_vertex_s
+{
+	float			v[3];
+	unsigned int	color; // packed 4 bytes of rgba
+	short			tc[2];
+} particle_vertex_t;
+
+static particle_vertex_t	*particles_buffer;
+#endif
+
 
 /*
 ===============
@@ -67,6 +81,11 @@ void R_InitParticles (void)
 
 	particles = (particle_t *)
 			Hunk_AllocName (r_numparticles * sizeof(particle_t), "particles");
+
+#ifdef GLQUAKE
+	particles_buffer = (particle_vertex_t *)
+			Hunk_AllocName( r_numparticles * sizeof(particle_vertex_t) * 3, "partvert" );
+#endif
 }
 
 #ifdef QUAKE2
@@ -665,11 +684,13 @@ void R_DrawParticles (void)
 	vec3_t			up, right;
 	float			scale;
 	float			min_distance, max_distance, half_fov_tan, min_pix_size;
+	particle_vertex_t*	vert;
 
-    GL_Bind(particletexture);
+	vert = particles_buffer;
+
+	GL_Bind(particletexture);
 	glEnable (GL_BLEND);
 	glEnable (GL_ALPHA_TEST);
-	glBegin (GL_TRIANGLES);
 
 	VectorScale (vup, 1.5 * r_particle_size.value, up);
 	VectorScale (vright, 1.5 * r_particle_size.value, right);
@@ -739,14 +760,18 @@ void R_DrawParticles (void)
 			else
 				scale = 1.0;
 		}
+		
+		VectorCopy(p->org, vert[0].v);
+		vert[0].tc[0] = 0; vert[0].tc[1] = 0;
 
-		glColor3ubv ((byte *)&d_8to24table[(int)p->color]);
-		glTexCoord2f (0,0);
-		glVertex3fv (p->org);
-		glTexCoord2f (1,0);
-		glVertex3f (p->org[0] + up[0]*scale, p->org[1] + up[1]*scale, p->org[2] + up[2]*scale);
-		glTexCoord2f (0,1);
-		glVertex3f (p->org[0] + right[0]*scale, p->org[1] + right[1]*scale, p->org[2] + right[2]*scale);
+		VectorMA(p->org, scale, up, vert[1].v);
+		vert[1].tc[0] = 1; vert[1].tc[1] = 0;
+
+		VectorMA(p->org, scale, right, vert[2].v);
+		vert[2].tc[0] = 0; vert[2].tc[1] = 1;
+
+		vert[0].color = vert[1].color = vert[2].color = d_8to24table[(int)p->color];
+		vert += 3;
 #else
 		D_DrawParticle (p);
 #endif
@@ -813,7 +838,20 @@ void R_DrawParticles (void)
 	}
 
 #ifdef GLQUAKE
-	glEnd ();
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	glVertexPointer( 3, GL_FLOAT, sizeof(particle_vertex_t), &particles_buffer[0].v[0] );
+	glTexCoordPointer( 2, GL_SHORT, sizeof(particle_vertex_t), &particles_buffer[0].tc[0] );
+	glColorPointer( 4, GL_UNSIGNED_BYTE, sizeof(particle_vertex_t), &particles_buffer[0].color );
+
+	glDrawArrays( GL_TRIANGLES, 0, vert - particles_buffer );
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+
 	glDisable (GL_BLEND);
 	glDisable (GL_ALPHA_TEST);
 #else
