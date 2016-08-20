@@ -1183,7 +1183,7 @@ void Sbar_MiniDeathmatchOverlay (void)
 	scoreboard_t	*s;
 	int				numlines;
 
-	if (vid.width < 512 || !sb_lines)
+	if (vid.width < 512 * sb_scale || !sb_lines)
 		return;
 
 	scr_copyeverything = 1;
