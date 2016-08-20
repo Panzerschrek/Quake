@@ -197,10 +197,7 @@ void IN_Move (usercmd_t *cmd)
 {
 	// cmd not used - because we do not use mouse for moving, only for rotation.
 
-	if( !g_mouse_captured )
-		return;
-
-	if( !cl.paused )
+	if( !cl.paused && key_dest == key_game )
 	{
 		float dx, dy;
 
@@ -222,7 +219,11 @@ void IN_Move (usercmd_t *cmd)
 
 		if( cl.viewangles[PITCH] > +90 ) cl.viewangles[PITCH] = +90;
 		if( cl.viewangles[PITCH] < -90 ) cl.viewangles[PITCH] = -90;
+
+		CaptureMouse(true);
 	}
+	else
+		CaptureMouse(false);
 
 	g_prev_mouse_dx = g_mouse_dx;
 	g_prev_mouse_dy = g_mouse_dy;
