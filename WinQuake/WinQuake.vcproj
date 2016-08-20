@@ -405,10 +405,6 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90"
 			>
 			<File
-				RelativePath=".\cd_null.c"
-				>
-			</File>
-			<File
 				RelativePath="chase.c"
 				>
 				<FileConfiguration

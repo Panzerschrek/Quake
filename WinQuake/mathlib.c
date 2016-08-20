@@ -578,3 +578,8 @@ fixed16_t Invert24To16(fixed16_t val)
 			(((double)0x10000 * (double)0x1000000 / (double)val) + 0.5);
 }
 
+fixed16_t Fixed16Mul(fixed16_t x, fixed16_t y)
+{
+	return ( ((long long int)x) * y ) >> 16;
+}
+
