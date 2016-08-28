@@ -41,6 +41,7 @@ cvar_t	gl_width  = { "gl_width" , "640", false };
 cvar_t	gl_height = { "gl_height", "480", false };
 cvar_t	gl_display = { "gl_display", "0", false };
 cvar_t	gl_fullscreen = { "gl_fullscreen", "0", false };
+cvar_t	gl_vsync = { "gl_vsync", "1", false };
 cvar_t	gl_msaa = { "gl_msaa", "0", false };
 
 // Some subsystem needs it
@@ -67,6 +68,7 @@ enum
 	MENU_LINE_TEXTIRES_ANISOTROPY,
 	MENU_LINE_MSAA,
 	MENU_LINE_FULLSCREEN,
+	MENU_LINE_VSYNC,
 	MENU_LINE_WIDTH ,
 	MENU_LINE_HEIGHT,
 	MENU_LINE_COUNT
@@ -135,6 +137,10 @@ static void MenuDrawFn(void)
 
 	M_Print (x_print, y, "            fullscreen");
 	M_DrawCheckbox (x_ctrl, y, gl_fullscreen.value);
+	y += 8;
+
+	M_Print (x_print, y, "                 vsync");
+	M_DrawCheckbox (x_ctrl, y, gl_vsync.value);
 	y += 8;
 
 	M_DrawTextBox (x_width, y, 5, 1);
@@ -297,6 +303,14 @@ static void MenuKeyFn(int key)
 			Cvar_SetValue( gl_fullscreen.name, !((int)gl_fullscreen.value) );
 		}
 	}
+	else if (g_menu_cursor_line == MENU_LINE_VSYNC)
+	{
+		if (is_flag_key)
+		{
+			S_LocalSound ("misc/menu3.wav");
+			Cvar_SetValue( gl_vsync.name, !((int)gl_vsync.value) );
+		}
+	}
 	else if (g_menu_cursor_line == MENU_LINE_WIDTH || g_menu_cursor_line == MENU_LINE_HEIGHT)
 	{
 		cvar_t* var = g_menu_cursor_line == MENU_LINE_WIDTH ? &gl_width : &gl_height;
@@ -345,6 +359,7 @@ static void SaveGLConfig(void)
 		fprintf( f, format, gl_height.name, gl_height.string );
 		fprintf( f, format, gl_display.name, gl_display.string );
 		fprintf( f, format, gl_fullscreen.name, gl_fullscreen.string );
+		fprintf( f, format, gl_vsync.name, gl_vsync.string );
 		fprintf( f, format, gl_msaa.name, gl_msaa.string );
 
 		fclose(f);
@@ -408,6 +423,7 @@ void	VID_Init (unsigned char *palette)
 	Cvar_RegisterVariable( &gl_width  );
 	Cvar_RegisterVariable( &gl_height );
 	Cvar_RegisterVariable( &gl_display );
+	Cvar_RegisterVariable( &gl_vsync );
 	Cvar_RegisterVariable( &gl_fullscreen );
 	Cvar_RegisterVariable( &gl_msaa );
 
@@ -482,7 +498,8 @@ void	VID_Init (unsigned char *palette)
 		Sys_Error("Can not get window context.");
 
 	SDL_GL_MakeCurrent( g_sdl_gl.window, g_sdl_gl.context );
-	SDL_GL_SetSwapInterval(1);
+
+	SDL_GL_SetSwapInterval( gl_vsync.value ? 1 : 0 );
 
 	VID_SetPalette(palette);
 
