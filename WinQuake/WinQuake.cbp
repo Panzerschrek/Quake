@@ -387,6 +387,9 @@
 		</Unit>
 		<Unit filename="wad.h" />
 		<Unit filename="winquake.h" />
+		<Unit filename="winquake.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
 		<Unit filename="world.c">
 			<Option compilerVar="CC" />
 		</Unit>
