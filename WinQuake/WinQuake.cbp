@@ -92,12 +92,7 @@
 			<Option compilerVar="CC" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="d_fill.c">
-			<Option compilerVar="CC" />
-			<Option target="Release" />
-		</Unit>
 		<Unit filename="d_iface.h" />
-		<Unit filename="d_ifacea.h" />
 		<Unit filename="d_init.c">
 			<Option compilerVar="CC" />
 			<Option target="Release" />
