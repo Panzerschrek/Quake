@@ -48,9 +48,6 @@
 		<Unit filename="anorm_dots.h" />
 		<Unit filename="anorms.h" />
 		<Unit filename="bspfile.h" />
-		<Unit filename="cd_null.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="cdaudio.h" />
 		<Unit filename="chase.c">
 			<Option compilerVar="CC" />
