@@ -141,9 +141,6 @@ void R_SetSkyFrame (void);
 texture_t *R_TextureAnimation (texture_t *base);
 
 void R_GenSkyTile (void *pdest);
-void R_GenSkyTile16 (void *pdest);
-void R_Surf8Patch (void);
-void R_Surf16Patch (void);
 void R_DrawSubmodelPolygons (model_t *pmodel, int clipflags);
 void R_DrawSolidClippedSubmodelPolygons (model_t *pmodel);
 
@@ -156,13 +153,6 @@ void D_DrawSurfaces (void);
 void R_InsertNewEdges (edge_t *edgestoadd, edge_t *edgelist);
 void R_StepActiveU (edge_t *pedge);
 void R_RemoveEdges (edge_t *pedge);
-
-extern void R_Surf8Start (void);
-extern void R_Surf8End (void);
-extern void R_Surf16Start (void);
-extern void R_Surf16End (void);
-extern void R_EdgeCodeStart (void);
-extern void R_EdgeCodeEnd (void);
 
 extern void R_RotateBmodel (void);
 
@@ -241,7 +231,6 @@ void R_DrawParticles (void);
 void R_InitParticles (void);
 void R_ClearParticles (void);
 void R_ReadPointFile_f (void);
-void R_SurfacePatch (void);
 
 extern int		r_amodels_drawn;
 extern edge_t	*auxedges;

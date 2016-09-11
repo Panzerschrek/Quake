@@ -643,32 +643,6 @@ void R_GenTurbTile (pixel_t *pbasetex, void *pdest)
 
 /*
 ================
-R_GenTurbTile16
-================
-*/
-void R_GenTurbTile16 (pixel_t *pbasetex, void *pdest)
-{
-	int				*turb;
-	int				i, j, s, t;
-	unsigned short	*pd;
-
-	turb = sintable + ((int)(cl.time*SPEED)&(CYCLE-1));
-	pd = (unsigned short *)pdest;
-
-	for (i=0 ; i<TILE_SIZE ; i++)
-	{
-		for (j=0 ; j<TILE_SIZE ; j++)
-		{	
-			s = (((j << 16) + turb[i & (CYCLE-1)]) >> 16) & 63;
-			t = (((i << 16) + turb[j & (CYCLE-1)]) >> 16) & 63;
-			*pd++ = d_8to16table[*(pbasetex + (t<<6) + s)];
-		}
-	}
-}
-
-
-/*
-================
 R_GenTile
 ================
 */
@@ -676,27 +650,12 @@ void R_GenTile (msurface_t *psurf, void *pdest)
 {
 	if (psurf->flags & SURF_DRAWTURB)
 	{
-		//if (r_pixbytes == 1)
-		//{
-			R_GenTurbTile ((pixel_t *)
-				((byte *)psurf->texinfo->texture + psurf->texinfo->texture->offsets[0]), pdest);
-		//}
-		/*else
-		{
-			R_GenTurbTile16 ((pixel_t *)
-				((byte *)psurf->texinfo->texture + psurf->texinfo->texture->offsets[0]), pdest);
-		}*/
+		R_GenTurbTile ((pixel_t *)
+			((byte *)psurf->texinfo->texture + psurf->texinfo->texture->offsets[0]), pdest);
 	}
 	else if (psurf->flags & SURF_DRAWSKY)
 	{
-		//if (r_pixbytes == 1)
-		//{
-			R_GenSkyTile (pdest);
-		//}
-		//else
-		//{
-			R_GenSkyTile16 (pdest);
-		//}
+		R_GenSkyTile (pdest);
 	}
 	else
 	{

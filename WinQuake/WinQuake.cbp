@@ -130,10 +130,6 @@
 			<Option compilerVar="CC" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="d_zpoint.c">
-			<Option compilerVar="CC" />
-			<Option target="Release" />
-		</Unit>
 		<Unit filename="draw.c">
 			<Option compilerVar="CC" />
 			<Option target="Release" />
@@ -246,9 +242,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="net_wipx.h" />
-		<Unit filename="nonintel.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="pr_cmds.c">
 			<Option compilerVar="CC" />
 		</Unit>
