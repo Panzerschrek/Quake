@@ -214,6 +214,10 @@ void R_BuildLightMap (void)
 			if (t < (1 << 6))
 				t = (1 << 6);
 
+			// Clamp too dark lights to prevent dithering overflow.
+			if(t > ( ( 256 * 256 ) >> (8 - VID_CBITS) ) - 256)
+				t= ( ( 256 * 256 ) >> (8 - VID_CBITS) ) - 256;
+
 			blocklights[i] = t;
 		}
 	}
@@ -350,6 +354,24 @@ void R_DrawSurface (void)
 
 //=============================================================================
 
+static const int c_bayer_matrix_4x4[4][4]=
+{
+	{  0,  8,  2, 10 },
+	{ 12,  4, 14,  6 },
+	{  3, 11,  1,  9 },
+	{ 15,  7, 13,  5 },
+};
+
+static const int c_bayer_matrix_2x2[2][2]=
+{
+	{ 0, 2 },
+	{ 3, 1 },
+};
+
+/*
+static int c_bayer_matrix[4][4];
+static int c_bayer_matrix_2x2[2][2];
+*/
 
 /*
 ================
@@ -358,7 +380,7 @@ R_DrawSurfaceBlock8_mip0
 */
 void R_DrawSurfaceBlock8_mip0 (void)
 {
-	int				v, i, b, lightstep, lighttemp, light;
+	int				v, i, b, lightstep, lighttemp, light, light_add;
 	unsigned char	pix, *psource, *prowdest;
 
 	psource = pbasesource;
@@ -383,9 +405,11 @@ void R_DrawSurfaceBlock8_mip0 (void)
 
 			for (b=15; b>=0; b--)
 			{
+				light_add= light + c_bayer_matrix_4x4[i&3][b&3] * 16;
+
 				pix = psource[b];
 				prowdest[b] = ((unsigned char *)vid.colormap)
-						[(light & 0xFF00) + pix];
+						[(light_add & 0xFF00) + pix];
 				light += lightstep;
 			}
 	
@@ -408,7 +432,7 @@ R_DrawSurfaceBlock8_mip1
 */
 void R_DrawSurfaceBlock8_mip1 (void)
 {
-	int				v, i, b, lightstep, lighttemp, light;
+	int				v, i, b, lightstep, lighttemp, light, light_add;
 	unsigned char	pix, *psource, *prowdest;
 
 	psource = pbasesource;
@@ -433,9 +457,11 @@ void R_DrawSurfaceBlock8_mip1 (void)
 
 			for (b=7; b>=0; b--)
 			{
+				light_add= light + c_bayer_matrix_4x4[i&3][b&3] * 16;
+
 				pix = psource[b];
 				prowdest[b] = ((unsigned char *)vid.colormap)
-						[(light & 0xFF00) + pix];
+						[(light_add & 0xFF00) + pix];
 				light += lightstep;
 			}
 	
@@ -458,7 +484,7 @@ R_DrawSurfaceBlock8_mip2
 */
 void R_DrawSurfaceBlock8_mip2 (void)
 {
-	int				v, i, b, lightstep, lighttemp, light;
+	int				v, i, b, lightstep, lighttemp, light, light_add;
 	unsigned char	pix, *psource, *prowdest;
 
 	psource = pbasesource;
@@ -483,9 +509,11 @@ void R_DrawSurfaceBlock8_mip2 (void)
 
 			for (b=3; b>=0; b--)
 			{
+				light_add= light + c_bayer_matrix_4x4[i&3][b&3] * 16;
+
 				pix = psource[b];
 				prowdest[b] = ((unsigned char *)vid.colormap)
-						[(light & 0xFF00) + pix];
+						[(light_add & 0xFF00) + pix];
 				light += lightstep;
 			}
 	
@@ -508,7 +536,7 @@ R_DrawSurfaceBlock8_mip3
 */
 void R_DrawSurfaceBlock8_mip3 (void)
 {
-	int				v, i, b, lightstep, lighttemp, light;
+	int				v, i, b, lightstep, lighttemp, light, light_add;
 	unsigned char	pix, *psource, *prowdest;
 
 	psource = pbasesource;
@@ -533,9 +561,12 @@ void R_DrawSurfaceBlock8_mip3 (void)
 
 			for (b=1; b>=0; b--)
 			{
+				// Use simplier bayer matrix for mip3, because block size is only 2x2.
+				light_add= light + c_bayer_matrix_2x2[i&1][b&1] * 64;
+
 				pix = psource[b];
 				prowdest[b] = ((unsigned char *)vid.colormap)
-						[(light & 0xFF00) + pix];
+						[(light_add & 0xFF00) + pix];
 				light += lightstep;
 			}
 	
