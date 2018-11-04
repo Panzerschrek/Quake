@@ -4,45 +4,52 @@
 	<Project>
 		<Option title="WinQuake" />
 		<Option pch_mode="2" />
-		<Option compiler="mingw_qt_53" />
+		<Option compiler="gcc" />
 		<Build>
 			<Target title="Release">
-				<Option output="bin\Release\WinQuake" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj\Release\" />
+				<Option output="bin/Release/WinQuake" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../WinQuake" />
+				<Option object_output="obj/Release/" />
 				<Option type="1" />
-				<Option compiler="mingw_qt_53" />
+				<Option compiler="gcc" />
+				<Option projectLibDirsRelation="-1" />
 				<Compiler>
-					<Add option="-march=pentium4" />
-					<Add option="-O2" />
+					<Add option="-O2 -s" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
 				</Linker>
+				<MakeCommands>
+					<Build command="" />
+					<CompileFile command="" />
+					<Clean command="" />
+					<DistClean command="" />
+					<AskRebuildNeeded command="" />
+					<SilentBuild command=" &gt; $(CMD_NULL)" />
+				</MakeCommands>
 			</Target>
 			<Target title="ReleaseGL">
-				<Option output="bin\ReleaseGL\GLQuake" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj\ReleaseGL\" />
+				<Option output="bin/ReleaseGL/GLQuake" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/ReleaseGL/" />
 				<Option type="1" />
-				<Option compiler="mingw_qt_53" />
+				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-march=pentium4" />
-					<Add option="-O2" />
+					<Add option="O2 -s" />
 					<Add option="-DGLQUAKE" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add library="opengl32" />
+					<Add library="GL" />
 				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-Wall" />
-			<Add directory="..\..\SDL2-2.0.3\include" />
+			<Add option="-Wall -Wextra" />
+			<Add directory="/usr/include/SDL2/" />
 		</Compiler>
 		<Linker>
 			<Add library="SDL2" />
-			<Add library="wsock32" />
-			<Add directory="..\..\SDL2-2.0.3\lib\x86" />
+			<Add directory="/usr/include/SDL2" />
 		</Linker>
 		<Unit filename="adivtab.h" />
 		<Unit filename="anorm_dots.h" />
@@ -227,19 +234,32 @@
 		<Unit filename="net_main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="net_none.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="net_udp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="net_udp.h" />
 		<Unit filename="net_vcr.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="net_vcr.h" />
 		<Unit filename="net_win.c">
 			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
 		</Unit>
 		<Unit filename="net_wins.c">
 			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
 		</Unit>
 		<Unit filename="net_wins.h" />
 		<Unit filename="net_wipx.c">
 			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
 		</Unit>
 		<Unit filename="net_wipx.h" />
 		<Unit filename="pr_cmds.c">

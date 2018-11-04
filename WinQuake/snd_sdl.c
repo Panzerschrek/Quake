@@ -9,7 +9,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <SDL.h>
 #include <SDL_audio.h>
-#include <SDL_Mutex.h>
+//#include <SDL_Mutex.h>
 
 #include "quakedef.h"
 
@@ -357,7 +357,7 @@ void CDAudio_Play(byte track, qboolean looping)
 	g_music.freq= spec.freq;
 	g_music.channels= spec.channels;
 	g_music.sample_bits= SDL_AUDIO_BITSIZE(spec.format);
-	
+
 	g_music.buffer_size= len / (g_music.channels * g_music.sample_bits / 8);
 
 	g_music.buffer_pos= 0;
