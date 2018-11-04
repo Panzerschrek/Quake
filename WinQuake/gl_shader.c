@@ -317,7 +317,7 @@ float HatchingFetch( float hatching_level )\
 {\
 	vec2 tc_scaled= gl_TexCoord[1].xy * vec2( 8.0, 8.0 );\
 	const float tex_layers= 24.0;\
-	float layer_num= ceil( hatching_level * tex_layers );\
+	float layer_num= floor( hatching_level * tex_layers );\
 	float m= hatching_level * tex_layers - layer_num;\
 	return mix(\
 		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num ) ).x,\
@@ -370,12 +370,12 @@ float HatchingFetch( float hatching_level )\
 {\
 	vec2 tc_scaled= gl_TexCoord[0].xy * vec2( 2.0, 2.0 );\
 	const float tex_layers= 24.0;\
-	float layer_num= ceil( hatching_level * tex_layers );\
+	float layer_num= floor( hatching_level * tex_layers );\
 	float m= hatching_level * tex_layers - layer_num;\
 	return mix(\
-	texture2DArray( hatching_texture, vec3( tc_scaled, layer_num ) ).x,\
-	texture2DArray( hatching_texture, vec3( tc_scaled, layer_num + 1.0 ) ).x,\
-	m );\
+		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num ) ).x,\
+		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num + 1.0 ) ).x,\
+		m );\
 }\
 void main(void)\
 {\
@@ -389,7 +389,7 @@ void main(void)\
 	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
 	float hatching_level= clamp( 1.0 - brightness, 0.0, 1.0 ); \
 	float hatching= HatchingFetch( hatching_level );\
-	hatching= step( 0.5, hatching ); \
+	hatching= step( 0.5, hatching );\
 	gl_FragColor = vec4( hatching, hatching, hatching, 0.0 ); /* wtire zero to alpha to prevent outlines on models */\
 }\
 ";
