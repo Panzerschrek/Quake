@@ -57,6 +57,17 @@ msurface_t  *waterchain = NULL;
 
 void R_RenderDynamicLightmaps (msurface_t *fa);
 
+static void PrepareHatchingShader()
+{
+	if( gl_hatching.value )
+	{
+		GL_BindShader( SHADER_WORLD_HATCHING );
+		glActiveTexture( GL_TEXTURE2 );
+		GL_HatchingBindTexture();
+		glActiveTexture( GL_TEXTURE0 );
+	}
+}
+
 /*
 ===============
 R_AddDynamicLights
@@ -476,6 +487,8 @@ void DrawTextureChains (void)
 
 	GL_BindShader( SHADER_WORLD );
 
+	PrepareHatchingShader();
+
 	for (i=0 ; i<cl.worldmodel->numtextures ; i++)
 	{
 		t = cl.worldmodel->textures[i];
@@ -577,6 +590,8 @@ e->angles[0] = -e->angles[0];	// stupid quake bug
 e->angles[0] = -e->angles[0];	// stupid quake bug
 
 	GL_BindShader( SHADER_WORLD );
+
+	PrepareHatchingShader();
 
 	//
 	// draw texture
@@ -763,6 +778,8 @@ void R_DrawWorld (void)
 #endif
 
 	GL_BindShader( SHADER_WORLD );
+
+	PrepareHatchingShader();
 
 	R_RecursiveWorldNode (cl.worldmodel->nodes);
 

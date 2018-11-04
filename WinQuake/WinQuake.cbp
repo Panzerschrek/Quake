@@ -34,7 +34,7 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="O2 -s" />
+					<Add option="-O2 -s" />
 					<Add option="-DGLQUAKE" />
 				</Compiler>
 				<Linker>
@@ -142,11 +142,18 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="draw.h" />
+		<Unit filename="gL_hatch.h">
+			<Option target="ReleaseGL" />
+		</Unit>
 		<Unit filename="gl_draw.c">
 			<Option compilerVar="CC" />
 			<Option target="ReleaseGL" />
 		</Unit>
 		<Unit filename="gl_funcs_list.h">
+			<Option target="ReleaseGL" />
+		</Unit>
+		<Unit filename="gl_hatch.c">
+			<Option compilerVar="CC" />
 			<Option target="ReleaseGL" />
 		</Unit>
 		<Unit filename="gl_mesh.c">

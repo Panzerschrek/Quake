@@ -242,6 +242,42 @@ void main(void)\
 }\
 ";
 
+static const char world_hatching_shader_v[]= "\
+#version 120\n\
+\
+void main(void)\
+{\
+	gl_TexCoord[0] = gl_MultiTexCoord0;\
+	gl_TexCoord[1] = gl_MultiTexCoord1;\
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+}\
+";
+
+static const char world_hatching_shader_f[]= "\
+#version 120\n\
+\
+uniform sampler2D tex;\
+uniform sampler2D lightmap;\
+uniform sampler3D hatching_texture;\
+uniform float light_gamma = 1.0;\
+uniform float light_overbright = 1.0;\
+\
+void main(void)\
+{\
+	vec4 c = texture2D( tex, gl_TexCoord[0].xy );\
+	float l = 2.0 * texture2D( lightmap, gl_TexCoord[1].xy ).x;\
+	\
+	l = pow(l, light_gamma) * light_overbright;\
+	\
+	/* mix lightmap and selft texture glow, stored in alpha texture component */ \
+	vec3 color= c.xyz * mix( 1.0, l, c.a );\
+\
+	float brightness= clamp( dot( color, vec3( 0.333, 0.333, 0.333 ) ), 1.0 / 32.0, 32.0 / 32.0 );\
+	float hatching= texture3D( hatching_texture, vec3( gl_TexCoord[1].xy * vec2( 4.0, 4.0 ), brightness ) ).x;\
+	gl_FragColor = vec4( hatching, hatching, hatching, 1.0 );\
+}\
+";
+
 void GL_InitShaders(void)
 {
 	programs[ SHADER_NONE ].handle = 0;
@@ -265,6 +301,12 @@ void GL_InitShaders(void)
 	InitProgram( SHADER_ALIAS, alias_shader_v, alias_shader_f );
 	GL_BindShader( SHADER_ALIAS );
 	GL_ShaderUniformInt( "tex", 0 );
+
+	InitProgram( SHADER_WORLD_HATCHING, world_hatching_shader_v, world_hatching_shader_f );
+	GL_BindShader( SHADER_WORLD_HATCHING );
+	GL_ShaderUniformInt( "tex", 0 );
+	GL_ShaderUniformInt( "lightmap", 1 );
+	GL_ShaderUniformInt( "hatching_texture", 2 );
 
 	GL_BindShader( SHADER_NONE );
 }

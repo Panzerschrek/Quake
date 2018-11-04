@@ -193,8 +193,10 @@ void R_Init (void)
 
 	Cvar_RegisterVariable (&gl_lightgamma);
 	Cvar_RegisterVariable (&gl_lightoverbright);
+	Cvar_RegisterVariable (&gl_hatching);
 
 	GL_InitShaders();
+	GL_InitHatching();
 
 	R_InitParticles ();
 	R_InitParticleTexture ();

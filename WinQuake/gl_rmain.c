@@ -100,6 +100,7 @@ cvar_t	gl_doubleeyes = {"gl_doubleeys", "1"};
 
 cvar_t gl_lightgamma = {"gl_lightgamma", "1.0", true};
 cvar_t gl_lightoverbright = {"gl_lightoverbright", "1.0", true};
+cvar_t gl_hatching = { "gl_hatching", "0", true };
 
 
 /*

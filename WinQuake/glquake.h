@@ -180,6 +180,7 @@ extern	cvar_t	gl_nocolors;
 extern	cvar_t	gl_doubleeyes;
 extern	cvar_t	gl_lightgamma;
 extern	cvar_t	gl_lightoverbright;
+extern	cvar_t	gl_hatching;
 
 extern	int		gl_lightmap_format;
 extern	int		gl_solid_format;
