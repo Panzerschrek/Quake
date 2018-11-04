@@ -580,6 +580,7 @@ void R_DrawAliasModel (entity_t *e)
 
 	glShadeModel (GL_SMOOTH);
 	GL_BindShader( SHADER_ALIAS );
+	GL_HatchingPrepareShaderAlias();
 
 	R_SetupAliasFrame (e, paliashdr);
 

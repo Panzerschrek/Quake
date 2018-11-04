@@ -21,20 +21,29 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
+enum PatternKind
+{
+	HATCH_PATTERN_RAND,
+	HATCH_PATTERN_XY_HATCHES,
+	HATCH_PATTERN_COUNT,
+};
+
 static GLuint hatching_texture= ~0;
 static int hatching_texture_size_log2= 9;
-static int hatching_texture_bright_levels= 32;
+static int hatching_texture_bright_levels= 24;
 
-static void PatternGen_Hatch( byte* level_data )
+static void PatternGen_Hatch( byte* level_data, int size_log2, qboolean allow_new_direction )
 {
-	int size= 1 << hatching_texture_size_log2;
+	int size= 1 << size_log2;
 	int size_mask= size - 1;
-	int hatch_half_width= 0;
+	int hatch_half_width= 1;
+	int half_length = ( size / 16 ) - 1;
+	if( half_length < 2 ) half_length= 2;
 
 	int start_x= rand() & size_mask;
 	int start_y= rand() & size_mask;
-	int length= rand() & ( ( size / 32 ) - 1 ) + ( size / 32 );
-	if( rand() & 1 )
+	int length= rand() & ( half_length - 1 ) + half_length;
+	if( (rand() & 1) && allow_new_direction )
 	{
 		for( int d= -hatch_half_width; d <= hatch_half_width; ++d )
 		for( int x= 0; x < length; ++x )
@@ -52,9 +61,9 @@ static void PatternGen_Hatch( byte* level_data )
 	}
 }
 
-static void PatternGen_Rand( byte* level_data )
+static void PatternGen_Rand( byte* level_data, int size_log2 )
 {
-	int size= 1 << hatching_texture_size_log2;
+	int size= 1 << size_log2;
 	int size_mask= size - 1;
 	for( int i= 0; i < 8; ++i )
 	{
@@ -64,18 +73,21 @@ static void PatternGen_Rand( byte* level_data )
 	}
 }
 
-static void GenerateHatchingTexture( byte* data )
+static void GenerateHatchingTexture( byte* data, int size_log2, int bright_levels )
 {
-	int size= 1 << hatching_texture_size_log2;
+	if( bright_levels < 2 )
+		return;
+
+	int size= 1 << size_log2;
 
 	memset( data, 255, size * size * 2 );
-	for( int bright_level= 1; bright_level < hatching_texture_bright_levels - 1; )
+	for( int bright_level= 1; bright_level < bright_levels - 1; )
 	{
 		byte* level_data= data + bright_level * size * size;
-		for( int t= 0; t < size * size / ( 128 * 128 ); ++t )
+		for( int t= 0; t < 16; ++t )
 		{
-			//PatternGen_Rand( level_data );
-			PatternGen_Hatch( level_data );
+			PatternGen_Rand( level_data, size_log2 );
+			//PatternGen_Hatch( level_data, size_log2, false );
 		}
 
 		// On each step add just a bit of random points and calculate average brightness.
@@ -86,12 +98,12 @@ static void GenerateHatchingTexture( byte* data )
 			avg_brightness+= level_data[i];
 		avg_brightness /= size * size;
 
-		int expected_brightness= ( hatching_texture_bright_levels  - bright_level - 1 ) * 255 / ( hatching_texture_bright_levels - 1 );
+		int expected_brightness= ( bright_levels  - bright_level - 1  ) * 255 / ( bright_levels - 1 );
 		if( avg_brightness > expected_brightness )
 			continue;
 
 		++bright_level;
-		if( bright_level < hatching_texture_bright_levels - 1 )
+		if( bright_level < bright_levels - 1 )
 			memcpy( level_data + size * size, level_data, size * size );
 		else
 			memset( level_data + size * size, 0, size * size );
@@ -123,6 +135,7 @@ static void GenerateHatchingTextureOrderedLinear( byte* data, int size_log2, int
 	{
 		byte* level_data= data + bright_level * size * size;
 		int step= bright_level * size  / ( bright_levels - 1 );
+		/*
 		for( int y= 0; y < size; ++y )
 		{
 			if( sequence[y] <= step )
@@ -130,6 +143,16 @@ static void GenerateHatchingTextureOrderedLinear( byte* data, int size_log2, int
 					level_data[ x + y * size ]= 0;
 			else
 				for( int x= 0; x < size; ++x )
+					level_data[ x + y * size ]= 255;
+		}
+		*/
+		for( int x= 0; x < size; ++x )
+		{
+			if( sequence[x] <= step )
+				for( int y= 0; y < size; ++y )
+					level_data[ x + y * size ]= 0;
+			else
+				for( int y= 0; y < size; ++y )
 					level_data[ x + y * size ]= 255;
 		}
 	}
@@ -201,17 +224,31 @@ void GL_InitHatching()
 	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_LOD_BIAS, 0.5f );
-	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MAX_LOD, 3.0f );
+	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MAX_LOD, 4.0f );
 	glTexParameteri( GL_TEXTURE_2D_ARRAY_EXT,  GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 
     free( data );
 }
 
-void GL_HatchingBindTexture()
+void GL_HatchingPrepareShader()
 {
-	glBindTexture( GL_TEXTURE_2D_ARRAY_EXT, hatching_texture );
+	if( gl_hatching.value )
+	{
+		GL_BindShader( SHADER_WORLD_HATCHING );
+		GL_SelectTexture( GL_TEXTURE2 );
+		glBindTexture( GL_TEXTURE_2D_ARRAY_EXT, hatching_texture );
+		GL_SelectTexture( GL_TEXTURE0 );
+	}
 }
 
-void GL_HatchBindPatternForTexture()
+void GL_HatchingPrepareShaderAlias()
 {
+	if( gl_hatching.value )
+	{
+		GL_BindShader( SHADER_ALIAS_HATCHING );
+		GL_SelectTexture( GL_TEXTURE2 );
+		glBindTexture( GL_TEXTURE_2D_ARRAY_EXT, hatching_texture );
+		GL_SelectTexture( GL_TEXTURE0 );
+	}
 }
+

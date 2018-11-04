@@ -344,6 +344,56 @@ void main(void)\
 }\
 ";
 
+static const char alias_hatching_shader_v[]= "\
+#version 120\n\
+\
+varying float f_light;\
+\
+void main(void)\
+{\
+	f_light = 2.0 * gl_Color.r;\
+	gl_TexCoord[0] = gl_MultiTexCoord0;\
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+}\
+";
+
+static const char alias_hatching_shader_f[]= "\
+#version 120\n\
+#extension GL_EXT_texture_array : require\n\
+uniform sampler2D tex;\
+uniform sampler2DArray hatching_texture;\
+uniform float light_gamma = 1.0;\
+uniform float light_overbright = 1.0;\
+varying float f_light;\
+\
+float HatchingFetch( float hatching_level )\
+{\
+	vec2 tc_scaled= gl_TexCoord[0].xy * vec2( 2.0, 2.0 );\
+	const float tex_layers= 24.0;\
+	float layer_num= ceil( hatching_level * tex_layers );\
+	float m= hatching_level * tex_layers - layer_num;\
+	return mix(\
+	texture2DArray( hatching_texture, vec3( tc_scaled, layer_num ) ).x,\
+	texture2DArray( hatching_texture, vec3( tc_scaled, layer_num + 1.0 ) ).x,\
+	m );\
+}\
+void main(void)\
+{\
+	vec4 c = texture2D( tex, gl_TexCoord[0].xy );\
+	float l = f_light;\
+	l = pow(l, light_gamma) * light_overbright;\
+	vec3 color= c.xyz * mix( 1.0, l, c.a ); /* mix lightmap and selft texture glow, stored in alpha texture component */\
+\
+	float max_color_component= max( color.x, max( color.y, color.z ) );\
+	float color_brightness= dot( color, vec3( 0.299, 0.587, 0.114 ) ); \
+	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
+	float hatching_level= clamp( 1.0 - brightness, 0.0, 1.0 ); \
+	float hatching= HatchingFetch( hatching_level );\
+	hatching= step( 0.5, hatching ); \
+	gl_FragColor = vec4( hatching, hatching, hatching, 0.0 ); /* wtire zero to alpha to prevent outlines on models */\
+}\
+";
+
 void GL_InitShaders(void)
 {
 	programs[ SHADER_NONE ].handle = 0;
@@ -377,6 +427,11 @@ void GL_InitShaders(void)
 	GL_BindShader( SHADER_WORLD_HATCHING );
 	GL_ShaderUniformInt( "tex", 0 );
 	GL_ShaderUniformInt( "lightmap", 1 );
+	GL_ShaderUniformInt( "hatching_texture", 2 );
+
+	InitProgram( SHADER_ALIAS_HATCHING, alias_hatching_shader_v, alias_hatching_shader_f );
+	GL_BindShader( SHADER_ALIAS_HATCHING );
+	GL_ShaderUniformInt( "tex", 0 );
 	GL_ShaderUniformInt( "hatching_texture", 2 );
 
 	GL_BindShader( SHADER_NONE );
