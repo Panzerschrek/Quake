@@ -117,6 +117,48 @@ void main(void)\
 }\
 ";
 
+static const char outlines_shader_v[]= "\
+#version 120\n\
+\
+void main(void)\
+{\
+	gl_TexCoord[0] = gl_MultiTexCoord0;\
+	gl_Position = gl_Vertex;\
+}\
+";
+
+static const char outlines_shader_f[]= "\
+#version 120\n\
+\
+uniform sampler2D tex;\
+uniform sampler2D depth_buffer;\
+uniform vec2 tex_size;\
+uniform float time;\
+\
+void main(void)\
+{\
+	vec2 texel_step= vec2(1.0, 1.0) / tex_size;\
+	float d[5];\
+	d[0]= texture2D( depth_buffer, gl_TexCoord[0].xy ).x;\
+	d[1]= texture2D( depth_buffer, gl_TexCoord[0].xy + vec2(+texel_step.x,  0) ).x;\
+	d[2]= texture2D( depth_buffer, gl_TexCoord[0].xy + vec2(-texel_step.x,  0) ).x;\
+	d[3]= texture2D( depth_buffer, gl_TexCoord[0].xy + vec2( 0, +texel_step.y) ).x;\
+	d[4]= texture2D( depth_buffer, gl_TexCoord[0].xy + vec2( 0, -texel_step.y) ).x;\
+	const float depth_eps= 32.0 / 16777216.0; /* estimated accuracy of depth buffer */ \
+	/* \
+	1 / z must be linear inside polygon \
+	detect pixels, where (1 / z)dx and (1 / z)dy both nonlinear \
+	and take sum of neighbor pixels \
+	*/ \
+	float two_d_0= 2.0 * d[0];\
+	if( abs( d[1] + d[2] - two_d_0 ) > depth_eps ||\
+		abs( d[3] + d[4] - two_d_0 ) > depth_eps )\
+		gl_FragColor= vec4( 1.0, 1.0, 1.0, 1.0 );\
+	else\
+		gl_FragColor = texture2D( tex, gl_TexCoord[0].xy );\
+}\
+";
+
 static const char water_turb_shader_v[]= "\
 #version 120\n\
 \
@@ -298,6 +340,11 @@ void GL_InitShaders(void)
 	programs[ SHADER_NONE ].handle = 0;
 
 	InitProgram( SHADER_SCREEN_WARP, warp_shader_v, warp_shader_f );
+
+	InitProgram( SHADER_OUTLINES, outlines_shader_v, outlines_shader_f );
+	GL_BindShader( SHADER_OUTLINES );
+	GL_ShaderUniformInt( "tex", 0 );
+	GL_ShaderUniformInt( "depth_buffer", 1 );
 
 	InitProgram( SHADER_WATER_TURB, water_turb_shader_v, water_turb_shader_f );
 	GL_BindShader( SHADER_WATER_TURB );

@@ -194,6 +194,7 @@ void R_Init (void)
 	Cvar_RegisterVariable (&gl_lightgamma);
 	Cvar_RegisterVariable (&gl_lightoverbright);
 	Cvar_RegisterVariable (&gl_hatching);
+	Cvar_RegisterVariable (&gl_outlines);
 
 	GL_InitShaders();
 	GL_InitHatching();
@@ -203,6 +204,7 @@ void R_Init (void)
 
 	glGenTextures( 16, playertextures );
 	glGenTextures( 1, &warptexture );
+	glGenTextures( 1, &depth_buffer );
 }
 
 /*

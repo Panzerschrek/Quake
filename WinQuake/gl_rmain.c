@@ -49,6 +49,7 @@ int			cnttextures[2] = {-1, -1};     // cached
 int			particletexture;	// little dot for particles
 int			playertextures[16];		// up to 16 color translated skins
 int			warptexture; // buffer for drawing warp view
+int			depth_buffer; // buffer for depth texture for outlines shader.
 
 //
 // view origin
@@ -101,6 +102,7 @@ cvar_t	gl_doubleeyes = {"gl_doubleeys", "1"};
 cvar_t gl_lightgamma = {"gl_lightgamma", "1.0", true};
 cvar_t gl_lightoverbright = {"gl_lightoverbright", "1.0", true};
 cvar_t gl_hatching = { "gl_hatching", "0", true };
+cvar_t gl_outlines = { "gl_outlines", "0", true };
 
 
 /*
@@ -1033,6 +1035,83 @@ void R_DoWarp(void)
 	glEnable (GL_ALPHA_TEST);
 }
 
+void R_DrawOutlines()
+{
+	if( !gl_outlines.value )
+		return;
+
+	glDisable (GL_ALPHA_TEST);
+	glDisable (GL_DEPTH_TEST);
+
+	// Copy view buffer
+	GL_SelectTexture( GL_TEXTURE0 );
+	GL_Bind(warptexture);
+
+	glViewport (
+		r_refdef.vrect.x,
+		vid.height - (r_refdef.vrect.y + r_refdef.vrect.height),
+		r_refdef.vrect.width,
+		r_refdef.vrect.height);
+
+	glCopyTexImage2D(
+		GL_TEXTURE_2D,
+		0, GL_RGBA,
+		r_refdef.vrect.x, vid.height - (r_refdef.vrect.y + r_refdef.vrect.height),
+		r_refdef.vrect.width, r_refdef.vrect.height,
+		0 );
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
+	// copy depth buffer
+	GL_SelectTexture( GL_TEXTURE1 );
+	GL_Bind(depth_buffer);
+
+	glCopyTexImage2D(
+		GL_TEXTURE_2D,
+		0, GL_DEPTH_COMPONENT24,
+		r_refdef.vrect.x, vid.height - (r_refdef.vrect.y + r_refdef.vrect.height),
+		r_refdef.vrect.width, r_refdef.vrect.height,
+		0 );
+
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+
+	// draw it
+
+	GL_BindShader( SHADER_OUTLINES );
+	GL_ShaderUniformVec2( "tex_size", r_refdef.vrect.width, r_refdef.vrect.height );
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+
+	glBegin (GL_QUADS);
+	glTexCoord2f( 1, 0 );
+	glVertex2f(  1, -1 );
+	glTexCoord2f( 0, 0 );
+	glVertex2f( -1, -1 );
+	glTexCoord2f( 0, 1 );
+	glVertex2f( -1,  1 );
+	glTexCoord2f( 1, 1 );
+	glVertex2f(  1,  1 );
+	glEnd ();
+
+	GL_BindShader( SHADER_NONE );
+
+	glEnable (GL_DEPTH_TEST);
+	glEnable (GL_ALPHA_TEST);
+
+	GL_SelectTexture( GL_TEXTURE0 );
+}
+
 /*
 ================
 R_RenderScene
@@ -1135,6 +1214,7 @@ void R_RenderView (void)
 
 	R_PolyBlend ();
 
+	R_DrawOutlines();
 	R_DoWarp();
 
 	if (r_speeds.value)
