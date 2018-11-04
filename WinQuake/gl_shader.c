@@ -255,13 +255,24 @@ void main(void)\
 
 static const char world_hatching_shader_f[]= "\
 #version 120\n\
-\
+#extension GL_EXT_texture_array : require\n\
 uniform sampler2D tex;\
 uniform sampler2D lightmap;\
-uniform sampler3D hatching_texture;\
+uniform sampler2DArray hatching_texture;\
 uniform float light_gamma = 1.0;\
 uniform float light_overbright = 1.0;\
 \
+float HatchingFetch( float hatching_level )\
+{\
+	vec2 tc_scaled= gl_TexCoord[1].xy * vec2( 8.0, 8.0 );\
+	const float tex_layers= 24.0;\
+	float layer_num= ceil( hatching_level * tex_layers );\
+	float m= hatching_level * tex_layers - layer_num;\
+	return mix(\
+		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num ) ).x,\
+		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num + 1.0 ) ).x,\
+		m );\
+}\
 void main(void)\
 {\
 	vec4 c = texture2D( tex, gl_TexCoord[0].xy );\
@@ -276,7 +287,7 @@ void main(void)\
 	float color_brightness= dot( color, vec3( 0.299, 0.587, 0.114 ) ); \
 	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
 	float hatching_level= clamp( 1.0 - brightness, 0.0, 1.0 ); \
-	float hatching= texture3D( hatching_texture, vec3( gl_TexCoord[1].xy * vec2( 6.0, 6.0 ), hatching_level ) ).x;\
+	float hatching= HatchingFetch( hatching_level );\
 	hatching= step( 0.5, hatching ); \
 	gl_FragColor = vec4( hatching, hatching, hatching, 1.0 );\
 }\

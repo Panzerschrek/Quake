@@ -62,9 +62,9 @@ static void PrepareHatchingShader()
 	if( gl_hatching.value )
 	{
 		GL_BindShader( SHADER_WORLD_HATCHING );
-		glActiveTexture( GL_TEXTURE2 );
+		GL_SelectTexture( GL_TEXTURE2 );
 		GL_HatchingBindTexture();
-		glActiveTexture( GL_TEXTURE0 );
+		GL_SelectTexture( GL_TEXTURE0 );
 	}
 }
 

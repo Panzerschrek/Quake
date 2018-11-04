@@ -182,33 +182,36 @@ void GL_InitHatching()
     int size = 1 << hatching_texture_size_log2;
     byte* data= malloc( size * size * hatching_texture_bright_levels );
 
+	glEnable( GL_TEXTURE_2D_ARRAY_EXT );
     glGenTextures( 1, &hatching_texture );
-	glBindTexture( GL_TEXTURE_3D, hatching_texture );
+	glBindTexture( GL_TEXTURE_2D_ARRAY_EXT, hatching_texture );
 
 	for( int mip= 0; mip < hatching_texture_size_log2 + 1; ++mip )
 	{
 		int mip_size= size >> mip;
 		if( mip_size < 1 ) mip_size = 1;
-		int level_count= hatching_texture_bright_levels >> mip;
-		if( level_count < 1 ) level_count = 1;
 
-		GenerateHatchingTextureOrderedMatrix( data, hatching_texture_size_log2 - mip, hatching_texture_bright_levels >> mip );
+		GenerateHatchingTextureOrderedMatrix( data, hatching_texture_size_log2 - mip, hatching_texture_bright_levels );
 		glTexImage3D(
-			GL_TEXTURE_3D, mip, GL_R8,
-			mip_size, mip_size, level_count,
+			GL_TEXTURE_2D_ARRAY_EXT, mip, GL_R8,
+			mip_size, mip_size, hatching_texture_bright_levels,
 			0, GL_RED, GL_UNSIGNED_BYTE, data );
 	}
 
-	glTexParameterf( GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
-	glTexParameterf( GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameterf( GL_TEXTURE_3D, GL_TEXTURE_LOD_BIAS, 0.5f );
-	glTexParameterf( GL_TEXTURE_3D, GL_TEXTURE_MAX_LOD, 2.0f );
-	glTexParameteri( GL_TEXTURE_3D,  GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_LOD_BIAS, 0.5f );
+	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MAX_LOD, 3.0f );
+	glTexParameteri( GL_TEXTURE_2D_ARRAY_EXT,  GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 
     free( data );
 }
 
 void GL_HatchingBindTexture()
 {
-	glBindTexture( GL_TEXTURE_3D, hatching_texture );
+	glBindTexture( GL_TEXTURE_2D_ARRAY_EXT, hatching_texture );
+}
+
+void GL_HatchBindPatternForTexture()
+{
 }
