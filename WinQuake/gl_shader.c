@@ -275,8 +275,9 @@ void main(void)\
 	float max_color_component= max( color.x, max( color.y, color.z ) );\
 	float color_brightness= dot( color, vec3( 0.299, 0.587, 0.114 ) ); \
 	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
-	float hatching_level= clamp( 1.0 - brightness, 1.0 / 32.0, 31.0 / 32.0 ); \
-	float hatching= texture3D( hatching_texture, vec3( gl_TexCoord[1].xy * vec2( 4.0, 4.0 ), hatching_level ) ).x;\
+	float hatching_level= clamp( 1.0 - brightness, 0.0, 1.0 ); \
+	float hatching= texture3D( hatching_texture, vec3( gl_TexCoord[1].xy * vec2( 6.0, 6.0 ), hatching_level ) ).x;\
+	hatching= step( 0.5, hatching ); \
 	gl_FragColor = vec4( hatching, hatching, hatching, 1.0 );\
 }\
 ";

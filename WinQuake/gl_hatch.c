@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static GLuint hatching_texture= ~0;
 static int hatching_texture_size_log2= 9;
-static int hatching_texture_bright_levels= 16;
+static int hatching_texture_bright_levels= 32;
 
 static void PatternGen_Hatch( byte* level_data )
 {
@@ -64,7 +64,6 @@ static void PatternGen_Rand( byte* level_data )
 	}
 }
 
-
 static void GenerateHatchingTexture( byte* data )
 {
 	int size= 1 << hatching_texture_size_log2;
@@ -99,20 +98,112 @@ static void GenerateHatchingTexture( byte* data )
 	}
 }
 
+static void GenerateHatchingTextureOrderedLinear( byte* data, int size_log2, int bright_levels )
+{
+	if( bright_levels < 2 )
+		return;
+
+	// Prepare dithering sequence
+	int sequence[ 4096 ];
+
+	sequence[0]= 0;
+	for( int i= 0; i < size_log2; ++i )
+	{
+		int old_seq_size= 1 << i;
+		int new_seq_size= old_seq_size * 2;
+		for( int s= 0; s < old_seq_size; ++s )
+			sequence[s]*= 2;
+		for( int s= old_seq_size; s < new_seq_size; ++s )
+			sequence[s]= sequence[ s - old_seq_size ] + 1;
+	}
+
+	int size= 1 << size_log2;
+	memset( data, 255, size * size );
+	for( int bright_level= 1; bright_level < bright_levels - 1; ++bright_level )
+	{
+		byte* level_data= data + bright_level * size * size;
+		int step= bright_level * size  / ( bright_levels - 1 );
+		for( int y= 0; y < size; ++y )
+		{
+			if( sequence[y] <= step )
+				for( int x= 0; x < size; ++x )
+					level_data[ x + y * size ]= 0;
+			else
+				for( int x= 0; x < size; ++x )
+					level_data[ x + y * size ]= 255;
+		}
+	}
+	memset( data + size * size * (bright_levels - 1), 0, size * size );
+}
+
+static void GenerateHatchingTextureOrderedMatrix( byte* data, int size_log2, int bright_levels )
+{
+	if( bright_levels < 2 )
+		return;
+
+	// Prepare dithering sequence
+	int matrix[ 1024 ][ 1024 ];
+
+	matrix[0][0]= 0;
+	for( int i= 0; i < size_log2; ++i )
+	{
+		int old_mat_size= 1 << i;
+		for( int y= 0; y < old_mat_size; ++y )
+		for( int x= 0; x < old_mat_size; ++x )
+			matrix[x][y]*= 4;
+
+		for( int y= 0; y < old_mat_size; ++y )
+		for( int x= 0; x < old_mat_size; ++x )
+			matrix[x + old_mat_size][y]= matrix[x][y] + 1;
+		for( int y= 0; y < old_mat_size; ++y )
+		for( int x= 0; x < old_mat_size; ++x )
+			matrix[x][y + old_mat_size]= matrix[x][y] + 2;
+		for( int y= 0; y < old_mat_size; ++y )
+		for( int x= 0; x < old_mat_size; ++x )
+			matrix[x + old_mat_size][y + old_mat_size]= matrix[x][y] + 3;
+	}
+
+	int size= 1 << size_log2;
+	memset( data, 255, size * size );
+	for( int bright_level= 1; bright_level < bright_levels - 1; ++bright_level )
+	{
+		byte* level_data= data + bright_level * size * size;
+		int step= bright_level * size * size / ( bright_levels - 1 );
+		for( int y= 0; y < size; ++y )
+		for( int x= 0; x < size; ++x )
+			level_data[x + y * size ]= ( matrix[x][y] <= step ) ? 0 : 255;
+
+	}
+	memset( data + size * size * (bright_levels - 1), 0, size * size );
+}
+
 void GL_InitHatching()
 {
     int size = 1 << hatching_texture_size_log2;
     byte* data= malloc( size * size * hatching_texture_bright_levels );
-	GenerateHatchingTexture( data );
 
     glGenTextures( 1, &hatching_texture );
-    glBindTexture( GL_TEXTURE_3D, hatching_texture );
+	glBindTexture( GL_TEXTURE_3D, hatching_texture );
 
-	glTexImage3D( GL_TEXTURE_3D, 0, GL_R8, size, size, hatching_texture_bright_levels, 0, GL_RED, GL_UNSIGNED_BYTE, data );
+	for( int mip= 0; mip < hatching_texture_size_log2 + 1; ++mip )
+	{
+		int mip_size= size >> mip;
+		if( mip_size < 1 ) mip_size = 1;
+		int level_count= hatching_texture_bright_levels >> mip;
+		if( level_count < 1 ) level_count = 1;
 
-	glTexParameterf( GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		GenerateHatchingTextureOrderedMatrix( data, hatching_texture_size_log2 - mip, hatching_texture_bright_levels >> mip );
+		glTexImage3D(
+			GL_TEXTURE_3D, mip, GL_R8,
+			mip_size, mip_size, level_count,
+			0, GL_RED, GL_UNSIGNED_BYTE, data );
+	}
+
+	glTexParameterf( GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 	glTexParameterf( GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D,  GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+	glTexParameterf( GL_TEXTURE_3D, GL_TEXTURE_LOD_BIAS, 0.5f );
+	glTexParameterf( GL_TEXTURE_3D, GL_TEXTURE_MAX_LOD, 2.0f );
+	glTexParameteri( GL_TEXTURE_3D,  GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 
     free( data );
 }
