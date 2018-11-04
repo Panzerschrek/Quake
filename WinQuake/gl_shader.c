@@ -152,8 +152,7 @@ void main(void)\
 	and take sum of neighbor pixels \
 	*/ \
 	float two_d_0= 2.0 * d[0];\
-	if( abs( d[1] + d[2] - two_d_0 ) > depth_eps ||\
-		abs( d[3] + d[4] - two_d_0 ) > depth_eps )\
+	if( ( abs( d[1] + d[2] - two_d_0 ) > depth_eps || abs( d[3] + d[4] - two_d_0 ) > depth_eps ) && color.a > 0.5 )\
 	{\
 		const int[16] dither_matrix= int[16]( 0, 8, 2, 10,   12, 4, 14, 16,  3, 11, 1, 9,  15, 7, 13, 5 );\
 		ivec2 texel_coord= ivec2( gl_TexCoord[0].xy * tex_size );\
@@ -225,6 +224,7 @@ void main(void)\
 	vec4 c0 = texture2D( tex0, tc0 );\
 	vec4 c1 = texture2D( tex1, tc1 );\
 	gl_FragColor = mix( c0, c1, c1.a );\
+	gl_FragDepth= 1.0f; \
 }\
 ";
 
@@ -289,7 +289,7 @@ void main(void)\
 	l = pow(l, light_gamma) * light_overbright;\
 	\
 	/* mix lightmap and selft texture glow, stored in alpha texture component */ \
-	gl_FragColor = vec4( c.xyz * mix( 1.0, l, c.a ), 1.0 );\
+	gl_FragColor = vec4( c.xyz * mix( 1.0, l, c.a ), 0.0 ); /* wtire zero to alpha to prevent outlines on models */ \
 }\
 ";
 
@@ -339,7 +339,7 @@ void main(void)\
 	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
 	float hatching_level= clamp( 1.0 - brightness, 0.0, 1.0 ); \
 	float hatching= HatchingFetch( hatching_level );\
-	hatching= step( 0.5, hatching ); \
+	hatching= step( 0.5, hatching );\
 	gl_FragColor = vec4( hatching, hatching, hatching, 1.0 );\
 }\
 ";
