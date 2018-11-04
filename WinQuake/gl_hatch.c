@@ -40,7 +40,7 @@ static void PatternGen_Hatch( byte* level_data )
 		for( int x= 0; x < length; ++x )
 			level_data[
 				( ( x + start_x ) & size_mask ) +
-				( ( d + start_y ) & size_mask ) * size ]= 255;
+				( ( d + start_y ) & size_mask ) * size ]= 0;
 	}
 	else
 	{
@@ -48,7 +48,7 @@ static void PatternGen_Hatch( byte* level_data )
 		for( int y= 0; y < length; ++y )
 			level_data[
 				( ( d + start_x ) & size_mask ) +
-				( ( y + start_y ) & size_mask ) * size ]= 255;
+				( ( y + start_y ) & size_mask ) * size ]= 0;
 	}
 }
 
@@ -60,7 +60,7 @@ static void PatternGen_Rand( byte* level_data )
 	{
 		int x= rand() & size_mask;
 		int y= rand() & size_mask;
-		level_data[ x + y * size ]= 255;
+		level_data[ x + y * size ]= 0;
 	}
 }
 
@@ -69,7 +69,7 @@ static void GenerateHatchingTexture( byte* data )
 {
 	int size= 1 << hatching_texture_size_log2;
 
-	memset( data, 0, size * size * 2 );
+	memset( data, 255, size * size * 2 );
 	for( int bright_level= 1; bright_level < hatching_texture_bright_levels - 1; )
 	{
 		byte* level_data= data + bright_level * size * size;
@@ -87,14 +87,15 @@ static void GenerateHatchingTexture( byte* data )
 			avg_brightness+= level_data[i];
 		avg_brightness /= size * size;
 
-		if( avg_brightness < bright_level * 255 / ( hatching_texture_bright_levels - 1 ) )
+		int expected_brightness= ( hatching_texture_bright_levels  - bright_level - 1 ) * 255 / ( hatching_texture_bright_levels - 1 );
+		if( avg_brightness > expected_brightness )
 			continue;
 
 		++bright_level;
 		if( bright_level < hatching_texture_bright_levels - 1 )
 			memcpy( level_data + size * size, level_data, size * size );
 		else
-			memset( level_data + size * size, 255, size * size );
+			memset( level_data + size * size, 0, size * size );
 	}
 }
 

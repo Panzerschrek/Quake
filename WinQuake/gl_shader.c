@@ -273,7 +273,7 @@ void main(void)\
 	vec3 color= c.xyz * mix( 1.0, l, c.a );\
 \
 	float brightness= pow( dot( color, vec3( 0.333, 0.333, 0.333 ) ), 0.75 );\
-	float hatching_level= clamp( brightness, 1.0 / 32.0, 31.0 / 32.0 ); \
+	float hatching_level= clamp( 1.0 - brightness, 1.0 / 32.0, 31.0 / 32.0 ); \
 	float hatching= texture3D( hatching_texture, vec3( gl_TexCoord[1].xy * vec2( 4.0, 4.0 ), hatching_level ) ).x;\
 	gl_FragColor = vec4( hatching, hatching, hatching, 1.0 );\
 }\
