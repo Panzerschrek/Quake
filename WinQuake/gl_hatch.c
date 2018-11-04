@@ -25,6 +25,46 @@ static GLuint hatching_texture= ~0;
 static int hatching_texture_size_log2= 9;
 static int hatching_texture_bright_levels= 16;
 
+static void PatternGen_Hatch( byte* level_data )
+{
+	int size= 1 << hatching_texture_size_log2;
+	int size_mask= size - 1;
+	int hatch_half_width= 0;
+
+	int start_x= rand() & size_mask;
+	int start_y= rand() & size_mask;
+	int length= rand() & ( ( size / 32 ) - 1 ) + ( size / 32 );
+	if( rand() & 1 )
+	{
+		for( int d= -hatch_half_width; d <= hatch_half_width; ++d )
+		for( int x= 0; x < length; ++x )
+			level_data[
+				( ( x + start_x ) & size_mask ) +
+				( ( d + start_y ) & size_mask ) * size ]= 255;
+	}
+	else
+	{
+		for( int d= -hatch_half_width; d <= hatch_half_width; ++d )
+		for( int y= 0; y < length; ++y )
+			level_data[
+				( ( d + start_x ) & size_mask ) +
+				( ( y + start_y ) & size_mask ) * size ]= 255;
+	}
+}
+
+static void PatternGen_Rand( byte* level_data )
+{
+	int size= 1 << hatching_texture_size_log2;
+	int size_mask= size - 1;
+	for( int i= 0; i < 8; ++i )
+	{
+		int x= rand() & size_mask;
+		int y= rand() & size_mask;
+		level_data[ x + y * size ]= 255;
+	}
+}
+
+
 static void GenerateHatchingTexture( byte* data )
 {
 	int size= 1 << hatching_texture_size_log2;
@@ -33,11 +73,10 @@ static void GenerateHatchingTexture( byte* data )
 	for( int bright_level= 1; bright_level < hatching_texture_bright_levels - 1; )
 	{
 		byte* level_data= data + bright_level * size * size;
-		for( int t= 0; t < size * size / 1024; ++t )
+		for( int t= 0; t < size * size / ( 128 * 128 ); ++t )
 		{
-			int x= rand() & ( size - 1 );
-			int y= rand() & ( size - 1 );
-			level_data[ x + y * size ]= 255;
+			//PatternGen_Rand( level_data );
+			PatternGen_Hatch( level_data );
 		}
 
 		// On each step add just a bit of random points and calculate average brightness.
@@ -48,7 +87,7 @@ static void GenerateHatchingTexture( byte* data )
 			avg_brightness+= level_data[i];
 		avg_brightness /= size * size;
 
-		if( avg_brightness < bright_level * 255 / hatching_texture_bright_levels )
+		if( avg_brightness < bright_level * 255 / ( hatching_texture_bright_levels - 1 ) )
 			continue;
 
 		++bright_level;
