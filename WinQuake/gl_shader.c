@@ -272,8 +272,9 @@ void main(void)\
 	/* mix lightmap and selft texture glow, stored in alpha texture component */ \
 	vec3 color= c.xyz * mix( 1.0, l, c.a );\
 \
-	float brightness= clamp( dot( color, vec3( 0.333, 0.333, 0.333 ) ), 1.0 / 32.0, 32.0 / 32.0 );\
-	float hatching= texture3D( hatching_texture, vec3( gl_TexCoord[1].xy * vec2( 4.0, 4.0 ), brightness ) ).x;\
+	float brightness= dot( color, vec3( 0.333, 0.333, 0.333 ) ) * 1.5;\
+	float hatching_level= clamp( brightness, 1.0 / 32.0, 31.0 / 32.0 ); \
+	float hatching= texture3D( hatching_texture, vec3( gl_TexCoord[1].xy * vec2( 4.0, 4.0 ), hatching_level ) ).x;\
 	gl_FragColor = vec4( hatching, hatching, hatching, 1.0 );\
 }\
 ";

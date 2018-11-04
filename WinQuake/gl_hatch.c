@@ -29,16 +29,33 @@ static void GenerateHatchingTexture( byte* data )
 {
 	int size= 1 << hatching_texture_size_log2;
 
-	memset( data, 0, size * size * hatching_texture_bright_levels );
-	for( int bright_level= 0; bright_level < hatching_texture_bright_levels; ++bright_level )
+	memset( data, 0, size * size * 2 );
+	for( int bright_level= 1; bright_level < hatching_texture_bright_levels - 1; )
 	{
 		byte* level_data= data + bright_level * size * size;
-		for( int t= 0; t < bright_level * size * size; ++t )
+		for( int t= 0; t < size * size / 1024; ++t )
 		{
 			int x= rand() & ( size - 1 );
 			int y= rand() & ( size - 1 );
 			level_data[ x + y * size ]= 255;
 		}
+
+		// On each step add just a bit of random points and calculate average brightness.
+		// Finish generating level, when target brightness achieved.
+
+		int avg_brightness= 0;
+		for( int i= 0; i < size * size; ++i )
+			avg_brightness+= level_data[i];
+		avg_brightness /= size * size;
+
+		if( avg_brightness < bright_level * 255 / hatching_texture_bright_levels )
+			continue;
+
+		++bright_level;
+		if( bright_level < hatching_texture_bright_levels - 1 )
+			memcpy( level_data + size * size, level_data, size * size );
+		else
+			memset( level_data + size * size, 255, size * size );
 	}
 }
 
