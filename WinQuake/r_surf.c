@@ -241,18 +241,20 @@ texture_t *R_TextureAnimation (texture_t *base)
 		if (base->alternate_anims)
 			base = base->alternate_anims;
 	}
-	
+
 	if (!base->anim_total)
 		return base;
 
 	reletive = (int)(cl.time*10) % base->anim_total;
 
-	count = 0;	
+	count = 0;
 	while (base->anim_min > reletive || base->anim_max <= reletive)
 	{
+        if( base->anim_next == NULL )
+            break;
 		base = base->anim_next;
-		if (!base)
-			Sys_Error ("R_TextureAnimation: broken cycle");
+		//if (!base)
+		//	Sys_Error ("R_TextureAnimation: broken cycle");
 		if (++count > 100)
 			Sys_Error ("R_TextureAnimation: infinite cycle");
 	}
