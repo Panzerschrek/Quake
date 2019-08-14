@@ -159,7 +159,7 @@ void main(void)\
 		float dither= float(dither_matrix[ int(mod(texel_coord.x, 2)) + 4 * int(mod(texel_coord.y, 4)) ]) / 16.0;\
 \
 		float color_brightness= dot( color.xyz, vec3( 0.299, 0.587, 0.114 ) ); \
-		float brightness= step( 0.75, color_brightness + dither );\
+		float brightness= sqrt(color_brightness);\
 		gl_FragColor= vec4( brightness, brightness, brightness, 1.0 );\
 	}\
 	else\
@@ -339,7 +339,7 @@ void main(void)\
 	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
 	float hatching_level= clamp( 1.0 - brightness, 0.0, 1.0 ); \
 	float hatching= HatchingFetch( hatching_level );\
-	hatching= step( 0.5, hatching );\
+	/*hatching= step( 0.5, hatching );*/\
 	gl_FragColor = vec4( hatching, hatching, hatching, 1.0 );\
 }\
 ";
@@ -389,7 +389,7 @@ void main(void)\
 	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
 	float hatching_level= clamp( 1.0 - brightness, 0.0, 1.0 ); \
 	float hatching= HatchingFetch( hatching_level );\
-	hatching= step( 0.5, hatching );\
+	/*hatching= step( 0.5, hatching );*/\
 	gl_FragColor = vec4( hatching, hatching, hatching, 0.0 ); /* wtire zero to alpha to prevent outlines on models */\
 }\
 ";

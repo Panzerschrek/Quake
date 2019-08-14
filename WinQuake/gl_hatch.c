@@ -36,7 +36,7 @@ static void PatternGen_Hatch( byte* level_data, int size_log2, qboolean allow_ne
 {
 	int size= 1 << size_log2;
 	int size_mask= size - 1;
-	int hatch_half_width= 1;
+	int hatch_half_width= 0;
 	int half_length = ( size / 16 ) - 1;
 	if( half_length < 2 ) half_length= 2;
 
@@ -47,17 +47,23 @@ static void PatternGen_Hatch( byte* level_data, int size_log2, qboolean allow_ne
 	{
 		for( int d= -hatch_half_width; d <= hatch_half_width; ++d )
 		for( int x= 0; x < length; ++x )
-			level_data[
+		{
+			byte* c= &level_data[
 				( ( x + start_x ) & size_mask ) +
-				( ( d + start_y ) & size_mask ) * size ]= 0;
+				( ( d + start_y ) & size_mask ) * size ];
+			*c= *c * 3 / 4;
+		}
 	}
 	else
 	{
 		for( int d= -hatch_half_width; d <= hatch_half_width; ++d )
 		for( int y= 0; y < length; ++y )
-			level_data[
+		{
+			byte* c= &level_data[
 				( ( d + start_x ) & size_mask ) +
-				( ( y + start_y ) & size_mask ) * size ]= 0;
+				( ( y + start_y ) & size_mask ) * size ];
+			*c= *c * 3 / 4;
+		}
 	}
 }
 
@@ -69,7 +75,8 @@ static void PatternGen_Rand( byte* level_data, int size_log2 )
 	{
 		int x= rand() & size_mask;
 		int y= rand() & size_mask;
-		level_data[ x + y * size ]= 0;
+		byte* c= &level_data[ x + y * size ];
+		*c= *c * 3 / 4;
 	}
 }
 
@@ -87,7 +94,7 @@ static void GenerateHatchingTexture( byte* data, int size_log2, int bright_level
 		for( int t= 0; t < 16; ++t )
 		{
 			PatternGen_Rand( level_data, size_log2 );
-			//PatternGen_Hatch( level_data, size_log2, false );
+			//PatternGen_Hatch( level_data, size_log2, bright_level >= bright_levels  * 5 / 8 );
 		}
 
 		// On each step add just a bit of random points and calculate average brightness.
@@ -214,7 +221,7 @@ void GL_InitHatching()
 		int mip_size= size >> mip;
 		if( mip_size < 1 ) mip_size = 1;
 
-		GenerateHatchingTextureOrderedMatrix( data, hatching_texture_size_log2 - mip, hatching_texture_bright_levels );
+		GenerateHatchingTexture( data, hatching_texture_size_log2 - mip, hatching_texture_bright_levels );
 		glTexImage3D(
 			GL_TEXTURE_2D_ARRAY_EXT, mip, GL_R8,
 			mip_size, mip_size, hatching_texture_bright_levels,
