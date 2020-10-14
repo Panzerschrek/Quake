@@ -240,7 +240,7 @@ static void GenerateHatchingTextureOrderedCircles( byte* data, int size_log2, in
 				*dst= 0;
 		}
 	}
-	memset( data + (bright_levels - 1) * size * size, 255,  size * size ); // Fill first level with ones.
+	memset( data + (bright_levels - 1) * size * size, 255, size * size ); // Fill first level with ones.
 }
 
 void GL_InitHatching()

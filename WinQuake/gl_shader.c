@@ -154,13 +154,9 @@ void main(void)\
 	float two_d_0= 2.0 * d[0];\
 	if( ( abs( d[1] + d[2] - two_d_0 ) > depth_eps || abs( d[3] + d[4] - two_d_0 ) > depth_eps ) && color.a > 0.5 )\
 	{\
-		const int[16] dither_matrix= int[16]( 0, 8, 2, 10,   12, 4, 14, 16,  3, 11, 1, 9,  15, 7, 13, 5 );\
-		ivec2 texel_coord= ivec2( gl_TexCoord[0].xy * tex_size );\
-		float dither= float(dither_matrix[ int(mod(texel_coord.x, 2)) + 4 * int(mod(texel_coord.y, 4)) ]) / 16.0;\
-\
 		float color_brightness= dot( color.xyz, vec3( 0.299, 0.587, 0.114 ) ); \
-		float brightness= sqrt(color_brightness);\
-		gl_FragColor= vec4( brightness, brightness, brightness, 1.0 );\
+		float brightness= sqrt( color_brightness ) * 0.975 + 0.025;\
+		gl_FragColor= vec4( brightness );\
 	}\
 	else\
 		 gl_FragColor= color;\
