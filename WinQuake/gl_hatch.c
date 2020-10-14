@@ -21,191 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-enum PatternKind
-{
-	HATCH_PATTERN_RAND,
-	HATCH_PATTERN_XY_HATCHES,
-	HATCH_PATTERN_COUNT,
-};
-
 static GLuint hatching_texture= ~0;
-static int hatching_texture_size_log2= 8;
-static int hatching_texture_bright_levels= 16;
-
-static void PatternGen_Hatch( byte* level_data, int size_log2, qboolean allow_new_direction )
-{
-	int size= 1 << size_log2;
-	int size_mask= size - 1;
-	int hatch_half_width= 0;
-	int half_length = ( size / 16 ) - 1;
-	if( half_length < 2 ) half_length= 2;
-
-	int start_x= rand() & size_mask;
-	int start_y= rand() & size_mask;
-	int length= rand() & ( half_length - 1 ) + half_length;
-	if( (rand() & 1) && allow_new_direction )
-	{
-		for( int d= -hatch_half_width; d <= hatch_half_width; ++d )
-		for( int x= 0; x < length; ++x )
-		{
-			byte* c= &level_data[
-				( ( x + start_x ) & size_mask ) +
-				( ( d + start_y ) & size_mask ) * size ];
-			*c= *c * 3 / 4;
-		}
-	}
-	else
-	{
-		for( int d= -hatch_half_width; d <= hatch_half_width; ++d )
-		for( int y= 0; y < length; ++y )
-		{
-			byte* c= &level_data[
-				( ( d + start_x ) & size_mask ) +
-				( ( y + start_y ) & size_mask ) * size ];
-			*c= *c * 3 / 4;
-		}
-	}
-}
-
-static void PatternGen_Rand( byte* level_data, int size_log2 )
-{
-	int size= 1 << size_log2;
-	int size_mask= size - 1;
-	for( int i= 0; i < 8; ++i )
-	{
-		int x= rand() & size_mask;
-		int y= rand() & size_mask;
-		byte* c= &level_data[ x + y * size ];
-		*c= *c * 3 / 4;
-	}
-}
-
-static void GenerateHatchingTexture( byte* data, int size_log2, int bright_levels )
-{
-	if( bright_levels < 2 )
-		return;
-
-	int size= 1 << size_log2;
-
-	memset( data, 255, size * size * 2 );
-	for( int bright_level= 1; bright_level < bright_levels - 1; )
-	{
-		byte* level_data= data + bright_level * size * size;
-		for( int t= 0; t < 16; ++t )
-		{
-			PatternGen_Rand( level_data, size_log2 );
-			//PatternGen_Hatch( level_data, size_log2, bright_level >= bright_levels  * 5 / 8 );
-		}
-
-		// On each step add just a bit of random points and calculate average brightness.
-		// Finish generating level, when target brightness achieved.
-
-		int avg_brightness= 0;
-		for( int i= 0; i < size * size; ++i )
-			avg_brightness+= level_data[i];
-		avg_brightness /= size * size;
-
-		int expected_brightness= ( bright_levels  - bright_level - 1  ) * 255 / ( bright_levels - 1 );
-		if( avg_brightness > expected_brightness )
-			continue;
-
-		++bright_level;
-		if( bright_level < bright_levels - 1 )
-			memcpy( level_data + size * size, level_data, size * size );
-		else
-			memset( level_data + size * size, 0, size * size );
-	}
-}
-
-static void GenerateHatchingTextureOrderedLinear( byte* data, int size_log2, int bright_levels )
-{
-	if( bright_levels < 2 )
-		return;
-
-	// Prepare dithering sequence
-	int sequence[ 4096 ];
-
-	sequence[0]= 0;
-	for( int i= 0; i < size_log2; ++i )
-	{
-		int old_seq_size= 1 << i;
-		int new_seq_size= old_seq_size * 2;
-		for( int s= 0; s < old_seq_size; ++s )
-			sequence[s]*= 2;
-		for( int s= old_seq_size; s < new_seq_size; ++s )
-			sequence[s]= sequence[ s - old_seq_size ] + 1;
-	}
-
-	int size= 1 << size_log2;
-	memset( data, 255, size * size );
-	for( int bright_level= 1; bright_level < bright_levels - 1; ++bright_level )
-	{
-		byte* level_data= data + bright_level * size * size;
-		int step= bright_level * size  / ( bright_levels - 1 );
-		/*
-		for( int y= 0; y < size; ++y )
-		{
-			if( sequence[y] <= step )
-				for( int x= 0; x < size; ++x )
-					level_data[ x + y * size ]= 0;
-			else
-				for( int x= 0; x < size; ++x )
-					level_data[ x + y * size ]= 255;
-		}
-		*/
-		for( int x= 0; x < size; ++x )
-		{
-			if( sequence[x] <= step )
-				for( int y= 0; y < size; ++y )
-					level_data[ x + y * size ]= 0;
-			else
-				for( int y= 0; y < size; ++y )
-					level_data[ x + y * size ]= 255;
-		}
-	}
-	memset( data + size * size * (bright_levels - 1), 0, size * size );
-}
-
-static void GenerateHatchingTextureOrderedMatrix( byte* data, int size_log2, int bright_levels )
-{
-	if( bright_levels < 2 )
-		return;
-
-	// Prepare dithering sequence
-	int matrix[ 1024 ][ 1024 ];
-
-	matrix[0][0]= 0;
-	for( int i= 0; i < size_log2; ++i )
-	{
-		int old_mat_size= 1 << i;
-		for( int y= 0; y < old_mat_size; ++y )
-		for( int x= 0; x < old_mat_size; ++x )
-			matrix[x][y]*= 4;
-
-		for( int y= 0; y < old_mat_size; ++y )
-		for( int x= 0; x < old_mat_size; ++x )
-			matrix[x + old_mat_size][y]= matrix[x][y] + 1;
-		for( int y= 0; y < old_mat_size; ++y )
-		for( int x= 0; x < old_mat_size; ++x )
-			matrix[x][y + old_mat_size]= matrix[x][y] + 2;
-		for( int y= 0; y < old_mat_size; ++y )
-		for( int x= 0; x < old_mat_size; ++x )
-			matrix[x + old_mat_size][y + old_mat_size]= matrix[x][y] + 3;
-	}
-
-	int size= 1 << size_log2;
-	memset( data, 255, size * size );
-	for( int bright_level= 1; bright_level < bright_levels - 1; ++bright_level )
-	{
-		byte* level_data= data + bright_level * size * size;
-		int step= bright_level * size * size / ( bright_levels - 1 );
-		for( int y= 0; y < size; ++y )
-		for( int x= 0; x < size; ++x )
-			level_data[x + y * size ]= ( matrix[x][y] <= step ) ? 0 : 255;
-
-	}
-	memset( data + size * size * (bright_levels - 1), 0, size * size );
-}
 
 static void GenerateHatchingTextureOrderedCircles( byte* data, int size_log2, int bright_levels )
 {
@@ -248,16 +64,20 @@ static void GenerateHatchingTextureOrderedCircles( byte* data, int size_log2, in
 				*dst= 0;
 		}
 	}
-	memset( data + (bright_levels - 1) * size * size, 255, size * size ); // Fill first level with ones.
+	memset( data + (bright_levels - 1) * size * size, 255, size * size ); // Fill last level with ones.
 }
 
 void GL_InitHatching()
 {
-    int size = 1 << hatching_texture_size_log2;
-    byte* data= malloc( size * size * hatching_texture_bright_levels );
+	// If this changes, shaders must be changed too!
+	const int hatching_texture_size_log2= 8;
+	const int hatching_texture_bright_levels= 16;
+
+	int size = 1 << hatching_texture_size_log2;
+	byte* data= malloc( size * size * hatching_texture_bright_levels );
 
 	glEnable( GL_TEXTURE_2D_ARRAY_EXT );
-    glGenTextures( 1, &hatching_texture );
+	glGenTextures( 1, &hatching_texture );
 	glBindTexture( GL_TEXTURE_2D_ARRAY_EXT, hatching_texture );
 
 	for( int mip= 0; mip < hatching_texture_size_log2 + 1; ++mip )
