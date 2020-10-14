@@ -314,3 +314,14 @@ void GL_HatchingPrepareShaderWaterTurb()
 		GL_SelectTexture( GL_TEXTURE0 );
 	}
 }
+
+void GL_HatchingPrepareShaderSky()
+{
+	if( gl_hatching.value )
+	{
+		GL_BindShader( SHADER_SKY_HATCHING );
+		GL_SelectTexture( GL_TEXTURE2 );
+		glBindTexture( GL_TEXTURE_2D_ARRAY_EXT, hatching_texture );
+		GL_SelectTexture( GL_TEXTURE0 );
+	}
+}

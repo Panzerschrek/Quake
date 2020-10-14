@@ -95,6 +95,7 @@ void R_DrawSkyChain (msurface_t *s)
 	msurface_t	*fa;
 
 	GL_BindShader( SHADER_SKY );
+	GL_HatchingPrepareShaderSky();
 
 	GL_Bind (solidskytexture);
 	GL_EnableMultitexture();

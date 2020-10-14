@@ -263,6 +263,48 @@ void main(void)\
 }\
 ";
 
+static const char sky_hatching_shader_f[]= "\
+#version 120\n\
+#extension GL_EXT_texture_array : require\n\
+\
+uniform sampler2D tex0;\
+uniform sampler2D tex1;\
+uniform sampler2DArray hatching_texture;\
+uniform float time;\
+\
+float HatchingFetch( float hatching_level, vec2 tc )\
+{\
+	vec2 tc_scaled= tc * vec2( 16.0, 16.0 );\
+	tc_scaled= vec2( tc_scaled.x + tc_scaled.y, tc_scaled.x - tc_scaled.y );\
+	const float tex_layers= 24.0;\
+	float layer_num= floor( hatching_level * tex_layers );\
+	float m= hatching_level * tex_layers - layer_num;\
+		return mix(\
+		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num ) ).x,\
+		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num + 1.0 ) ).x,\
+m );\
+}\
+void main(void)\
+{\
+	const float speed0 = 1.0 / 16.0;\
+	const float speed1 = 1.0 /  8.0;\
+	vec3 n = normalize( gl_TexCoord[0].xyz );\
+	vec2 tc = n.xy * ( 1.25 / ( abs(n.z) + 0.25 ) );\
+	vec2 tc0 = tc + time * speed0 * vec2(1.0, 1.0);\
+	vec2 tc1 = tc + time * speed1 * vec2(1.0, 1.0);\
+	vec4 c0 = texture2D( tex0, tc0 );\
+	vec4 c1 = texture2D( tex1, tc1 );\
+	vec3 color = mix( c0.rgb, c1.rgb, c1.a );\
+	float max_color_component= max( color.x, max( color.y, color.z ) );\
+	float color_brightness= dot( color, vec3( 0.299, 0.587, 0.114 ) ); \
+	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
+	float hatching_level= clamp( brightness, 0.0, 1.0 ); \
+	float hatching= HatchingFetch( hatching_level, tc );\
+	gl_FragColor = vec4( hatching, hatching, hatching, 1.0 );\
+	gl_FragDepth= 1.0f; \
+}\
+";
+
 static const char world_shader_v[]= "\
 #version 120\n\
 \
@@ -453,6 +495,12 @@ void GL_InitShaders(void)
 	GL_BindShader( SHADER_SKY );
 	GL_ShaderUniformInt( "tex0", 0 );
 	GL_ShaderUniformInt( "tex1", 1 );
+
+	InitProgram( SHADER_SKY_HATCHING, sky_shader_v, sky_hatching_shader_f );
+	GL_BindShader( SHADER_SKY_HATCHING );
+	GL_ShaderUniformInt( "tex0", 0 );
+	GL_ShaderUniformInt( "tex1", 1 );
+	GL_ShaderUniformInt( "hatching_texture", 2 );
 
 	InitProgram( SHADER_WORLD, world_shader_v, world_shader_f );
 	GL_BindShader( SHADER_WORLD );

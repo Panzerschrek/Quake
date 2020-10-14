@@ -838,6 +838,7 @@ void R_SetupFrame (void)
 	GL_ShaderUniformFloat( "alpha", r_wateralpha.value );
 
 	GL_BindShader( SHADER_SKY );
+	GL_HatchingPrepareShaderSky();
 	GL_ShaderUniformFloat( "time", cl.time );
 
 	GL_BindShader( SHADER_WORLD );
