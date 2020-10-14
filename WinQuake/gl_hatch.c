@@ -29,8 +29,8 @@ enum PatternKind
 };
 
 static GLuint hatching_texture= ~0;
-static int hatching_texture_size_log2= 9;
-static int hatching_texture_bright_levels= 24;
+static int hatching_texture_size_log2= 8;
+static int hatching_texture_bright_levels= 16;
 
 static void PatternGen_Hatch( byte* level_data, int size_log2, qboolean allow_new_direction )
 {
@@ -215,13 +215,21 @@ static void GenerateHatchingTextureOrderedCircles( byte* data, int size_log2, in
 		circle_size= size;
 
 	memset( data, 0, size * size ); // Fill first level with zeros.
+	float overbright_brightness= M_PI / 4.0;
 	for( int level= 1; level < bright_levels - 1; ++level )
 	{
 		byte* level_data= data + level * size * size;
-		int radius= sqrt( level / (double)bright_levels ) * circle_size;
+		int scale_factor= 32;
 
-		int square_radius_minus_half= (radius * 2 - 1 ) * ( radius * 2 - 1 );
-		int square_radius_plus_half = (radius * 2 + 1 ) * ( radius * 2 + 1 );
+		float brightness_f= ((float)level) / ((float)bright_levels);
+		int radius;
+		if( brightness_f < overbright_brightness )
+			radius= sqrt( brightness_f / overbright_brightness ) * scale_factor * circle_size / 2;
+		else
+			radius= ( 1.0f + ( sqrt(2.0f) - 1.0f ) * ( brightness_f - overbright_brightness ) / ( 1.0f - overbright_brightness ) ) * scale_factor * circle_size / 2;
+
+		int square_radius_minus_half= (radius - scale_factor / 2 ) * ( radius  - scale_factor / 2 );
+		int square_radius_plus_half = (radius + scale_factor / 2 ) * ( radius  + scale_factor / 2 );
 
 		for( int cx= 0; cx < size / circle_size; ++cx )
 		for( int cy= 0; cy < size / circle_size; ++cy )
@@ -230,7 +238,7 @@ static void GenerateHatchingTextureOrderedCircles( byte* data, int size_log2, in
 		{
 			int dx= x <= circle_size / 2 ? x : (circle_size - x);
 			int dy= y <= circle_size / 2 ? y : (circle_size - y);
-			int square_distance= ( dx * dx + dy * dy ) * 4;
+			float square_distance= ( dx * dx + dy * dy ) * scale_factor * scale_factor;
 			byte* dst= &level_data[ ( x + cx * circle_size ) + ( y + cy * circle_size ) * size ];
 			if( square_distance < square_radius_minus_half )
 				*dst= 255;

@@ -205,7 +205,7 @@ float HatchingFetch( float hatching_level )\
 {\
 	vec2 tc_scaled= gl_TexCoord[0].xy * vec2( 2.0, 2.0 );\
 	tc_scaled= vec2( tc_scaled.x + tc_scaled.y, tc_scaled.x - tc_scaled.y );\
-	const float tex_layers= 24.0;\
+	const float tex_layers= 16.0;\
 	float layer_num= floor( hatching_level * tex_layers );\
 	float m= hatching_level * tex_layers - layer_num;\
 	return mix(\
@@ -276,7 +276,7 @@ float HatchingFetch( float hatching_level, vec2 tc )\
 {\
 	vec2 tc_scaled= tc * vec2( 16.0, 16.0 );\
 	tc_scaled= vec2( tc_scaled.x + tc_scaled.y, tc_scaled.x - tc_scaled.y );\
-	const float tex_layers= 24.0;\
+	const float tex_layers= 16.0;\
 	float layer_num= floor( hatching_level * tex_layers );\
 	float m= hatching_level * tex_layers - layer_num;\
 		return mix(\
@@ -394,7 +394,7 @@ float HatchingFetch( float hatching_level )\
 {\
 	vec2 tc_scaled= gl_TexCoord[1].xy * vec2( 64.0, 64.0 );\
 	tc_scaled= vec2( tc_scaled.x + tc_scaled.y, tc_scaled.x - tc_scaled.y );\
-	const float tex_layers= 24.0;\
+	const float tex_layers= 16.0;\
 	float layer_num= floor( hatching_level * tex_layers );\
 	float m= hatching_level * tex_layers - layer_num;\
 	return mix(\
@@ -447,7 +447,7 @@ float HatchingFetch( float hatching_level )\
 {\
 	vec2 tc_scaled= gl_TexCoord[0].xy * vec2( 16.0, 16.0 );\
 	tc_scaled= vec2( tc_scaled.x + tc_scaled.y, tc_scaled.x - tc_scaled.y );\
-	const float tex_layers= 24.0;\
+	const float tex_layers= 16.0;\
 	float layer_num= floor( hatching_level * tex_layers );\
 	float m= hatching_level * tex_layers - layer_num;\
 	return mix(\
