@@ -316,6 +316,7 @@ uniform float light_overbright = 1.0;\
 float HatchingFetch( float hatching_level )\
 {\
 	vec2 tc_scaled= gl_TexCoord[1].xy * vec2( 64.0, 64.0 );\
+	tc_scaled= vec2( tc_scaled.x + tc_scaled.y, tc_scaled.x - tc_scaled.y );\
 	const float tex_layers= 24.0;\
 	float layer_num= floor( hatching_level * tex_layers );\
 	float m= hatching_level * tex_layers - layer_num;\
@@ -339,7 +340,6 @@ void main(void)\
 	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
 	float hatching_level= clamp( brightness, 0.0, 1.0 ); \
 	float hatching= HatchingFetch( hatching_level );\
-	/*hatching= step( 0.5, hatching );*/\
 	gl_FragColor = vec4( hatching, hatching, hatching, 1.0 );\
 }\
 ";
@@ -368,7 +368,8 @@ varying float f_light;\
 \
 float HatchingFetch( float hatching_level )\
 {\
-	vec2 tc_scaled= gl_TexCoord[0].xy * vec2( 2.0, 2.0 );\
+	vec2 tc_scaled= gl_TexCoord[0].xy * vec2( 16.0, 16.0 );\
+	tc_scaled= vec2( tc_scaled.x + tc_scaled.y, tc_scaled.x - tc_scaled.y );\
 	const float tex_layers= 24.0;\
 	float layer_num= floor( hatching_level * tex_layers );\
 	float m= hatching_level * tex_layers - layer_num;\
@@ -389,7 +390,6 @@ void main(void)\
 	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
 	float hatching_level= clamp( brightness, 0.0, 1.0 ); \
 	float hatching= HatchingFetch( hatching_level );\
-	/*hatching= step( 0.5, hatching );*/\
 	gl_FragColor = vec4( hatching, hatching, hatching, 0.0 ); /* wtire zero to alpha to prevent outlines on models */\
 }\
 ";
