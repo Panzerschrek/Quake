@@ -140,6 +140,8 @@ set( SOURCES_SOFT
 
 set( SOURCES_GL
 	gl_draw.c
+	gl_hatch.c
+	gl_hatch.h
 	gl_funcs_list.h
 	gl_mesh.c
 	gl_model.c

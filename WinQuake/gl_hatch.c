@@ -207,6 +207,46 @@ static void GenerateHatchingTextureOrderedMatrix( byte* data, int size_log2, int
 	memset( data + size * size * (bright_levels - 1), 0, size * size );
 }
 
+static void GenerateHatchingTextureOrderedCircles( byte* data, int size_log2, int bright_levels )
+{
+	int size= 1 << size_log2;
+	int circle_size= 8; // TOD - make constant
+
+	if( circle_size == 0 )
+	{
+		memset( data, 0, size * size * bright_levels );
+		return;
+	}
+
+	for( int level= 0; level < bright_levels; ++level )
+	{
+		byte* level_data= data + level * size * size;
+		int radius= sqrt( level / (double)bright_levels ) * circle_size;
+
+		int square_radius_minus_half= (radius * 2 - 1 ) * ( radius * 2 - 1 );
+		if( radius == 0 )
+			square_radius_minus_half= 0;
+		int square_radius_plus_half = (radius * 2 + 1 ) * ( radius * 2 + 1 );
+
+		for( int cx= 0; cx < size / circle_size; ++cx )
+		for( int cy= 0; cy < size / circle_size; ++cy )
+		for( int x= 0; x < circle_size; ++x )
+		for( int y= 0; y < circle_size; ++y )
+		{
+			int dx= x -  circle_size / 2;
+			int dy= y -  circle_size / 2;
+			int square_distance= ( dx * dx + dy * dy ) * 4;
+			byte* dst= &level_data[ ( x + cx * circle_size ) + ( y + cy * circle_size ) * size ];
+			if( square_distance < square_radius_minus_half )
+				*dst= 255;
+			else if( square_distance > square_radius_plus_half )
+				*dst= 0;
+			else
+				*dst= 255 * ( square_radius_plus_half - square_distance ) / ( square_radius_plus_half - square_radius_minus_half );
+		}
+	}
+}
+
 void GL_InitHatching()
 {
     int size = 1 << hatching_texture_size_log2;
@@ -221,7 +261,7 @@ void GL_InitHatching()
 		int mip_size= size >> mip;
 		if( mip_size < 1 ) mip_size = 1;
 
-		GenerateHatchingTexture( data, hatching_texture_size_log2 - mip, hatching_texture_bright_levels );
+		GenerateHatchingTextureOrderedCircles( data, hatching_texture_size_log2 - mip, hatching_texture_bright_levels );
 		glTexImage3D(
 			GL_TEXTURE_2D_ARRAY_EXT, mip, GL_R8,
 			mip_size, mip_size, hatching_texture_bright_levels,

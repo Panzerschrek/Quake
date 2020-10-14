@@ -227,7 +227,7 @@ typedef struct
 #ifdef GLQUAKE
 #include "gl_model.h"
 #include "gl_shader.h"
-#include "gL_hatch.h"
+#include "gl_hatch.h"
 #else
 #include "model.h"
 #include "d_iface.h"
