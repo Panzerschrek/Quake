@@ -833,6 +833,7 @@ void R_SetupFrame (void)
 	GL_ShaderUniformFloat( "time", cl.time );
 
 	GL_BindShader( SHADER_WATER_TURB );
+	GL_HatchingPrepareShaderWaterTurb();
 	GL_ShaderUniformFloat( "time", cl.time );
 	GL_ShaderUniformFloat( "alpha", r_wateralpha.value );
 

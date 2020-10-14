@@ -439,6 +439,7 @@ void R_DrawWaterSurfaces (void)
 		glEnable (GL_BLEND);
 
 	GL_BindShader( SHADER_WATER_TURB );
+	GL_HatchingPrepareShaderWaterTurb();
 
 	for ( s = waterchain ; s ; s=s->texturechain) {
 		GL_Bind (s->texinfo->texture->gl_texturenum);

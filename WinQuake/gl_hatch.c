@@ -304,3 +304,13 @@ void GL_HatchingPrepareShaderAlias()
 	}
 }
 
+void GL_HatchingPrepareShaderWaterTurb()
+{
+	if( gl_hatching.value )
+	{
+		GL_BindShader( SHADER_WATER_TURB_HATCHING );
+		GL_SelectTexture( GL_TEXTURE2 );
+		glBindTexture( GL_TEXTURE_2D_ARRAY_EXT, hatching_texture );
+		GL_SelectTexture( GL_TEXTURE0 );
+	}
+}

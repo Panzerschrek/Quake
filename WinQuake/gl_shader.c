@@ -192,6 +192,45 @@ void main(void)\
 }\
 ";
 
+static const char water_turb_hatching_shader_f[]= "\
+#version 120\n\
+#extension GL_EXT_texture_array : require\n\
+\
+uniform sampler2D tex;\
+uniform sampler2DArray hatching_texture;\
+uniform float time;\
+uniform float alpha;\
+\
+float HatchingFetch( float hatching_level )\
+{\
+	vec2 tc_scaled= gl_TexCoord[0].xy * vec2( 2.0, 2.0 );\
+	tc_scaled= vec2( tc_scaled.x + tc_scaled.y, tc_scaled.x - tc_scaled.y );\
+	const float tex_layers= 24.0;\
+	float layer_num= floor( hatching_level * tex_layers );\
+	float m= hatching_level * tex_layers - layer_num;\
+	return mix(\
+		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num ) ).x,\
+		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num + 1.0 ) ).x,\
+		m );\
+}\
+void main(void)\
+{\
+	const float pi = 3.1415926535;\
+	float time_freq = "PI_S" * 0.4;\
+	float omega = 2.0 * "PI_S";\
+	float amplitude = 0.0625;\
+	vec2 tc = gl_TexCoord[0].xy;\
+	tc = tc + amplitude * sin( time_freq * vec2(time, time) + omega * tc.yx );\
+	vec3 color= texture2D( tex, tc ).xyz;\
+	float max_color_component= max( color.x, max( color.y, color.z ) );\
+	float color_brightness= dot( color, vec3( 0.299, 0.587, 0.114 ) ); \
+	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
+	float hatching_level= clamp( brightness, 0.0, 1.0 ); \
+	float hatching= HatchingFetch( hatching_level );\
+	gl_FragColor = vec4( hatching, hatching, hatching, alpha );\
+}\
+";
+
 static const char sky_shader_v[]= "\
 #version 120\n\
 \
@@ -404,6 +443,11 @@ void GL_InitShaders(void)
 	InitProgram( SHADER_WATER_TURB, water_turb_shader_v, water_turb_shader_f );
 	GL_BindShader( SHADER_WATER_TURB );
 	GL_ShaderUniformInt( "tex", 0 );
+
+	InitProgram( SHADER_WATER_TURB_HATCHING, water_turb_shader_v, water_turb_hatching_shader_f );
+	GL_BindShader( SHADER_WATER_TURB_HATCHING );
+	GL_ShaderUniformInt( "tex", 0 );
+	GL_ShaderUniformInt( "hatching_texture", 2 );
 
 	InitProgram( SHADER_SKY, sky_shader_v, sky_shader_f );
 	GL_BindShader( SHADER_SKY );
