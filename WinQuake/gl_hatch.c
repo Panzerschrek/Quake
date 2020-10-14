@@ -210,22 +210,17 @@ static void GenerateHatchingTextureOrderedMatrix( byte* data, int size_log2, int
 static void GenerateHatchingTextureOrderedCircles( byte* data, int size_log2, int bright_levels )
 {
 	int size= 1 << size_log2;
-	int circle_size= 8; // TOD - make constant
+	int circle_size= 8;
+	if( circle_size > size )
+		circle_size= size;
 
-	if( circle_size == 0 )
-	{
-		memset( data, 0, size * size * bright_levels );
-		return;
-	}
-
-	for( int level= 0; level < bright_levels; ++level )
+	memset( data, 0, size * size ); // Fill first level with zeros.
+	for( int level= 1; level < bright_levels - 1; ++level )
 	{
 		byte* level_data= data + level * size * size;
 		int radius= sqrt( level / (double)bright_levels ) * circle_size;
 
 		int square_radius_minus_half= (radius * 2 - 1 ) * ( radius * 2 - 1 );
-		if( radius == 0 )
-			square_radius_minus_half= 0;
 		int square_radius_plus_half = (radius * 2 + 1 ) * ( radius * 2 + 1 );
 
 		for( int cx= 0; cx < size / circle_size; ++cx )
@@ -233,18 +228,19 @@ static void GenerateHatchingTextureOrderedCircles( byte* data, int size_log2, in
 		for( int x= 0; x < circle_size; ++x )
 		for( int y= 0; y < circle_size; ++y )
 		{
-			int dx= x -  circle_size / 2;
-			int dy= y -  circle_size / 2;
+			int dx= x <= circle_size / 2 ? x : (circle_size - x);
+			int dy= y <= circle_size / 2 ? y : (circle_size - y);
 			int square_distance= ( dx * dx + dy * dy ) * 4;
 			byte* dst= &level_data[ ( x + cx * circle_size ) + ( y + cy * circle_size ) * size ];
 			if( square_distance < square_radius_minus_half )
 				*dst= 255;
-			else if( square_distance > square_radius_plus_half )
-				*dst= 0;
-			else
+			else if( square_distance < square_radius_plus_half )
 				*dst= 255 * ( square_radius_plus_half - square_distance ) / ( square_radius_plus_half - square_radius_minus_half );
+			else
+				*dst= 0;
 		}
 	}
+	memset( data + (bright_levels - 1) * size * size, 255,  size * size ); // Fill first level with ones.
 }
 
 void GL_InitHatching()
@@ -270,11 +266,20 @@ void GL_InitHatching()
 
 	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_LOD_BIAS, 0.5f );
-	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MAX_LOD, 4.0f );
+	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_LOD_BIAS, 0.0f );
+	glTexParameterf( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MAX_LOD, 5.0f );
 	glTexParameteri( GL_TEXTURE_2D_ARRAY_EXT,  GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
 
-    free( data );
+	if (gl_texanisotropy.value > 0.0)
+	{
+		int anisotropy = (int)gl_texanisotropy.value;
+		if (anisotropy > gl_max_texanisotropy)
+			anisotropy = gl_max_texanisotropy;
+
+		glTexParameteri( GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy );
+	}
+
+	free( data );
 }
 
 void GL_HatchingPrepareShader()
