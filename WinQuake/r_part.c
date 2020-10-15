@@ -693,6 +693,9 @@ void R_DrawParticles (void)
 	glEnable (GL_BLEND);
 	glEnable (GL_ALPHA_TEST);
 
+	if( gl_hatching.value )
+		GL_BindShader( SHADER_PARTICELS_HATCHING );
+
 	VectorScale (vup, 1.5 * r_particle_size.value, up);
 	VectorScale (vright, 1.5 * r_particle_size.value, right);
 
