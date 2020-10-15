@@ -88,8 +88,6 @@ set( SOURCES_COMMON
 
 if( WIN32 )
 	list( APPEND SOURCES_COMMON
-		net_ser.h
-		net_ser.c
 		net_win.c
 		net_wins.c
 		net_wipx.c
@@ -168,9 +166,12 @@ target_compile_definitions( PanzerQuakeGL PRIVATE GLQUAKE )
 
 target_link_libraries( PanzerQuake PRIVATE ${SDL2_LIBRARIES} )
 target_link_libraries( PanzerQuakeGL PRIVATE ${SDL2_LIBRARIES} )
-target_link_libraries( PanzerQuakeGL PRIVATE GL )
 
-if( UNIX )
+if( WIN32 )
+	target_link_libraries( PanzerQuake PRIVATE wsock32 )
+	target_link_libraries( PanzerQuakeGL PRIVATE wsock32 opengl32 )
+else()
 	target_link_libraries( PanzerQuake PRIVATE m )
-	target_link_libraries( PanzerQuakeGL PRIVATE m )
+	target_link_libraries( PanzerQuakeGL PRIVATE m GL )
+
 endif()
