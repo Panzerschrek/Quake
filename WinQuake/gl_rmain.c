@@ -926,8 +926,9 @@ void R_SetupGL (void)
 	{
 		// Draw in low resolution,
 		// but no less, then 320x200 / 2, and not bigger, than r_refdef.vrect.size
-		warp_width  = w / 3;
-		warp_height = h / 3;
+		int scale= gl_hatching.value || gl_outlines.value ? 2 : 3;
+		warp_width  = w / scale;
+		warp_height = h / scale;
 
 		if (warp_width  < 320 / 2)
 			warp_width  = 320 / 2;
@@ -998,11 +999,14 @@ void R_DoWarp(void)
 		r_refdef.vrect.width,
 		r_refdef.vrect.height);
 
+	int delta= gl_outlines.value ? 1 : 0; // Skip one pixel to hide ugly edge outlines.
 	glCopyTexImage2D(
 		GL_TEXTURE_2D,
 		0, GL_RGBA,
-		r_refdef.vrect.x, vid.height - (r_refdef.vrect.y + r_refdef.vrect.height),
-		warp_width, warp_height,
+		r_refdef.vrect.x + delta,
+		vid.height - (r_refdef.vrect.y + r_refdef.vrect.height) + delta,
+		warp_width  - 2 * delta,
+		warp_height - 2 * delta,
 		0 );
 
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
