@@ -871,6 +871,9 @@ void GL_Set2D (void)
 //	glDisable (GL_ALPHA_TEST);
 
 	glColor4f (1,1,1,1);
+
+	if( gl_hatching.value )
+		GL_BindShader( SHADER_HUD_HATCHING );
 }
 
 //====================================================================

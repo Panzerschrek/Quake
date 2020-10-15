@@ -471,6 +471,31 @@ void main(void)\
 }\
 ";
 
+static const char hud_hatching_shader_v[]= "\
+#version 120\n\
+void main(void)\
+{\
+	gl_TexCoord[0] = gl_MultiTexCoord0;\
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+}\
+";
+
+static const char hud_hatching_shader_f[]= "\
+#version 120\n\
+\
+uniform sampler2D tex;\
+\
+varying float f_light;\
+\
+void main(void)\
+{\
+	vec4 c= texture2D( tex, gl_TexCoord[0].xy );\
+	float b= mix( max( max( c.r, c.g ), c.b ), dot( c.rgb, vec3( 0.299, 0.587, 0.114 ) ), 0.5 );\
+	float k= floor( b * 2.0 * 4.0 ) / 4.0;\
+	gl_FragColor= vec4( k, k, k, c.a );\
+}\
+";
+
 void GL_InitShaders(void)
 {
 	programs[ SHADER_NONE ].handle = 0;
@@ -521,6 +546,10 @@ void GL_InitShaders(void)
 	GL_BindShader( SHADER_ALIAS_HATCHING );
 	GL_ShaderUniformInt( "tex", 0 );
 	GL_ShaderUniformInt( "hatching_texture", 2 );
+
+	InitProgram( SHADER_HUD_HATCHING, hud_hatching_shader_v, hud_hatching_shader_f );
+	GL_BindShader( SHADER_HUD_HATCHING );
+	GL_ShaderUniformInt( "tex", 0 );
 
 	GL_BindShader( SHADER_NONE );
 }
