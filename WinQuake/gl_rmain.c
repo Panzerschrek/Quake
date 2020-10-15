@@ -735,7 +735,26 @@ void R_PolyBlend (void)
 {
 	if (!gl_polyblend.value)
 		return;
-	if (!v_blend[3])
+
+	if (gl_hatching.value)
+	{
+		double hatch_blend[4]= { 1.0, 1.0, 0.84, 0.16 };
+		if (!v_blend[3])
+		{
+			v_blend[0]= hatch_blend[0];
+			v_blend[1]= hatch_blend[1];
+			v_blend[2]= hatch_blend[2];
+			v_blend[3]= hatch_blend[3];
+		}
+		else
+		{
+			v_blend[0]*= hatch_blend[0];
+			v_blend[1]*= hatch_blend[1];
+			v_blend[2]*= hatch_blend[2];
+			v_blend[3]= v_blend[3] > hatch_blend[3] ? v_blend[3] : hatch_blend[3];
+		}
+	}
+	else if (!v_blend[3])
 		return;
 
 	glDisable (GL_ALPHA_TEST);

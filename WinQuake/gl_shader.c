@@ -538,7 +538,7 @@ void main(void)\
 	vec4 c= texture2D( tex, gl_TexCoord[0].xy );\
 	float b= mix( max( max( c.r, c.g ), c.b ), dot( c.rgb, vec3( 0.299, 0.587, 0.114 ) ), 0.5 );\
 	float k= floor( b * 2.0 * 4.0 ) / 4.0;\
-	gl_FragColor= vec4( k, k, k, c.a );\
+	gl_FragColor= vec4( mix( vec3( k, k, k ), vec3( 1.0, 1.0, 0.84 ), 0.16 ), c.a );\
 }\
 ";
 
