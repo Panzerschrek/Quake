@@ -1109,7 +1109,7 @@ void GL_SelectTexture (GLenum target)
 	if (target == oldtarget) 
 		return;
 
-	glActiveTexture( target );
+	QglActiveTexture( target );
 
 	cnttextures[oldtarget-GL_TEXTURE0] = currenttexture;
 	currenttexture = cnttextures[target-GL_TEXTURE0];

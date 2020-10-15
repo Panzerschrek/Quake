@@ -350,8 +350,8 @@ void R_DrawSequentialPoly (msurface_t *s)
 	v = p->verts[0];
 	for (i=0 ; i<p->numverts ; i++, v+= VERTEXSIZE)
 	{
-		glMultiTexCoord2f  (GL_TEXTURE0, v[3], v[4]);
-		glMultiTexCoord2f  (GL_TEXTURE1, v[5], v[6]);
+		QglMultiTexCoord2f  (GL_TEXTURE0, v[3], v[4]);
+		QglMultiTexCoord2f  (GL_TEXTURE1, v[5], v[6]);
 		glVertex3fv (v);
 	}
 	glEnd ();

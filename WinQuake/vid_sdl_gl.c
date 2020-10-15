@@ -375,6 +375,10 @@ static void GetGLFuncs(void)
 
 	#include "gl_funcs_list.h"
 	#undef PROCESS_GL_FUNC
+
+	QglActiveTexture= (PFNGLACTIVETEXTUREPROC) SDL_GL_GetProcAddress( "glActiveTexture" );
+	QglMultiTexCoord2f= (PFNGLMULTITEXCOORD2FARBPROC) SDL_GL_GetProcAddress( "glMultiTexCoord2f" );
+	QglTexImage3D= (PFNGLACTIVETEXTUREPROC) SDL_GL_GetProcAddress( "glTexImage3D" );
 }
 
 static void CheckGLExtensions(void)

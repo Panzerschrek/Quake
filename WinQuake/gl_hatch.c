@@ -86,7 +86,7 @@ void GL_InitHatching()
 		if( mip_size < 1 ) mip_size = 1;
 
 		GenerateHatchingTextureOrderedCircles( data, hatching_texture_size_log2 - mip, hatching_texture_bright_levels );
-		glTexImage3D(
+		QglTexImage3D(
 			GL_TEXTURE_2D_ARRAY_EXT, mip, GL_R8,
 			mip_size, mip_size, hatching_texture_bright_levels,
 			0, GL_RED, GL_UNSIGNED_BYTE, data );
