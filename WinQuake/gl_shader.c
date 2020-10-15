@@ -471,6 +471,29 @@ void main(void)\
 }\
 ";
 
+static const char sprites_hatching_shader_v[]= "\
+#version 120\n\
+void main(void)\
+{\
+	gl_TexCoord[0] = gl_MultiTexCoord0;\
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+}\
+";
+
+static const char sprites_hatching_shader_f[]= "\
+#version 120\n\
+\
+uniform sampler2D tex;\
+\
+void main(void)\
+{\
+	vec4 c= texture2D( tex, gl_TexCoord[0].xy );\
+	float b= mix( max( max( c.r, c.g ), c.b ), dot( c.rgb, vec3( 0.299, 0.587, 0.114 ) ), 0.5 );\
+	float k= round( b * 6.0 ) / 6.0;\
+	gl_FragColor= vec4( k, k, k, c.a );\
+}\
+";
+
 static const char particles_hatching_shader_v[]= "\
 #version 120\n\
 varying vec4 f_color;\
@@ -569,6 +592,10 @@ void GL_InitShaders(void)
 	GL_BindShader( SHADER_ALIAS_HATCHING );
 	GL_ShaderUniformInt( "tex", 0 );
 	GL_ShaderUniformInt( "hatching_texture", 2 );
+
+	InitProgram( SHARED_SPRITES_HATCING, sprites_hatching_shader_v, sprites_hatching_shader_f );
+	GL_BindShader( SHARED_SPRITES_HATCING );
+	GL_ShaderUniformInt( "tex", 0 );
 
 	InitProgram( SHADER_PARTICELS_HATCHING, particles_hatching_shader_v, particles_hatching_shader_f );
 	GL_BindShader( SHADER_PARTICELS_HATCHING );

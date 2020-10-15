@@ -223,6 +223,9 @@ void R_DrawSpriteModel (entity_t *e)
 		right = vright;
 	}
 
+	if( gl_hatching.value )
+		GL_BindShader( SHARED_SPRITES_HATCING );
+
 	glColor3f (1,1,1);
 
     GL_Bind(frame->gl_texturenum);
