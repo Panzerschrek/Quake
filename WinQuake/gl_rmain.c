@@ -864,10 +864,12 @@ void R_SetupFrame (void)
 	GL_ShaderUniformFloat( "time", cl.time );
 
 	GL_BindShader( SHADER_WORLD );
+	GL_HatchingPrepareShader();
 	GL_ShaderUniformFloat( "light_gamma", gl_lightgamma.value );
 	GL_ShaderUniformFloat( "light_overbright", gl_lightoverbright.value );
 
 	GL_BindShader( SHADER_ALIAS );
+	GL_HatchingPrepareShaderAlias();
 	GL_ShaderUniformFloat( "light_gamma", gl_lightgamma.value );
 	GL_ShaderUniformFloat( "light_overbright", gl_lightoverbright.value );
 
