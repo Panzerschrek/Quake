@@ -489,7 +489,7 @@ void main(void)\
 {\
 	vec4 c= texture2D( tex, gl_TexCoord[0].xy );\
 	float b= mix( max( max( c.r, c.g ), c.b ), dot( c.rgb, vec3( 0.299, 0.587, 0.114 ) ), 0.5 );\
-	float k= round( b * 6.0 ) / 6.0;\
+	float k= floor( b * 6.0 + 0.5 ) / 6.0;\
 	gl_FragColor= vec4( k, k, k, c.a );\
 }\
 ";
@@ -514,7 +514,7 @@ varying vec4 f_color;\
 void main(void)\
 {\
 	float b= mix( max( max( f_color.r, f_color.g ), f_color.b ), dot( f_color.rgb, vec3( 0.299, 0.587, 0.114 ) ), 0.5 );\
-	float k= round( b * 6.0 ) / 6.0;\
+	float k= floor( b * 6.0 + 0.5 ) / 6.0;\
 	gl_FragColor= vec4( k, k, k, texture2D( tex, gl_TexCoord[0].xy ).a );\
 }\
 ";
