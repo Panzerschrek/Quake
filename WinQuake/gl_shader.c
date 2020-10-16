@@ -40,7 +40,7 @@ float GetBrightness( vec3 c )\
 }\
 float HatchingFetch( vec3 c, sampler2DArray hatching_texture, vec2 tc )\
 {\
-	float hatching_level= GetBrightness(c);\
+	float hatching_level= clamp( 0.0, 1.0, 1.5 * GetBrightness(c) );\
 	vec2 tc_scaled= vec2( tc.x + tc.y, tc.x - tc.y );\
 	const float tex_layers= 16.0;\
 	float layer_num= floor( hatching_level * tex_layers );\
