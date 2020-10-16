@@ -27,6 +27,31 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define PI_S "3.1415926535"
 
+#define SHADER_HEADER "\
+#version 120\n\
+#extension GL_EXT_texture_array : require\n\
+"
+
+#define COMMON_FUNCS \
+"\
+float GetBrightness( vec3 c )\
+{\
+	return mix( max( max( c.r, c.g ), c.b ), dot( c.rgb, vec3( 0.299, 0.587, 0.114 ) ), 0.5 );\
+}\
+float HatchingFetch( vec3 c, sampler2DArray hatching_texture, vec2 tc )\
+{\
+	float hatching_level= GetBrightness(c);\
+	vec2 tc_scaled= vec2( tc.x + tc.y, tc.x - tc.y );\
+	const float tex_layers= 16.0;\
+	float layer_num= floor( hatching_level * tex_layers );\
+	float m= hatching_level * tex_layers - layer_num;\
+	return mix(\
+		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num ) ).x,\
+		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num + 1.0 ) ).x,\
+		m );\
+}\
+"
+
 typedef struct
 {
 	GLuint		handle;
@@ -90,8 +115,7 @@ static void InitProgram( gl_shader_t program_num, const char* vert_text, const c
 }
 
 static const char warp_shader_v[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 void main(void)\
 {\
 	gl_TexCoord[0] = gl_MultiTexCoord0;\
@@ -100,8 +124,7 @@ void main(void)\
 ";
 
 static const char warp_shader_f[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 uniform sampler2D tex;\
 uniform vec2 tex_size;\
 uniform float time;\
@@ -118,8 +141,7 @@ void main(void)\
 ";
 
 static const char outlines_shader_v[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 void main(void)\
 {\
 	gl_TexCoord[0] = gl_MultiTexCoord0;\
@@ -128,8 +150,7 @@ void main(void)\
 ";
 
 static const char outlines_shader_f[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 uniform sampler2D tex;\
 uniform sampler2D depth_buffer;\
 uniform vec2 tex_size;\
@@ -164,8 +185,7 @@ void main(void)\
 ";
 
 static const char water_turb_shader_v[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 void main(void)\
 {\
 	gl_TexCoord[0] = gl_MultiTexCoord0;\
@@ -174,8 +194,7 @@ void main(void)\
 ";
 
 static const char water_turb_shader_f[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 uniform sampler2D tex;\
 uniform float time;\
 uniform float alpha;\
@@ -193,26 +212,12 @@ void main(void)\
 ";
 
 static const char water_turb_hatching_shader_f[]= "\
-#version 120\n\
-#extension GL_EXT_texture_array : require\n\
-\
+" SHADER_HEADER "\
 uniform sampler2D tex;\
 uniform sampler2DArray hatching_texture;\
 uniform float time;\
 uniform float alpha;\
-\
-float HatchingFetch( float hatching_level )\
-{\
-	vec2 tc_scaled= gl_TexCoord[0].xy * vec2( 2.0, 2.0 );\
-	tc_scaled= vec2( tc_scaled.x + tc_scaled.y, tc_scaled.x - tc_scaled.y );\
-	const float tex_layers= 16.0;\
-	float layer_num= floor( hatching_level * tex_layers );\
-	float m= hatching_level * tex_layers - layer_num;\
-	return mix(\
-		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num ) ).x,\
-		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num + 1.0 ) ).x,\
-		m );\
-}\
+" COMMON_FUNCS "\
 void main(void)\
 {\
 	const float pi = 3.1415926535;\
@@ -221,19 +226,13 @@ void main(void)\
 	float amplitude = 0.0625;\
 	vec2 tc = gl_TexCoord[0].xy;\
 	tc = tc + amplitude * sin( time_freq * vec2(time, time) + omega * tc.yx );\
-	vec3 color= texture2D( tex, tc ).xyz;\
-	float max_color_component= max( color.x, max( color.y, color.z ) );\
-	float color_brightness= dot( color, vec3( 0.299, 0.587, 0.114 ) ); \
-	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
-	float hatching_level= clamp( brightness, 0.0, 1.0 ); \
-	float hatching= HatchingFetch( hatching_level );\
+	float hatching= HatchingFetch(texture2D( tex, tc ).xyz, hatching_texture, gl_TexCoord[0].xy * vec2( 2.0, 2.0 ) );\
 	gl_FragColor = vec4( hatching, hatching, hatching, alpha );\
 }\
 ";
 
 static const char sky_shader_v[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 void main(void)\
 {\
 	gl_TexCoord[0] = gl_MultiTexCoord0;\
@@ -242,8 +241,7 @@ void main(void)\
 ";
 
 static const char sky_shader_f[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 uniform sampler2D tex0;\
 uniform sampler2D tex1;\
 uniform float time;\
@@ -264,26 +262,12 @@ void main(void)\
 ";
 
 static const char sky_hatching_shader_f[]= "\
-#version 120\n\
-#extension GL_EXT_texture_array : require\n\
-\
+" SHADER_HEADER "\
 uniform sampler2D tex0;\
 uniform sampler2D tex1;\
 uniform sampler2DArray hatching_texture;\
 uniform float time;\
-\
-float HatchingFetch( float hatching_level, vec2 tc )\
-{\
-	vec2 tc_scaled= tc * vec2( 16.0, 16.0 );\
-	tc_scaled= vec2( tc_scaled.x + tc_scaled.y, tc_scaled.x - tc_scaled.y );\
-	const float tex_layers= 16.0;\
-	float layer_num= floor( hatching_level * tex_layers );\
-	float m= hatching_level * tex_layers - layer_num;\
-		return mix(\
-		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num ) ).x,\
-		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num + 1.0 ) ).x,\
-m );\
-}\
+" COMMON_FUNCS "\
 void main(void)\
 {\
 	const float speed0 = 1.0 / 16.0;\
@@ -294,20 +278,14 @@ void main(void)\
 	vec2 tc1 = tc + time * speed1 * vec2(1.0, 1.0);\
 	vec4 c0 = texture2D( tex0, tc0 );\
 	vec4 c1 = texture2D( tex1, tc1 );\
-	vec3 color = mix( c0.rgb, c1.rgb, c1.a );\
-	float max_color_component= max( color.x, max( color.y, color.z ) );\
-	float color_brightness= dot( color, vec3( 0.299, 0.587, 0.114 ) ); \
-	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
-	float hatching_level= clamp( brightness, 0.0, 1.0 ); \
-	float hatching= HatchingFetch( hatching_level, tc );\
+	float hatching= HatchingFetch( mix( c0.rgb, c1.rgb, c1.a ), hatching_texture, tc * 16.0 );\
 	gl_FragColor = vec4( hatching, hatching, hatching, 1.0 );\
 	gl_FragDepth= 1.0f; \
 }\
 ";
 
 static const char world_shader_v[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 void main(void)\
 {\
 	gl_TexCoord[0] = gl_MultiTexCoord0;\
@@ -317,8 +295,7 @@ void main(void)\
 ";
 
 static const char world_shader_f[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 uniform sampler2D tex;\
 uniform sampler2D lightmap;\
 uniform float light_gamma = 1.0;\
@@ -337,8 +314,7 @@ void main(void)\
 ";
 
 static const char alias_shader_v[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 varying float f_light;\
 \
 void main(void)\
@@ -350,8 +326,7 @@ void main(void)\
 ";
 
 static const char alias_shader_f[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 uniform sampler2D tex;\
 uniform float light_gamma = 1.0;\
 uniform float light_overbright = 1.0;\
@@ -371,8 +346,7 @@ void main(void)\
 ";
 
 static const char world_hatching_shader_v[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 void main(void)\
 {\
 	gl_TexCoord[0] = gl_MultiTexCoord0;\
@@ -382,26 +356,13 @@ void main(void)\
 ";
 
 static const char world_hatching_shader_f[]= "\
-#version 120\n\
-#extension GL_EXT_texture_array : require\n\
+" SHADER_HEADER "\
 uniform sampler2D tex;\
 uniform sampler2D lightmap;\
 uniform sampler2DArray hatching_texture;\
 uniform float light_gamma = 1.0;\
 uniform float light_overbright = 1.0;\
-\
-float HatchingFetch( float hatching_level )\
-{\
-	vec2 tc_scaled= gl_TexCoord[1].xy * vec2( 64.0, 64.0 );\
-	tc_scaled= vec2( tc_scaled.x + tc_scaled.y, tc_scaled.x - tc_scaled.y );\
-	const float tex_layers= 16.0;\
-	float layer_num= floor( hatching_level * tex_layers );\
-	float m= hatching_level * tex_layers - layer_num;\
-	return mix(\
-		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num ) ).x,\
-		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num + 1.0 ) ).x,\
-		m );\
-}\
+" COMMON_FUNCS "\
 void main(void)\
 {\
 	vec4 c = texture2D( tex, gl_TexCoord[0].xy );\
@@ -411,19 +372,14 @@ void main(void)\
 	\
 	/* mix lightmap and selft texture glow, stored in alpha texture component */ \
 	vec3 color= c.xyz * mix( 1.0, l, c.a );\
-\
-	float max_color_component= max( color.x, max( color.y, color.z ) );\
-	float color_brightness= dot( color, vec3( 0.299, 0.587, 0.114 ) ); \
-	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
-	float hatching_level= clamp( brightness, 0.0, 1.0 ); \
-	float hatching= HatchingFetch( hatching_level );\
+	\
+	float hatching= HatchingFetch( color, hatching_texture, gl_TexCoord[1].xy * 64.0 );\
 	gl_FragColor = vec4( hatching, hatching, hatching, 1.0 );\
 }\
 ";
 
 static const char alias_hatching_shader_v[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 varying float f_light;\
 \
 void main(void)\
@@ -435,44 +391,27 @@ void main(void)\
 ";
 
 static const char alias_hatching_shader_f[]= "\
-#version 120\n\
-#extension GL_EXT_texture_array : require\n\
+" SHADER_HEADER "\
 uniform sampler2D tex;\
 uniform sampler2DArray hatching_texture;\
 uniform float light_gamma = 1.0;\
 uniform float light_overbright = 1.0;\
 varying float f_light;\
-\
-float HatchingFetch( float hatching_level )\
-{\
-	vec2 tc_scaled= gl_TexCoord[0].xy * vec2( 16.0, 16.0 );\
-	tc_scaled= vec2( tc_scaled.x + tc_scaled.y, tc_scaled.x - tc_scaled.y );\
-	const float tex_layers= 16.0;\
-	float layer_num= floor( hatching_level * tex_layers );\
-	float m= hatching_level * tex_layers - layer_num;\
-	return mix(\
-		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num ) ).x,\
-		texture2DArray( hatching_texture, vec3( tc_scaled, layer_num + 1.0 ) ).x,\
-		m );\
-}\
+" COMMON_FUNCS "\
 void main(void)\
 {\
 	vec4 c = texture2D( tex, gl_TexCoord[0].xy );\
 	float l = f_light;\
 	l = pow(l, light_gamma) * light_overbright;\
 	vec3 color= c.xyz * mix( 1.0, l, c.a ); /* mix lightmap and selft texture glow, stored in alpha texture component */\
-\
-	float max_color_component= max( color.x, max( color.y, color.z ) );\
-	float color_brightness= dot( color, vec3( 0.299, 0.587, 0.114 ) ); \
-	float brightness= pow( mix( color_brightness, max_color_component, 0.5 ), 0.75 );\
-	float hatching_level= clamp( brightness, 0.0, 1.0 ); \
-	float hatching= HatchingFetch( hatching_level );\
+	\
+	float hatching= HatchingFetch( color, hatching_texture, gl_TexCoord[0].xy * 16.0 );\
 	gl_FragColor = vec4( hatching, hatching, hatching, 0.0 ); /* wtire zero to alpha to prevent outlines on models */\
 }\
 ";
 
 static const char sprites_hatching_shader_v[]= "\
-#version 120\n\
+" SHADER_HEADER "\
 void main(void)\
 {\
 	gl_TexCoord[0] = gl_MultiTexCoord0;\
@@ -481,21 +420,19 @@ void main(void)\
 ";
 
 static const char sprites_hatching_shader_f[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 uniform sampler2D tex;\
-\
+" COMMON_FUNCS "\
 void main(void)\
 {\
 	vec4 c= texture2D( tex, gl_TexCoord[0].xy );\
-	float b= mix( max( max( c.r, c.g ), c.b ), dot( c.rgb, vec3( 0.299, 0.587, 0.114 ) ), 0.5 );\
-	float k= floor( b * 6.0 + 0.5 ) / 6.0;\
+	float k= floor( GetBrightness( c.rgb ) * 6.0 + 0.5 ) / 6.0;\
 	gl_FragColor= vec4( k, k, k, c.a );\
 }\
 ";
 
 static const char particles_hatching_shader_v[]= "\
-#version 120\n\
+" SHADER_HEADER "\
 varying vec4 f_color;\
 void main(void)\
 {\
@@ -506,21 +443,19 @@ void main(void)\
 ";
 
 static const char particles_hatching_shader_f[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 uniform sampler2D tex;\
 varying vec4 f_color;\
-\
+" COMMON_FUNCS "\
 void main(void)\
 {\
-	float b= mix( max( max( f_color.r, f_color.g ), f_color.b ), dot( f_color.rgb, vec3( 0.299, 0.587, 0.114 ) ), 0.5 );\
-	float k= floor( b * 6.0 + 0.5 ) / 6.0;\
+	float k= floor( GetBrightness( f_color.rgb ) * 6.0 + 0.5 ) / 6.0;\
 	gl_FragColor= vec4( k, k, k, texture2D( tex, gl_TexCoord[0].xy ).a );\
 }\
 ";
 
 static const char hud_hatching_shader_v[]= "\
-#version 120\n\
+" SHADER_HEADER "\
 void main(void)\
 {\
 	gl_TexCoord[0] = gl_MultiTexCoord0;\
@@ -529,15 +464,13 @@ void main(void)\
 ";
 
 static const char hud_hatching_shader_f[]= "\
-#version 120\n\
-\
+" SHADER_HEADER "\
 uniform sampler2D tex;\
-\
+" COMMON_FUNCS "\
 void main(void)\
 {\
 	vec4 c= texture2D( tex, gl_TexCoord[0].xy );\
-	float b= mix( max( max( c.r, c.g ), c.b ), dot( c.rgb, vec3( 0.299, 0.587, 0.114 ) ), 0.5 );\
-	float k= floor( b * 2.0 * 4.0 ) / 4.0;\
+	float k= floor( GetBrightness( c.rgb ) * 2.0 * 4.0 ) / 4.0;\
 	gl_FragColor= vec4( mix( vec3( k, k, k ), vec3( 1.0, 1.0, 0.84 ), 0.16 ), c.a );\
 }\
 ";
